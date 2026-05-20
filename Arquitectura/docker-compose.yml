@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # BASES DE DATOS
+  # ============================================
+  
+  # PostgreSQL para Characters Microservice
+  characters-db:
+    image: postgres:15-alpine
+    container_name: characters-db
+    environment:
+      POSTGRES_DB: characters_db
+      POSTGRES_USER: characters_user
+      POSTGRES_PASSWORD: characters_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+    ports:
+      - "5432:5432"
+    volumes:
+      - characters_db_data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U characters_user -d characters_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # MySQL para Match Microservice
+  match-db:
+    image: mysql:8.0
+    container_name: match-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: match_db
+      MYSQL_USER: match_user
+      MYSQL_PASSWORD: match_pass
+    ports:
+      - "3308:3306"
+    volumes:
+      - match_db_data:/var/lib/mysql
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================
+  # MICROSERVICIOS BACKEND
+  # ============================================
+
+  # Characters Microservice (Imagen pública)
+  characters-be:
+    image: ramiromera/characters
+    container_name: characters-be
+    environment:
+      SERVER_PORT: 80
+    expose:
+      - "80"
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  # Random Dice Microservice (Imagen pública - AJUSTAR LA IMAGEN SEGÚN LA QUE PROPORCIONES)
+  random-be:
+    image: ramiromera/random  # REEMPLAZAR con la imagen pública real
+    container_name: random-be
+    environment:
+      SERVER_PORT: 8080
+    expose:
+      - "8080"
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  # Match Microservice (Build local)
+  match-be:
+    build:
+      context: ../Backend
+      dockerfile: Dockerfile
+    container_name: match-be
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://match-db:3306/match_db
+      SPRING_DATASOURCE_USERNAME: match_user
+      SPRING_DATASOURCE_PASSWORD: match_pass
+      SPRING_PROFILES_ACTIVE: prod
+      CHARACTER_SERVICE_URL: http://characters-be:80
+      SERVER_PORT: 8080
+    expose:
+      - "8080"
+    networks:
+      - backend-network
+    depends_on:
+      match-db:
+        condition: service_healthy
+      characters-be:
+        condition: service_started
+    restart: unless-stopped
+
+  # ============================================
+  # FRONTEND
+  # ============================================
+
+  frontend:
+    build:
+      context: ../Frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    environment:
+      - NODE_ENV=production
+    expose:
+      - "80"
+    networks:
+      - frontend-network
+    restart: unless-stopped
+
+  # ============================================
+  # NGINX PROXY REVERSE
+  # ============================================
+
+  nginx:
+    image: nginx:1.26-alpine
+    container_name: reverse-proxy
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "1583:1583"  # Puerto para Frontend
+      - "5712:5712"  # Puerto para API Gateway
+    networks:
+      - frontend-network
+      - backend-network
+    depends_on:
+      - frontend
+      - characters-be
+      - random-be
+      - match-be
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5712/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# ============================================
+# NETWORKS
+# ============================================
+
+networks:
+  backend-network:
+    driver: bridge
+    name: backend-network
+  frontend-network:
+    driver: bridge
+    name: frontend-network
+
+# ============================================
+# VOLUMES
+# ============================================
+
+volumes:
+  characters_db_data:
+    name: characters_db_data
+  match_db_data:
+    name: match_db_data

@@ -1,0 +1,13 @@
+<header class="app-header">
+  <h1>{{ title }}</h1>
+  <nav class="nav-menu">
+    <a routerLink="/characters" routerLinkActive="active">Personajes</a>
+    <a routerLink="/stats" routerLinkActive="active">Estadísticas</a>
+  </nav>
+</header>
+
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Fixed start button removed from shell; moved to CharactersComponent -->
