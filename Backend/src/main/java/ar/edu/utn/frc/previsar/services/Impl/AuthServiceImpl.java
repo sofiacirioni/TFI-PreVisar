@@ -17,7 +17,6 @@ import ar.edu.utn.frc.previsar.repositories.RegionalRepository;
 import ar.edu.utn.frc.previsar.repositories.UsuarioRepository;
 import ar.edu.utn.frc.previsar.security.JwtService;
 import ar.edu.utn.frc.previsar.services.AuthService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,6 +24,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.Transient;
 
@@ -35,6 +35,7 @@ import java.beans.Transient;
  *   - Registrar profesionales (Usuario + Profesional en una transacción).
  *   - Autenticar credenciales y generar JWT.
  */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
