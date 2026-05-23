@@ -6,6 +6,7 @@ import ar.edu.utn.frc.previsar.entities.Comitente;
 import ar.edu.utn.frc.previsar.entities.Profesional;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
+import ar.edu.utn.frc.previsar.mapper.ComitenteMapper;
 import ar.edu.utn.frc.previsar.repositories.ComitenteRepository;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import ar.edu.utn.frc.previsar.services.ComitenteService;
@@ -24,6 +25,7 @@ public class ComitenteServiceImpl implements ComitenteService {
 
     private final ComitenteRepository comitenteRepository;
     private final SecurityUtils securityUtils;
+    private final ComitenteMapper comitenteMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -32,7 +34,7 @@ public class ComitenteServiceImpl implements ComitenteService {
         return comitenteRepository
                 .findByProfesionalIdAndDeletedAtIsNull(profesional.getId())
                 .stream()
-                .map(this::mapearAResponse)
+                .map(comitenteMapper::toResponse)
                 .toList();
     }
 
@@ -40,7 +42,7 @@ public class ComitenteServiceImpl implements ComitenteService {
     @Transactional(readOnly = true)
     public ComitenteResponseDto obtenerPorId(Long id) {
         Comitente comitente = buscarYValidarPropiedad(id);
-        return mapearAResponse(comitente);
+        return comitenteMapper.toResponse(comitente);
     }
 
     @Override
@@ -50,7 +52,7 @@ public class ComitenteServiceImpl implements ComitenteService {
         return comitenteRepository
                 .findByProfesionalIdAndDniCuitAndDeletedAtIsNull(
                         profesional.getId(), dniCuit)
-                .map(this::mapearAResponse);
+                .map(comitenteMapper::toResponse);
     }
 
     @Override
@@ -81,7 +83,7 @@ public class ComitenteServiceImpl implements ComitenteService {
         log.info("Comitente creado: id={}, profesional={}, dniCuit={}",
                 guardado.getId(), profesional.getId(), guardado.getDniCuit());
 
-        return mapearAResponse(guardado);
+        return comitenteMapper.toResponse(guardado);
     }
 
     @Override
@@ -110,7 +112,7 @@ public class ComitenteServiceImpl implements ComitenteService {
 
         log.info("Comitente actualizado: id={}", comitente.getId());
 
-        return mapearAResponse(comitente);
+        return comitenteMapper.toResponse(comitente);
 
     }
 
@@ -151,19 +153,5 @@ public class ComitenteServiceImpl implements ComitenteService {
         }
 
         return comitente;
-    }
-
-    private ComitenteResponseDto mapearAResponse(Comitente c) {
-        return ComitenteResponseDto.builder()
-                .id(c.getId())
-                .tipoPersona(c.getTipoPersona())
-                .nombreRazonSocial(c.getNombreRazonSocial())
-                .dniCuit(c.getDniCuit())
-                .domicilio(c.getDomicilio())
-                .email(c.getEmail())
-                .telefono(c.getTelefono())
-                .createdAt(c.getCreatedAt())
-                .updatedAt(c.getUpdatedAt())
-                .build();
     }
 }

@@ -52,16 +52,16 @@ public class RolRevisor {
         this.updatedAt = LocalDateTime.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RolRevisor)) return false;
-        RolRevisor that = (RolRevisor) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof RolRevisor)) return false;
+//        RolRevisor that = (RolRevisor) o;
+//        return id != null && id.equals(that.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id);
+//    }
 }

@@ -36,16 +36,16 @@ public class Provincia {
     // ------------------------------------------------------------
     // equals / hashCode basados en id (estándar para entidades JPA)
     // ------------------------------------------------------------
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Provincia)) return false;
-        Provincia that = (Provincia) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof Provincia)) return false;
+//        Provincia that = (Provincia) o;
+//        return id != null && id.equals(that.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id);
+//    }
 }

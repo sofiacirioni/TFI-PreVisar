@@ -6,6 +6,7 @@ import ar.edu.utn.frc.previsar.entities.CondicionIva;
 import ar.edu.utn.frc.previsar.entities.Profesional;
 import ar.edu.utn.frc.previsar.entities.Regional;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
+import ar.edu.utn.frc.previsar.mapper.ProfesionalMapper;
 import ar.edu.utn.frc.previsar.repositories.CondicionIvaRepository;
 import ar.edu.utn.frc.previsar.repositories.ProfesionalRepository;
 import ar.edu.utn.frc.previsar.repositories.RegionalRepository;
@@ -26,6 +27,7 @@ public class ProfesionalServiceImpl implements ProfesionalService {
     private final CondicionIvaRepository condicionIvaRepository;
     private final RolRevisorRepository rolRevisorRepository;
     private final SecurityUtils securityUtils;
+    private final ProfesionalMapper profesionalMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -89,26 +91,8 @@ public class ProfesionalServiceImpl implements ProfesionalService {
      * En la próxima sesión refactorizamos esto con MapStruct.
      */
     private ProfesionalResponseDto mapearAResponse(Profesional p, boolean esRevisor) {
-        return ProfesionalResponseDto.builder()
-                .id(p.getId())
-                .email(p.getUsuario().getEmail())
-                .rol(p.getUsuario().getRol().name())
-                .activo(p.getUsuario().getActivo())
-                .nombre(p.getNombre())
-                .apellido(p.getApellido())
-                .dni(p.getDni())
-                .cuit(p.getCuit())
-                .matricula(p.getMatricula())
-                .titulo(p.getTitulo())
-                .domicilio(p.getDomicilio())
-                .telefono(p.getTelefono())
-                .regionalId(p.getRegional().getId())
-                .regionalNombre(p.getRegional().getNombre())
-                .provinciaNombre(p.getRegional().getProvincia().getNombre())
-                .condicionIvaId(p.getCondicionIva().getId())
-                .condicionIvaDescripcion(p.getCondicionIva().getDescripcion())
-                .afiliadoCaja8470(p.getAfiliadoCaja8470())
-                .esRevisor(esRevisor)
-                .build();
+        ProfesionalResponseDto response = profesionalMapper.toResponse(p);
+        response.setEsRevisor(esRevisor);
+        return response;
     }
 }

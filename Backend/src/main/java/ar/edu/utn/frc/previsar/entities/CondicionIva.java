@@ -35,17 +35,17 @@ public class CondicionIva {
     @Column(nullable = false)
     private boolean activo;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CondicionIva)) return false;
-        CondicionIva that = (CondicionIva) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof CondicionIva)) return false;
+//        CondicionIva that = (CondicionIva) o;
+//        return id != null && id.equals(that.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id);
+//    }
 
 }

@@ -106,16 +106,16 @@ public class Obra {
         return String.format("%s-%s-%s-%s", circunscripcion, seccion, manzana, parcela);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Obra)) return false;
-        Obra that = (Obra) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof Obra)) return false;
+//        Obra that = (Obra) o;
+//        return id != null && id.equals(that.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id);
+//    }
 }

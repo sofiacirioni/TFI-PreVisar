@@ -68,16 +68,16 @@ public class Usuario {
     // ------------------------------------------------------------
     // equals / hashCode por id (patrón estándar JPA)
     // ------------------------------------------------------------
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Usuario)) return false;
-        Usuario that = (Usuario) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof Usuario)) return false;
+//        Usuario that = (Usuario) o;
+//        return id != null && id.equals(that.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id);
+//    }
 }

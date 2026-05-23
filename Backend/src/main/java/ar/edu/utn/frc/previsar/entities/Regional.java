@@ -34,17 +34,17 @@ public class Regional {
     @JoinColumn(name="provincia_id", nullable=false)
     private Provincia provincia;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Regional)) return false;
-        Regional that = (Regional) o;
-        return id != null && id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof Regional)) return false;
+//        Regional that = (Regional) o;
+//        return id != null && id.equals(that.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id);
+//    }
 
 }
