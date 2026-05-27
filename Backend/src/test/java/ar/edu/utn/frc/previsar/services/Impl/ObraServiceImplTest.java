@@ -2,16 +2,14 @@ package ar.edu.utn.frc.previsar.services.Impl;
 
 import ar.edu.utn.frc.previsar.dtos.request.ObraRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ObraResponseDto;
-import ar.edu.utn.frc.previsar.entities.Comitente;
-import ar.edu.utn.frc.previsar.entities.Obra;
-import ar.edu.utn.frc.previsar.entities.Profesional;
-import ar.edu.utn.frc.previsar.entities.Usuario;
+import ar.edu.utn.frc.previsar.entities.*;
 import ar.edu.utn.frc.previsar.enums.Rol;
 import ar.edu.utn.frc.previsar.enums.TipoPersona;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ObraMapper;
 import ar.edu.utn.frc.previsar.repositories.ComitenteRepository;
 import ar.edu.utn.frc.previsar.repositories.ObraRepository;
+import ar.edu.utn.frc.previsar.repositories.ProvinciaRepository;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +45,9 @@ class ObraServiceImplTest {
     private ComitenteRepository comitenteRepository;
 
     @Mock
+    private ProvinciaRepository provinciaRepository;
+
+    @Mock
     private SecurityUtils securityUtils;
 
     @Mock
@@ -59,6 +60,7 @@ class ObraServiceImplTest {
     private Profesional otroProfesional;
     private Comitente comitenteDelActual;
     private Comitente comitenteDelOtro;
+    private Provincia provincia;
     private Obra obraDelActual;
     private Obra obraDelOtro;
     private ObraRequestDto request;
@@ -91,9 +93,13 @@ class ObraServiceImplTest {
                 .dniCuit("30-99999999-9")
                 .build();
 
+        provincia = Provincia.builder()
+                .id(1L).nombre("Córdoba").codigo("CBA").build();
+
         obraDelActual = Obra.builder()
                 .id(1000L)
                 .comitente(comitenteDelActual)
+                .provincia(provincia)
                 .designacion("Proyecto BT MYKONOS")
                 .calle("Rivadavia")
                 .numero("162")
@@ -104,6 +110,7 @@ class ObraServiceImplTest {
         obraDelOtro = Obra.builder()
                 .id(2000L)
                 .comitente(comitenteDelOtro)
+                .provincia(provincia)
                 .designacion("Obra ajena")
                 .calle("Ajena")
                 .numero("1")
@@ -116,6 +123,7 @@ class ObraServiceImplTest {
                 .calle("Rivadavia")
                 .numero("162")
                 .localidad("Villa María")
+                .provinciaId(1L)
                 .codigoPostal("5900")
                 .circunscripcion("01")
                 .seccion("01")
@@ -124,7 +132,7 @@ class ObraServiceImplTest {
                 .build();
     }
 
-    //Listar
+    //Listar todas
     @Test
     @DisplayName("listarTodasMisObras: devuelve obras activas del profesional actual")
     void listarTodasMisObras_devuelveObrasDelActual() {
@@ -140,6 +148,7 @@ class ObraServiceImplTest {
         assertEquals(1000L, resultado.get(0).getId());
     }
 
+    //Listar por comitente
     @Test
     @DisplayName("listarPorComitente: devuelve obras del comitente propio")
     void listarPorComitente_propio_devuelveObras() {
@@ -236,6 +245,7 @@ class ObraServiceImplTest {
     void crear_comitentePropio_creaObra() {
         when(securityUtils.getProfesionalActual()).thenReturn(profesionalActual);
         when(comitenteRepository.findById(100L)).thenReturn(Optional.of(comitenteDelActual));
+        when(provinciaRepository.findById(1L)).thenReturn(Optional.of(provincia));
         when(obraRepository.save(any(Obra.class)))
                 .thenAnswer(inv -> {
                     Obra o = inv.getArgument(0);
@@ -250,11 +260,12 @@ class ObraServiceImplTest {
         assertNotNull(resultado);
         assertEquals(1001L, resultado.getId());
 
-        // Verificar que la obra se asoció al comitente correcto
+        // Verificar que la obra se asoció al comitente y provincia correcta
         ArgumentCaptor<Obra> captor = ArgumentCaptor.forClass(Obra.class);
         verify(obraRepository).save(captor.capture());
         Obra guardada = captor.getValue();
         assertEquals(comitenteDelActual, guardada.getComitente());
+        assertEquals(provincia, guardada.getProvincia());
         assertEquals("Proyecto BT MYKONOS", guardada.getDesignacion());
         assertEquals("01", guardada.getCircunscripcion());
     }
@@ -270,6 +281,21 @@ class ObraServiceImplTest {
 
         // No debió guardarse nada
         verify(obraRepository, never()).save(any());
+        // Tampoco debió consultarse la provincia (falla antes)
+        verify(provinciaRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("crear: lanza 404 si la provincia no existe")
+    void crear_provinciaInexistente_lanza404() {
+        when(securityUtils.getProfesionalActual()).thenReturn(profesionalActual);
+        when(comitenteRepository.findById(100L)).thenReturn(Optional.of(comitenteDelActual));
+        when(provinciaRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> obraService.crear(100L, request));
+
+        verify(obraRepository, never()).save(any());
     }
 
     //Actualizar
@@ -281,11 +307,13 @@ class ObraServiceImplTest {
                 .calle("Nueva Calle")
                 .numero("999")
                 .localidad("Nueva Localidad")
+                .provinciaId(1L)
                 .codigoPostal("5000")
                 .build();
 
         when(securityUtils.getProfesionalActual()).thenReturn(profesionalActual);
         when(obraRepository.findById(1000L)).thenReturn(Optional.of(obraDelActual));
+        when(provinciaRepository.findById(1L)).thenReturn(Optional.of(provincia));
         when(obraMapper.toResponse(obraDelActual))
                 .thenReturn(ObraResponseDto.builder().id(1000L).build());
 
@@ -296,6 +324,7 @@ class ObraServiceImplTest {
         assertEquals("Nueva Calle", obraDelActual.getCalle());
         assertEquals("999", obraDelActual.getNumero());
         assertEquals("Nueva Localidad", obraDelActual.getLocalidad());
+        assertEquals(provincia, obraDelActual.getProvincia());
     }
 
     @Test

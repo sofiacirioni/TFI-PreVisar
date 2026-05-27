@@ -33,6 +33,10 @@ public class Obra {
     @JoinColumn(name = "comitente_id", nullable = false)
     private Comitente comitente;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "provincia_id", nullable = false)
+    private Provincia provincia;
+
     @Column(nullable = false, length = 255)
     private String designacion;
 

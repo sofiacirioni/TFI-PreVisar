@@ -1,6 +1,7 @@
 package ar.edu.utn.frc.previsar.dtos.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -39,6 +40,9 @@ public class ObraRequestDto {
     @NotBlank(message = "La localidad es obligatoria")
     @Size(max = 100)
     private String localidad;
+
+    @NotNull(message = "Debe seleccionar la provincia de la obra")
+    private Long provinciaId;
 
     @NotBlank(message = "El código postal es obligatorio")
     @Pattern(regexp = "^[A-Z0-9]{4,10}$",

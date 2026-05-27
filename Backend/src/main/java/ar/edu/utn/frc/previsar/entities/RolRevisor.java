@@ -34,6 +34,10 @@ public class RolRevisor {
     @JoinColumn(name="profesional_id", nullable = false, unique = true)
     private Profesional profesional;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "provincia_id", nullable = false)
+    private Provincia provincia;
+
     @Column(name="created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

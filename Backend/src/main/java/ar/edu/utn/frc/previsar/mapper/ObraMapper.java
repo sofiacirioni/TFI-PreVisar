@@ -21,5 +21,7 @@ public interface ObraMapper {
     @Mapping(source = "comitente.id", target = "comitenteId")
     @Mapping(source = "comitente.nombreRazonSocial", target = "comitenteNombre")
     @Mapping(source = "comitente.dniCuit", target = "comitenteDniCuit")
+    @Mapping(source = "provincia.id", target = "provinciaId")
+    @Mapping(source = "provincia.nombre", target = "provinciaNombre")
     ObraResponseDto toResponse(Obra obra);
 }

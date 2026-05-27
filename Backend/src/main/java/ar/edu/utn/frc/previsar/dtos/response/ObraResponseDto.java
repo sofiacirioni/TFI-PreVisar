@@ -30,6 +30,8 @@ public class ObraResponseDto {
     private String numero;
     private String barrio;
     private String localidad;
+    private Long provinciaId;
+    private String provinciaNombre;
     private String codigoPostal;
 
     // Datos catastrales

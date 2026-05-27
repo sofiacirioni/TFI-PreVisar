@@ -5,10 +5,12 @@ import ar.edu.utn.frc.previsar.dtos.response.ObraResponseDto;
 import ar.edu.utn.frc.previsar.entities.Comitente;
 import ar.edu.utn.frc.previsar.entities.Obra;
 import ar.edu.utn.frc.previsar.entities.Profesional;
+import ar.edu.utn.frc.previsar.entities.Provincia;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ObraMapper;
 import ar.edu.utn.frc.previsar.repositories.ComitenteRepository;
 import ar.edu.utn.frc.previsar.repositories.ObraRepository;
+import ar.edu.utn.frc.previsar.repositories.ProvinciaRepository;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import ar.edu.utn.frc.previsar.services.ObraService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ObraServiceImpl implements ObraService {
     private final ObraRepository obraRepository;
+    private final ProvinciaRepository provinciaRepository;
     private final ComitenteRepository comitenteRepository;
     private final SecurityUtils securityUtils;
     private final ObraMapper obraMapper;
@@ -61,8 +64,13 @@ public class ObraServiceImpl implements ObraService {
     public ObraResponseDto crear(Long comitenteId, ObraRequestDto request) {
         Comitente comitente = buscarYValidarComitente(comitenteId);
 
+        Provincia provincia = provinciaRepository.findById(request.getProvinciaId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Provincia no encontrada: " + request.getProvinciaId()));
+
         Obra nueva = Obra.builder()
                 .comitente(comitente)
+                .provincia(provincia)
                 .designacion(request.getDesignacion())
                 .calle(request.getCalle())
                 .numero(request.getNumero())
@@ -88,6 +96,11 @@ public class ObraServiceImpl implements ObraService {
     public ObraResponseDto actualizar(Long id, ObraRequestDto request) {
         Obra obra = buscarYValidarPropiedadObra(id);
 
+        Provincia provincia = provinciaRepository.findById(request.getProvinciaId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Provincia no encontrada: " + request.getProvinciaId()));
+
+        obra.setProvincia(provincia);
         obra.setDesignacion(request.getDesignacion());
         obra.setCalle(request.getCalle());
         obra.setNumero(request.getNumero());
