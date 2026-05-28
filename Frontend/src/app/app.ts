@@ -1,25 +1,14 @@
-import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { CharacterService } from './services/character.service';
+import { Component, signal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, MatIconModule, MatButtonModule],
   templateUrl: './app.html',
-  styleUrls: ['./app.scss']
+  styleUrl: './app.scss'
 })
 export class App {
-  title = 'Mortal Kombat - Match Game';
-  private characterService = inject(CharacterService);
-  private router = inject(Router);
-
-  // Exponer señal para la plantilla
-  selectedCharacter = this.characterService.selectedCharacter;
-  loadingStart = signal<boolean>(false);
-
-  // No route-aware logic here; control moved to CharactersComponent
-
-  // start logic moved to CharactersComponent
+  protected readonly title = signal('frontend');
 }

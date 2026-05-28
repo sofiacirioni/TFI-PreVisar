@@ -1,13 +1,12 @@
-<header class="app-header">
-  <h1>{{ title }}</h1>
-  <nav class="nav-menu">
-    <a routerLink="/characters" routerLinkActive="active">Personajes</a>
-    <a routerLink="/stats" routerLinkActive="active">Estadísticas</a>
-  </nav>
-</header>
-
-<main class="app-main">
-  <router-outlet></router-outlet>
-</main>
-
-<!-- Fixed start button removed from shell; moved to CharactersComponent -->
+<div style="padding: 24px; display: flex; gap: 12px; align-items: center;">
+  <h1 style="margin: 0;">PreVisar — test de Material</h1>
+  <button mat-flat-button>
+    <mat-icon>check_circle</mat-icon>
+    Botón Material
+  </button>
+  <button mat-stroked-button color="primary">Stroked</button>
+  <button mat-icon-button aria-label="menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+</div>
+<router-outlet />
