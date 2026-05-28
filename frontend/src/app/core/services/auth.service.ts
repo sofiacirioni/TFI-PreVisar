@@ -45,9 +45,14 @@ export class AuthService {
     );
   }
 
-  logout(): void {
+  /** Limpia la sesión (storage + signal) SIN navegar. Útil para guards. */
+  limpiarSesion(): void {
     this.tokenService.clear();
     this._sesion.set(null);
+  }
+
+  logout(): void {
+    this.limpiarSesion();
     this.router.navigate(['/auth/login']);
   }
 
