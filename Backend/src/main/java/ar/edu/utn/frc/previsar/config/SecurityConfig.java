@@ -3,6 +3,7 @@ package ar.edu.utn.frc.previsar.config;
 import ar.edu.utn.frc.previsar.security.JwtAuthenticationEntryPoint;
 import ar.edu.utn.frc.previsar.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +17,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * Configuración central de Spring Security para PreVisar.
@@ -34,6 +40,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CorsProperties corsProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,6 +48,9 @@ public class SecurityConfig {
                 // CSRF deshabilitado porque usamos JWT, no cookies de sesión.
                 // CSRF protege contra ataques con cookies; sin cookies no aplica.
                 .csrf(AbstractHttpConfigurer::disable)
+
+                // CORS activado, configurado por corsConfigurationSource()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // Stateless: el server NO guarda sesiones. Cada request se autentica
                 // sola con su JWT.
@@ -70,10 +80,30 @@ public class SecurityConfig {
     }
 
     /**
+     * Configuración CORS. Define qué orígenes, métodos y headers se aceptan.
+     * Los orígenes vienen de previsar.cors.allowed-origins (12-factor).
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(false);
+        config.setMaxAge(3600L);  // cachear preflight 1h
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    /**
      * BCrypt para hashear passwords. Bean que Spring usa donde haga falta.
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 

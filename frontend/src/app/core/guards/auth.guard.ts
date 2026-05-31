@@ -1,4 +1,4 @@
-import { inject } from '@angular/core/primitives/di';
+import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { TokenService } from '@core/services/token.service';
@@ -11,7 +11,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   if (tokenService.hasValidToken()) {
     return true;
   }
-
+  
   authService.limpiarSesion();
   return router.createUrlTree(['/auth/login']);
 };

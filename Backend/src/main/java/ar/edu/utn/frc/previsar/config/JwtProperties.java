@@ -17,10 +17,11 @@ import org.springframework.stereotype.Component;
  *   previsar.jwt.issuer=xxx       → JwtProperties.issuer
  */
 
-@Component
-@ConfigurationProperties(prefix = "previsar.jwt")
+
 @Getter
 @Setter
+@Component
+@ConfigurationProperties(prefix = "previsar.jwt")
 public class JwtProperties {
     /**
      * Clave secreta para firmar y verificar tokens (al menos 256 bits).
