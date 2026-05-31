@@ -1,0 +1,54 @@
+.login-card {
+  width: 100%;
+  padding: 8px;
+  background-color: #ffffff;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.submit-button {
+  height: 44px;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background-color: #fdecea;
+  color: #c62828;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin: 4px 0 8px;
+
+  mat-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 16px 16px;
+
+  .register-prompt {
+    font-size: 0.875rem;
+    color: #5a6b78;
+  }
+}

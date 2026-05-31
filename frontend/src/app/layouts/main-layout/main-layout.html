@@ -1,0 +1,79 @@
+<mat-sidenav-container class="layout-container">
+
+  <!-- ===== Sidebar ===== -->
+  <mat-sidenav
+    mode="side"
+    opened
+    [class.colapsado]="!sidebarExpandido()"
+    class="sidebar"
+  >
+    <div class="sidebar-brand">
+      @if (sidebarExpandido()) {
+        <span class="brand-text">PreVisar</span>
+      } @else {
+        <span class="brand-mini">P</span>
+      }
+    </div>
+
+    <mat-divider />
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.route) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="activo"
+          [matTooltip]="sidebarExpandido() ? '' : item.label"
+          matTooltipPosition="right"
+          class="nav-item"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          @if (sidebarExpandido()) {
+            <span matListItemTitle>{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+  </mat-sidenav>
+
+  <!-- ===== Contenido principal ===== -->
+  <mat-sidenav-content class="content-area">
+
+    <mat-toolbar class="topbar">
+      <button
+        mat-icon-button
+        (click)="toggleSidebar()"
+        [matTooltip]="sidebarExpandido() ? 'Colapsar menú' : 'Expandir menú'"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="spacer"></span>
+
+      @if (sesion(); as s) {
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-trigger">
+          <mat-icon>account_circle</mat-icon>
+          <span class="user-email">{{ s.email }}</span>
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item routerLink="/profile">
+            <mat-icon>person</mat-icon>
+            <span>Mi perfil</span>
+          </button>
+          <mat-divider />
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </mat-menu>
+      }
+    </mat-toolbar>
+
+    <main class="page-content">
+      <router-outlet />
+    </main>
+
+  </mat-sidenav-content>
+</mat-sidenav-container>
