@@ -5,6 +5,11 @@ export const API = {
   AUTH_LOGIN: `${environment.authBaseUrl}/login`,
   AUTH_REGISTER: `${environment.authBaseUrl}/register`,
 
+  // --- Catálogos (públicos) ---
+  CATALOGO_PROVINCIAS: `${environment.apiBaseUrl}/catalogos/provincias`,
+  CATALOGO_REGIONALES: `${environment.apiBaseUrl}/catalogos/regionales`,
+  CATALOGO_CONDICIONES_IVA: `${environment.apiBaseUrl}/catalogos/condiciones-iva`,
+
   // --- Profesional ---
   PROFESIONAL_ME: `${environment.apiBaseUrl}/profesional/me`,
 

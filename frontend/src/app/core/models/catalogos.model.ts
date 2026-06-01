@@ -8,6 +8,7 @@ export interface Regional {
   readonly id: number;
   nombre: string;
   provinciaId: number;
+  provinciaNombre?: string;
 }
 
 export interface CondicionIva {
