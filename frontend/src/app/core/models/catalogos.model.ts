@@ -16,3 +16,9 @@ export interface CondicionIva {
   descripcion: string;
   codigo: string;
 }
+
+export interface Titulo {
+  readonly id: number;
+  nombre: string;
+  permiteTextoLibre: boolean;
+}

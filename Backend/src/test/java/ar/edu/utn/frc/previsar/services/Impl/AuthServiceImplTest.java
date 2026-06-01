@@ -72,6 +72,7 @@ class AuthServiceImplTest {
     private RegisterRequestDto registerRequest;
     private Regional regional;
     private CondicionIva condicionIva;
+    private Titulo titulo;
 
     @BeforeEach
     void setUp() {
@@ -86,6 +87,10 @@ class AuthServiceImplTest {
                 .id(1L).codigo("RESPONSABLE_INSCRIPTO")
                 .descripcion("Responsable Inscripto").activo(true).build();
 
+        titulo = Titulo.builder()
+                .id(2L).nombre("Tec. en Programacion")
+                .permiteTextoLibre(false).activo(true).build();
+
         registerRequest = RegisterRequestDto.builder()
                 .email("sofia@example.com")
                 .password("miPassword123")
@@ -94,7 +99,7 @@ class AuthServiceImplTest {
                 .dni("40123456")
                 .cuit("27-40123456-3")
                 .matricula("99999")
-                .titulo("Tec. en Programación")
+                .tituloId(2L)
                 .domicilio("Calle Falsa 123")
                 .telefono("3511234567")
                 .regionalId(3L)

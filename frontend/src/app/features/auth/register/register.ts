@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -17,8 +17,9 @@ import { MatDividerModule } from '@angular/material/divider';
 
 import { AuthService } from '@core/services/auth.service';
 import { CatalogoService } from '@core/services/catalogo.service';
-import { Regional, CondicionIva, RegisterRequest } from '@core/models';
+import { Regional, CondicionIva, RegisterRequest, Titulo } from '@core/models';
 import { passwordMatchValidator } from '@shared/validators/password-match.validator';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-register',
@@ -55,6 +56,7 @@ export class Register implements OnInit {
   // Catálogos
   readonly regionales = signal<Regional[]>([]);
   readonly condicionesIva = signal<CondicionIva[]>([]);
+  readonly titulos = signal<Titulo[]>([]);
 
   readonly form = this.fb.nonNullable.group(
     {
@@ -73,7 +75,8 @@ export class Register implements OnInit {
 
       // Sección 3: datos profesionales
       matricula: ['', [Validators.required, Validators.maxLength(50)]],
-      titulo: ['', [Validators.required, Validators.maxLength(150)]],
+      tituloId: [null as number | null, [Validators.required]],
+      tituloOtroDescripcion: ['', [Validators.maxLength(150)]],
       regionalId: [null as number | null, [Validators.required]],
       condicionIvaId: [null as number | null, [Validators.required]],
       afiliadoCaja8470: [false, [Validators.required]],
@@ -83,8 +86,29 @@ export class Register implements OnInit {
     }
   );
 
+  // Signal que refleja el id de título seleccionado (reactivo)
+  private readonly tituloIdSignal = toSignal(this.form.controls.tituloId.valueChanges, {
+    initialValue: this.form.controls.tituloId.value,
+  });
+
+  // True si el título seleccionado tiene permite_texto_libre = true
+  readonly tituloRequiereDescripcion = computed(() => {
+  const id = this.form.controls.tituloId.value;
+  if (!id) return false;
+  const titulo = this.titulos().find((t) => t.id === id);
+  return titulo?.permiteTextoLibre ?? false;
+  });
+
   ngOnInit(): void {
     this.cargarCatalogos();
+
+    // Limpiar el campo libre cuando se cambia a un título que no lo requiere
+    this.form.controls.tituloId.valueChanges.subscribe(() => {
+      if (!this.tituloRequiereDescripcion()) {
+        this.form.controls.tituloOtroDescripcion.setValue('');
+        this.form.controls.tituloOtroDescripcion.setErrors(null);
+      }
+    });
   }
 
   private cargarCatalogos(): void {
@@ -92,10 +116,12 @@ export class Register implements OnInit {
     forkJoin({
       regionales: this.catalogoService.listarRegionales(),
       condicionesIva: this.catalogoService.listarCondicionesIva(),
+      titulos: this.catalogoService.listarTitulos(),
     }).subscribe({
-      next: ({ regionales, condicionesIva }) => {
+      next: ({ regionales, condicionesIva, titulos }) => {
         this.regionales.set(regionales);
         this.condicionesIva.set(condicionesIva);
+        this.titulos.set(titulos);
         this.cargandoCatalogos.set(false);
       },
       error: () => {
@@ -114,42 +140,50 @@ export class Register implements OnInit {
   }
 
   submit(): void {
-    if (this.form.invalid || this.cargando()) {
-      this.form.markAllAsTouched();
-      return;
-    }
+  if (this.form.invalid || this.cargando()) {
+    this.form.markAllAsTouched();
+    return;
+  }
 
-    this.errorGeneral.set(null);
-    this.cargando.set(true);
+  // Validación condicional: si el título requiere descripción, debe venir
+  const raw = this.form.getRawValue();
+  if (this.tituloRequiereDescripcion() && !raw.tituloOtroDescripcion.trim()) {
+    this.form.controls.tituloOtroDescripcion.setErrors({ requeridoSiOtro: true });
+    this.form.controls.tituloOtroDescripcion.markAsTouched();
+    return;
+  }
 
-    // Armamos el RegisterRequest (sin confirmarPassword, que es solo UI)
-    const raw = this.form.getRawValue();
-    const credenciales: RegisterRequest = {
-      email: raw.email,
-      password: raw.password,
-      nombre: raw.nombre,
-      apellido: raw.apellido,
-      dni: raw.dni,
-      cuit: raw.cuit,
-      matricula: raw.matricula,
-      titulo: raw.titulo,
-      domicilio: raw.domicilio,
-      telefono: raw.telefono,
-      regionalId: raw.regionalId!,
-      condicionIvaId: raw.condicionIvaId!,
-      afiliadoCaja8470: raw.afiliadoCaja8470,
-    };
+  this.errorGeneral.set(null);
+  this.cargando.set(true);
 
-    this.authService.register(credenciales).subscribe({
-      next: () => {
-        // El AuthService ya guardó token y signal, navegamos al dashboard
-        this.router.navigate(['/dashboard']);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.cargando.set(false);
-        this.manejarErrorBackend(err);
-      },
-    });
+  const credenciales: RegisterRequest = {
+    email: raw.email,
+    password: raw.password,
+    nombre: raw.nombre,
+    apellido: raw.apellido,
+    dni: raw.dni,
+    cuit: raw.cuit,
+    matricula: raw.matricula,
+    tituloId: raw.tituloId!,
+    tituloOtroDescripcion: this.tituloRequiereDescripcion()
+      ? raw.tituloOtroDescripcion.trim()
+      : undefined,
+    domicilio: raw.domicilio,
+    telefono: raw.telefono,
+    regionalId: raw.regionalId!,
+    condicionIvaId: raw.condicionIvaId!,
+    afiliadoCaja8470: raw.afiliadoCaja8470,
+  };
+
+  this.authService.register(credenciales).subscribe({
+    next: () => {
+      this.router.navigate(['/dashboard']);
+    },
+    error: (err: HttpErrorResponse) => {
+      this.cargando.set(false);
+      this.manejarErrorBackend(err);
+    },
+  });
   }
 
   /**

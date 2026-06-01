@@ -9,6 +9,7 @@ export const API = {
   CATALOGO_PROVINCIAS: `${environment.apiBaseUrl}/catalogos/provincias`,
   CATALOGO_REGIONALES: `${environment.apiBaseUrl}/catalogos/regionales`,
   CATALOGO_CONDICIONES_IVA: `${environment.apiBaseUrl}/catalogos/condiciones-iva`,
+  CATALOGO_TITULOS: `${environment.apiBaseUrl}/catalogos/titulos`,
 
   // --- Profesional ---
   PROFESIONAL_ME: `${environment.apiBaseUrl}/profesional/me`,

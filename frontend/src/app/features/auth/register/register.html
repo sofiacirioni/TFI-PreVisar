@@ -12,7 +12,6 @@
       </div>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit()" class="register-form">
-
         <!-- ========== SECCIÓN 1: Credenciales ========== -->
         <section>
           <h3 class="section-title">Credenciales</h3>
@@ -22,9 +21,13 @@
             <input matInput type="email" formControlName="email" autocomplete="email" />
             <mat-icon matSuffix>mail</mat-icon>
             @if (form.controls.email.touched && form.controls.email.errors; as e) {
-              @if (e['required']) { <mat-error>El email es obligatorio</mat-error> }
-              @else if (e['email']) { <mat-error>Email inválido</mat-error> }
-              @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+              @if (e['required']) {
+                <mat-error>El email es obligatorio</mat-error>
+              } @else if (e['email']) {
+                <mat-error>Email inválido</mat-error>
+              } @else if (e['backend']) {
+                <mat-error>{{ e['backend'] }}</mat-error>
+              }
             }
           </mat-form-field>
 
@@ -38,16 +41,22 @@
                 autocomplete="new-password"
               />
               <button
-                mat-icon-button matSuffix type="button"
+                mat-icon-button
+                matSuffix
+                type="button"
                 (click)="toggleMostrarPassword()"
                 [attr.aria-label]="mostrarPassword() ? 'Ocultar' : 'Mostrar'"
               >
                 <mat-icon>{{ mostrarPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
               @if (form.controls.password.touched && form.controls.password.errors; as e) {
-                @if (e['required']) { <mat-error>Obligatoria</mat-error> }
-                @else if (e['minlength']) { <mat-error>Mínimo 8 caracteres</mat-error> }
-                @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                @if (e['required']) {
+                  <mat-error>Obligatoria</mat-error>
+                } @else if (e['minlength']) {
+                  <mat-error>Mínimo 8 caracteres</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
               }
             </mat-form-field>
 
@@ -60,12 +69,19 @@
                 autocomplete="new-password"
               />
               <button
-                mat-icon-button matSuffix type="button"
+                mat-icon-button
+                matSuffix
+                type="button"
                 (click)="toggleMostrarConfirmPassword()"
               >
-                <mat-icon>{{ mostrarConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <mat-icon>{{
+                  mostrarConfirmPassword() ? 'visibility_off' : 'visibility'
+                }}</mat-icon>
               </button>
-              @if (form.controls.confirmarPassword.touched && form.controls.confirmarPassword.errors?.['required']) {
+              @if (
+                form.controls.confirmarPassword.touched &&
+                form.controls.confirmarPassword.errors?.['required']
+              ) {
                 <mat-error>Confirmá la contraseña</mat-error>
               }
               @if (form.controls.confirmarPassword.touched && form.errors?.['passwordMismatch']) {
@@ -86,8 +102,11 @@
               <mat-label>Nombre</mat-label>
               <input matInput formControlName="nombre" autocomplete="given-name" />
               @if (form.controls.nombre.touched && form.controls.nombre.errors; as e) {
-                @if (e['required']) { <mat-error>Obligatorio</mat-error> }
-                @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                @if (e['required']) {
+                  <mat-error>Obligatorio</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
               }
             </mat-form-field>
 
@@ -95,8 +114,11 @@
               <mat-label>Apellido</mat-label>
               <input matInput formControlName="apellido" autocomplete="family-name" />
               @if (form.controls.apellido.touched && form.controls.apellido.errors; as e) {
-                @if (e['required']) { <mat-error>Obligatorio</mat-error> }
-                @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                @if (e['required']) {
+                  <mat-error>Obligatorio</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
               }
             </mat-form-field>
           </div>
@@ -106,9 +128,13 @@
               <mat-label>DNI</mat-label>
               <input matInput formControlName="dni" placeholder="40123456" />
               @if (form.controls.dni.touched && form.controls.dni.errors; as e) {
-                @if (e['required']) { <mat-error>Obligatorio</mat-error> }
-                @else if (e['pattern']) { <mat-error>7 u 8 dígitos sin puntos</mat-error> }
-                @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                @if (e['required']) {
+                  <mat-error>Obligatorio</mat-error>
+                } @else if (e['pattern']) {
+                  <mat-error>7 u 8 dígitos sin puntos</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
               }
             </mat-form-field>
 
@@ -116,9 +142,13 @@
               <mat-label>CUIT</mat-label>
               <input matInput formControlName="cuit" placeholder="27-40123456-3" />
               @if (form.controls.cuit.touched && form.controls.cuit.errors; as e) {
-                @if (e['required']) { <mat-error>Obligatorio</mat-error> }
-                @else if (e['pattern']) { <mat-error>Formato: XX-XXXXXXXX-X</mat-error> }
-                @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                @if (e['required']) {
+                  <mat-error>Obligatorio</mat-error>
+                } @else if (e['pattern']) {
+                  <mat-error>Formato: XX-XXXXXXXX-X</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
               }
             </mat-form-field>
           </div>
@@ -127,8 +157,11 @@
             <mat-label>Domicilio</mat-label>
             <input matInput formControlName="domicilio" autocomplete="street-address" />
             @if (form.controls.domicilio.touched && form.controls.domicilio.errors; as e) {
-              @if (e['required']) { <mat-error>Obligatorio</mat-error> }
-              @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+              @if (e['required']) {
+                <mat-error>Obligatorio</mat-error>
+              } @else if (e['backend']) {
+                <mat-error>{{ e['backend'] }}</mat-error>
+              }
             }
           </mat-form-field>
 
@@ -152,20 +185,47 @@
               <mat-label>Matrícula</mat-label>
               <input matInput formControlName="matricula" />
               @if (form.controls.matricula.touched && form.controls.matricula.errors; as e) {
-                @if (e['required']) { <mat-error>Obligatoria</mat-error> }
-                @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                @if (e['required']) {
+                  <mat-error>Obligatoria</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>Título</mat-label>
-              <input matInput formControlName="titulo" />
-              @if (form.controls.titulo.touched && form.controls.titulo.errors; as e) {
-                @if (e['required']) { <mat-error>Obligatorio</mat-error> }
-                @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+              <mat-select formControlName="tituloId">
+                @for (t of titulos(); track t.id) {
+                  <mat-option [value]="t.id">{{ t.nombre }}</mat-option>
+                }
+              </mat-select>
+              @if (form.controls.tituloId.touched && form.controls.tituloId.errors?.['required']) {
+                <mat-error>Seleccioná un título</mat-error>
               }
             </mat-form-field>
           </div>
+
+          @if (tituloRequiereDescripcion()) {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Especificá tu título</mat-label>
+              <input matInput formControlName="tituloOtroDescripcion" maxlength="150" />
+              <mat-hint align="end"
+                >{{ form.controls.tituloOtroDescripcion.value.length }}/150</mat-hint
+              >
+              @if (
+                form.controls.tituloOtroDescripcion.touched &&
+                  form.controls.tituloOtroDescripcion.errors;
+                as e
+              ) {
+                @if (e['requeridoSiOtro']) {
+                  <mat-error>Indicá tu título exacto</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
+              }
+            </mat-form-field>
+          }
 
           <div class="row-2">
             <mat-form-field appearance="outline">
@@ -175,7 +235,9 @@
                   <mat-option [value]="r.id">{{ r.nombre }}</mat-option>
                 }
               </mat-select>
-              @if (form.controls.regionalId.touched && form.controls.regionalId.errors?.['required']) {
+              @if (
+                form.controls.regionalId.touched && form.controls.regionalId.errors?.['required']
+              ) {
                 <mat-error>Seleccioná una regional</mat-error>
               }
             </mat-form-field>
@@ -187,7 +249,10 @@
                   <mat-option [value]="c.id">{{ c.descripcion }}</mat-option>
                 }
               </mat-select>
-              @if (form.controls.condicionIvaId.touched && form.controls.condicionIvaId.errors?.['required']) {
+              @if (
+                form.controls.condicionIvaId.touched &&
+                form.controls.condicionIvaId.errors?.['required']
+              ) {
                 <mat-error>Seleccioná una opción</mat-error>
               }
             </mat-form-field>
@@ -219,7 +284,6 @@
             <span>Crear cuenta</span>
           }
         </button>
-
       </form>
     }
   </mat-card-content>

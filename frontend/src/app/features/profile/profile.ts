@@ -12,12 +12,13 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { ProfesionalService } from '../../core/services/profesional.service';
-import { CondicionIva, Regional } from '../../core/models/catalogos.model';
+import { CondicionIva, Regional, Titulo } from '../../core/models/catalogos.model';
 import { forkJoin } from 'rxjs/internal/observable/forkJoin';
 import { ProfesionalUpdateRequest } from '../../core/models/profesional.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-profile',
@@ -55,6 +56,7 @@ export class Profile implements OnInit {
   readonly perfil = this.profesionalService.perfilActual;
   readonly regionales = signal<Regional[]>([]);
   readonly condicionesIva = signal<CondicionIva[]>([]);
+  readonly titulos = signal<Titulo[]>([]);
 
   // Derivados para mostrar nombres en modo lectura
   readonly regionalNombre = computed(() => this.perfil()?.regionalNombre ?? '—');
@@ -62,11 +64,17 @@ export class Profile implements OnInit {
   readonly condicionIvaNombre = computed(
     () => this.perfil()?.condicionIvaDescripcion ?? '—'
   );
+  readonly tituloMostrar = computed(() => {
+    const p = this.perfil();
+    if (!p) return '—';
+    return p.tituloOtroDescripcion || p.tituloNombre;
+  });
 
   readonly form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(100)]],
     apellido: ['', [Validators.required, Validators.maxLength(100)]],
-    titulo: ['', [Validators.required, Validators.maxLength(150)]],
+    tituloId: [null as number | null, [Validators.required]],
+    tituloOtroDescripcion: ['', [Validators.maxLength(150)]],
     domicilio: ['', [Validators.required, Validators.maxLength(255)]],
     telefono: ['', [Validators.maxLength(30)]],
     regionalId: [null as number | null, [Validators.required]],
@@ -76,6 +84,13 @@ export class Profile implements OnInit {
 
   ngOnInit(): void {
     this.cargarTodo();
+
+    this.form.controls.tituloId.valueChanges.subscribe(() => {
+      if (!this.tituloRequiereDescripcion()) {
+        this.form.controls.tituloOtroDescripcion.setValue('');
+        this.form.controls.tituloOtroDescripcion.setErrors(null);
+      }
+    });
   }
 
   private cargarTodo(): void {
@@ -86,10 +101,12 @@ export class Profile implements OnInit {
       perfil: this.profesionalService.cargarPerfil(),
       regionales: this.catalogoService.listarRegionales(),
       condicionesIva: this.catalogoService.listarCondicionesIva(),
+      titulos: this.catalogoService.listarTitulos(),
     }).subscribe({
-      next: ({ regionales, condicionesIva }) => {
+      next: ({ regionales, condicionesIva, titulos }) => {
         this.regionales.set(regionales);
         this.condicionesIva.set(condicionesIva);
+        this.titulos.set(titulos);
         this.cargando.set(false);
       },
       error: () => {
@@ -99,6 +116,17 @@ export class Profile implements OnInit {
     });
   }
 
+  private readonly tituloIdSignal = toSignal(this.form.controls.tituloId.valueChanges, {
+  initialValue: this.form.controls.tituloId.value,
+  });
+
+readonly tituloRequiereDescripcion = computed(() => {
+  const id = this.tituloIdSignal();
+  if (!id) return false;
+   const titulo = this.titulos().find((t) => t.id === id);
+   return titulo?.permiteTextoLibre ?? false;
+  });
+
   comenzarEdicion(): void {
     const p = this.perfil();
     if (!p) return;
@@ -107,7 +135,8 @@ export class Profile implements OnInit {
     this.form.patchValue({
       nombre: p.nombre,
       apellido: p.apellido,
-      titulo: p.titulo,
+      tituloId: p.tituloId,
+      tituloOtroDescripcion: p.tituloOtroDescripcion ?? '',
       domicilio: p.domicilio,
       telefono: p.telefono ?? '',
       regionalId: p.regionalId,
@@ -131,14 +160,23 @@ export class Profile implements OnInit {
       return;
     }
 
+    const raw = this.form.getRawValue();
+      if (this.tituloRequiereDescripcion() && !raw.tituloOtroDescripcion.trim()) {
+        this.form.controls.tituloOtroDescripcion.setErrors({ requeridoSiOtro: true });
+        this.form.controls.tituloOtroDescripcion.markAsTouched();
+        return;
+    }
+
     this.guardando.set(true);
     this.errorGeneral.set(null);
 
-    const raw = this.form.getRawValue();
     const datos: ProfesionalUpdateRequest = {
       nombre: raw.nombre,
       apellido: raw.apellido,
-      titulo: raw.titulo,
+      tituloId: raw.tituloId!,
+      tituloOtroDescripcion: this.tituloRequiereDescripcion()
+        ? raw.tituloOtroDescripcion.trim()
+        : undefined,
       domicilio: raw.domicilio,
       telefono: raw.telefono || undefined,
       regionalId: raw.regionalId!,

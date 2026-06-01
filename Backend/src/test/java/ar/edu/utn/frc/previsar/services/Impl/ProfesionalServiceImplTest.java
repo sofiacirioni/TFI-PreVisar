@@ -6,10 +6,7 @@ import ar.edu.utn.frc.previsar.entities.*;
 import ar.edu.utn.frc.previsar.enums.Rol;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ProfesionalMapper;
-import ar.edu.utn.frc.previsar.repositories.CondicionIvaRepository;
-import ar.edu.utn.frc.previsar.repositories.ProfesionalRepository;
-import ar.edu.utn.frc.previsar.repositories.RegionalRepository;
-import ar.edu.utn.frc.previsar.repositories.RolRevisorRepository;
+import ar.edu.utn.frc.previsar.repositories.*;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +41,9 @@ class ProfesionalServiceImplTest {
     private CondicionIvaRepository condicionIvaRepository;
 
     @Mock
+    private TituloRepository tituloRepository;
+
+    @Mock
     private RolRevisorRepository rolRevisorRepository;
 
     @Mock
@@ -58,6 +58,7 @@ class ProfesionalServiceImplTest {
     private Profesional profesional;
     private Regional regional;
     private CondicionIva condicionIva;
+    private Titulo titulo;
     private ProfesionalUpdateRequestDto updateRequest;
 
     @BeforeEach
@@ -81,6 +82,12 @@ class ProfesionalServiceImplTest {
                 .descripcion("Responsable Inscripto")
                 .activo(true).build();
 
+        titulo = Titulo.builder()
+                .id(2L)
+                .nombre("Tec. en programación")
+                .permiteTextoLibre(false)
+                .activo(true).build();
+
         profesional = Profesional.builder()
                 .id(10L)
                 .usuario(usuario)
@@ -89,7 +96,7 @@ class ProfesionalServiceImplTest {
                 .dni("40123456")
                 .cuit("27-40123456-3")
                 .matricula("99999")
-                .titulo("Tec. en Programación")
+                .titulo(titulo)
                 .domicilio("Calle Falsa 123")
                 .telefono("3511234567")
                 .regional(regional)
@@ -100,7 +107,7 @@ class ProfesionalServiceImplTest {
         updateRequest = ProfesionalUpdateRequestDto.builder()
                 .nombre("Sofía Actualizada")
                 .apellido("Cirioni")
-                .titulo("Tec. en Programación")
+                .tituloId(2L)
                 .domicilio("Calle Nueva 456")
                 .telefono("3519999999")
                 .regionalId(3L)

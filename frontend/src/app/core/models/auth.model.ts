@@ -24,7 +24,8 @@ export interface RegisterRequest {
   dni: string;
   cuit: string;
   matricula: string;
-  titulo: string;
+  tituloId: number;
+  tituloOtroDescripcion?: string;
   domicilio: string;
   telefono: string;
   regionalId: number;

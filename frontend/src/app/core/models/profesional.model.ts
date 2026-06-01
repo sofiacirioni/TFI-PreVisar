@@ -12,7 +12,10 @@ export interface Profesional {
   dni: string;
   cuit: string;
   matricula: string;
-  titulo: string;
+  //Titulo (catalogo)
+  tituloId: number;
+  tituloNombre: string;
+  tituloOtroDescripcion?: string;
   domicilio: string;
   telefono: string;
   // Catálogos: id + nombre denormalizado para mostrar
@@ -29,7 +32,8 @@ export interface Profesional {
 export interface ProfesionalUpdateRequest {
   nombre: string;
   apellido: string;
-  titulo: string;
+  tituloId: number;
+  tituloOtroDescripcion?: string;
   domicilio: string;
   telefono?: string;     
   regionalId: number;
