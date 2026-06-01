@@ -4,17 +4,11 @@ import ar.edu.utn.frc.previsar.config.JwtProperties;
 import ar.edu.utn.frc.previsar.dtos.request.LoginRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.RegisterRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AuthResponseDto;
-import ar.edu.utn.frc.previsar.entities.CondicionIva;
-import ar.edu.utn.frc.previsar.entities.Profesional;
-import ar.edu.utn.frc.previsar.entities.Regional;
-import ar.edu.utn.frc.previsar.entities.Usuario;
+import ar.edu.utn.frc.previsar.entities.*;
 import ar.edu.utn.frc.previsar.enums.Rol;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
-import ar.edu.utn.frc.previsar.repositories.CondicionIvaRepository;
-import ar.edu.utn.frc.previsar.repositories.ProfesionalRepository;
-import ar.edu.utn.frc.previsar.repositories.RegionalRepository;
-import ar.edu.utn.frc.previsar.repositories.UsuarioRepository;
+import ar.edu.utn.frc.previsar.repositories.*;
 import ar.edu.utn.frc.previsar.security.JwtService;
 import ar.edu.utn.frc.previsar.services.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final ProfesionalRepository profesionalRepository;
     private final RegionalRepository regionalRepository;
     private final CondicionIvaRepository condicionIvaRepository;
+    private final TituloRepository tituloRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
@@ -52,11 +47,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponseDto registrar(RegisterRequestDto request) {
-        log.info("Registrando nuevo profesional con email {}", request.getEmail());
 
         // 1. Validar unicidad
         if (usuarioRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("Ya existe un usuario con ese email");
+        }
+        if (profesionalRepository.existsByDni(request.getDni())) {
+            throw new BusinessException("Ya existe un profesional con ese DNI");
         }
         if (profesionalRepository.existsByCuit(request.getCuit())) {
             throw new BusinessException("Ya existe un profesional con ese CUIT");
@@ -74,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "CondicionIva no encontrada: " + request.getCondicionIvaId()));
 
-        // 3. Crear Usuario con password hasheado
+        // 3. Crear Usuario
         Usuario usuario = Usuario.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
@@ -92,18 +89,16 @@ public class AuthServiceImpl implements AuthService {
                 .dni(request.getDni())
                 .cuit(request.getCuit())
                 .matricula(request.getMatricula())
-                .titulo(request.getTitulo())
                 .domicilio(request.getDomicilio())
                 .telefono(request.getTelefono())
                 .regional(regional)
                 .condicionIva(condicionIva)
                 .afiliadoCaja8470(request.getAfiliadoCaja8470())
                 .build();
+        //validar y asignar titulo (select o texto libre)
+        validarYAsignarTitulo(profesional, request.getTituloId(), request.getTituloOtroDescripcion());
 
         profesionalRepository.save(profesional);
-
-        log.info("Profesional registrado: id usuario={}, email={}",
-                usuario.getId(), usuario.getEmail());
 
         // 5. Generar token y devolver
         String token = jwtService.generarToken(usuario);
@@ -143,4 +138,27 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    private void validarYAsignarTitulo(Profesional profesional,
+                                       Long tituloId,
+                                       String tituloOtroDescripcion) {
+        Titulo titulo = tituloRepository.findById(tituloId)
+                .orElseThrow(() -> new BusinessException("El título seleccionado no existe"));
+
+        if (Boolean.FALSE.equals(titulo.getActivo())) {
+            throw new BusinessException("El título seleccionado no está habilitado");
+        }
+
+        boolean requiereTextoLibre = Boolean.TRUE.equals(titulo.getPermiteTextoLibre());
+        boolean trajoTextoLibre = tituloOtroDescripcion != null && !tituloOtroDescripcion.isBlank();
+
+        if (requiereTextoLibre && !trajoTextoLibre) {
+            throw new BusinessException("Debe especificar el título cuando selecciona 'Otro'");
+        }
+        if (!requiereTextoLibre && trajoTextoLibre) {
+            throw new BusinessException("El campo de título libre solo aplica cuando selecciona 'Otro'");
+        }
+
+        profesional.setTitulo(titulo);
+        profesional.setTituloOtroDescripcion(trajoTextoLibre ? tituloOtroDescripcion.trim() : null);
+    }
 }

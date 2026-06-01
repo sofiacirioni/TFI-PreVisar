@@ -54,9 +54,11 @@ public class RegisterRequestDto {
     @Size(max = 20)
     private String matricula;
 
-    @NotBlank(message = "El título es obligatorio")
+    @NotNull(message = "Debe seleccionar un título")
+    private Long tituloId;
+
     @Size(max = 150)
-    private String titulo;
+    private String tituloOtroDescripcion;
 
     @NotBlank(message = "El domicilio es obligatorio")
     @Size(max = 255)

@@ -1,0 +1,157 @@
+.profile-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: #1a2733;
+  }
+
+  .subtitle {
+    margin: 4px 0 0;
+    color: #5a6b78;
+    font-size: 0.9rem;
+  }
+}
+
+.profile-card {
+  background-color: #ffffff;
+}
+
+.info-section,
+section {
+  padding: 16px 0;
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #00838f;
+    letter-spacing: 0.2px;
+  }
+
+  &:first-of-type {
+    padding-top: 8px;
+  }
+}
+
+.readonly-note {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  color: #5a6b78;
+  font-style: italic;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 24px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &.info-item-wide {
+    grid-column: 1 / -1;
+  }
+
+  .label {
+    font-size: 0.78rem;
+    color: #5a6b78;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .value {
+    font-size: 0.95rem;
+    color: #1a2733;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.chip-revisor {
+  background-color: #fff3e0 !important;
+  color: #ef6c00 !important;
+  font-size: 0.75rem !important;
+  height: 22px !important;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.checkbox-row {
+  margin: 8px 0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e6eb;
+}
+
+.loader-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 16px;
+  color: #5a6b78;
+  font-size: 0.9rem;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background-color: #fdecea;
+  color: #c62828;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin: 8px 0;
+
+  mat-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}

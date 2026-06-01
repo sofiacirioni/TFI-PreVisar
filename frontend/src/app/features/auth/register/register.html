@@ -184,7 +184,7 @@
               <mat-label>Condición frente al IVA</mat-label>
               <mat-select formControlName="condicionIvaId">
                 @for (c of condicionesIva(); track c.id) {
-                  <mat-option [value]="c.id">{{ c.nombre }}</mat-option>
+                  <mat-option [value]="c.id">{{ c.descripcion }}</mat-option>
                 }
               </mat-select>
               @if (form.controls.condicionIvaId.touched && form.controls.condicionIvaId.errors?.['required']) {

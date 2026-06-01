@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '@core/constants/api.constants';
 import { tap } from 'rxjs/internal/operators/tap';
+import { ProfesionalService } from './profesional.service';
 
 
 /** Snapshot mínimo del usuario autenticado, derivado del token + storage. */
@@ -21,6 +22,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly tokenService = inject(TokenService);
   private readonly router = inject(Router);
+  private readonly profesionalService = inject(ProfesionalService);
 
   // Estado reactivo del usuario actual (signal privado, expuesto readonly)
   private readonly _sesion = signal<SesionUsuario | null>(this.restaurarSesion());
@@ -49,6 +51,7 @@ export class AuthService {
   limpiarSesion(): void {
     this.tokenService.clear();
     this._sesion.set(null);
+    this.profesionalService.limpiar();
   }
 
   logout(): void {

@@ -30,9 +30,11 @@ public class ProfesionalUpdateRequestDto {
     @Size(max = 100)
     private String apellido;
 
-    @NotBlank(message = "El título es obligatorio")
-    @Size(max = 150)
-    private String titulo;
+    @NotNull(message = "Debe seleccionar un título")
+    private Long tituloId;
+
+    @Size(max = 150, message = "La descripción del título no puede exceder 150 caracteres")
+    private String tituloOtroDescripcion;
 
     @NotBlank(message = "El domicilio es obligatorio")
     @Size(max = 255)

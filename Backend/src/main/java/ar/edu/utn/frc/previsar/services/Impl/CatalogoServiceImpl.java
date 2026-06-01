@@ -3,9 +3,11 @@ package ar.edu.utn.frc.previsar.services.Impl;
 import ar.edu.utn.frc.previsar.dtos.response.CondicionIvaResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProvinciaResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.RegionalResponseDto;
+import ar.edu.utn.frc.previsar.dtos.response.TituloResponseDto;
 import ar.edu.utn.frc.previsar.repositories.CondicionIvaRepository;
 import ar.edu.utn.frc.previsar.repositories.ProvinciaRepository;
 import ar.edu.utn.frc.previsar.repositories.RegionalRepository;
+import ar.edu.utn.frc.previsar.repositories.TituloRepository;
 import ar.edu.utn.frc.previsar.services.CatalogoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -21,6 +23,7 @@ public class CatalogoServiceImpl implements CatalogoService {
     private final ProvinciaRepository provinciaRepository;
     private final RegionalRepository regionalRepository;
     private final CondicionIvaRepository condicionIvaRepository;
+    private final TituloRepository tituloRepository;
 
     @Override
     public List<ProvinciaResponseDto> listarProvincias() {
@@ -52,6 +55,17 @@ public class CatalogoServiceImpl implements CatalogoService {
                         .id(c.getId())
                         .descripcion(c.getDescripcion())
                         .codigo(c.getCodigo())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public List<TituloResponseDto> listarTitulos() {
+        return tituloRepository.findAllByActivoTrueOrderByNombreAsc().stream()
+                .map(t -> TituloResponseDto.builder()
+                        .id(t.getId())
+                        .nombre(t.getNombre())
+                        .permiteTextoLibre(t.getPermiteTextoLibre())
                         .build())
                 .toList();
     }

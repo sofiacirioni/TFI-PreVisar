@@ -13,6 +13,6 @@ export interface Regional {
 
 export interface CondicionIva {
   readonly id: number;
-  nombre: string;
-  codigoAfip: string;
+  descripcion: string;
+  codigo: string;
 }

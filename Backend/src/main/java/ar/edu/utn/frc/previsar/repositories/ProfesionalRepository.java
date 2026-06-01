@@ -16,7 +16,12 @@ public interface ProfesionalRepository extends JpaRepository<Profesional,Long> {
     Optional<Profesional> findByUsuarioId(Long usuarioId);
 
     /**
-     * Buscar por CUIT. Usado para validar unicidad y para deduplicar.
+     * Buscar por DNI. Usado para validar unicidad.
+     */
+    Optional<Profesional> findByDni(String dni);
+
+    /**
+     * Buscar por CUIT. Usado para validar unicidad.
      */
     Optional<Profesional> findByCuit(String cuit);
 
@@ -24,6 +29,11 @@ public interface ProfesionalRepository extends JpaRepository<Profesional,Long> {
      * Buscar profesional por matrícula.
      */
     Optional<Profesional> findByMatricula(String matricula);
+
+    /**
+     * Verificar si existe un profesional con ese DNI.
+     */
+    boolean existsByDni(String dni);
 
     /**
      * Verificar si existe un profesional con ese CUIT.

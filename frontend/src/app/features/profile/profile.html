@@ -1,2 +1,272 @@
-<h1>Perfil</h1>
-<p>placeholder Sprint 1</p>
+@if (cargando()) {
+  <div class="loader-wrap">
+    <mat-spinner diameter="40" />
+    <span>Cargando perfil...</span>
+  </div>
+} @else if (errorCarga()) {
+  <div class="error-banner">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ errorCarga() }}</span>
+  </div>
+} @else if (perfil(); as p) {
+  <div class="profile-page">
+
+    <header class="page-header">
+      <div>
+        <h1>Mi perfil</h1>
+        <p class="subtitle">Datos personales y profesionales</p>
+      </div>
+
+      @if (!editando()) {
+        <button mat-flat-button (click)="comenzarEdicion()">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </button>
+      }
+    </header>
+
+    <mat-card appearance="outlined" class="profile-card">
+      <mat-card-content>
+
+        @if (!editando()) {
+
+          <!-- ========== MODO LECTURA ========== -->
+
+          <section class="info-section">
+            <h3>Cuenta</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Email</span>
+                <span class="value">{{ p.email }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Rol</span>
+                <span class="value">
+                  {{ p.rol }}
+                  @if (p.esRevisor) {
+                    <mat-chip class="chip-revisor">Revisor</mat-chip>
+                  }
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <mat-divider />
+
+          <section class="info-section">
+            <h3>Datos personales</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Nombre</span>
+                <span class="value">{{ p.nombre }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Apellido</span>
+                <span class="value">{{ p.apellido }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">DNI</span>
+                <span class="value">{{ p.dni }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">CUIT</span>
+                <span class="value">{{ p.cuit }}</span>
+              </div>
+              <div class="info-item info-item-wide">
+                <span class="label">Domicilio</span>
+                <span class="value">{{ p.domicilio }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Teléfono</span>
+                <span class="value">{{ p.telefono || '—' }}</span>
+              </div>
+            </div>
+          </section>
+
+          <mat-divider />
+
+          <section class="info-section">
+            <h3>Datos profesionales</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Matrícula</span>
+                <span class="value">{{ p.matricula }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Título</span>
+                <span class="value">{{ p.titulo }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Regional</span>
+                <span class="value">{{ regionalNombre() }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Provincia</span>
+                <span class="value">{{ provinciaNombre() }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Condición frente al IVA</span>
+                <span class="value">{{ condicionIvaNombre() }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Afiliado Caja 8470</span>
+                <span class="value">{{ p.afiliadoCaja8470 ? 'Sí' : 'No' }}</span>
+              </div>
+            </div>
+          </section>
+
+        } @else {
+
+          <!-- ========== MODO EDICIÓN ========== -->
+
+          <form [formGroup]="form" (ngSubmit)="guardar()" class="profile-form">
+
+            <section>
+              <h3>Cuenta</h3>
+              <p class="readonly-note">El email, DNI, CUIT y matrícula no son editables.</p>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="label">Email</span>
+                  <span class="value">{{ p.email }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">DNI</span>
+                  <span class="value">{{ p.dni }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">CUIT</span>
+                  <span class="value">{{ p.cuit }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="label">Matrícula</span>
+                  <span class="value">{{ p.matricula }}</span>
+                </div>
+              </div>
+            </section>
+
+            <mat-divider />
+
+            <section>
+              <h3>Datos personales</h3>
+
+              <div class="row-2">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput formControlName="nombre" />
+                  @if (form.controls.nombre.touched && form.controls.nombre.errors; as e) {
+                    @if (e['required']) { <mat-error>Obligatorio</mat-error> }
+                    @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Apellido</mat-label>
+                  <input matInput formControlName="apellido" />
+                  @if (form.controls.apellido.touched && form.controls.apellido.errors; as e) {
+                    @if (e['required']) { <mat-error>Obligatorio</mat-error> }
+                    @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Domicilio</mat-label>
+                <input matInput formControlName="domicilio" />
+                @if (form.controls.domicilio.touched && form.controls.domicilio.errors; as e) {
+                  @if (e['required']) { <mat-error>Obligatorio</mat-error> }
+                  @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Teléfono (opcional)</mat-label>
+                <input matInput formControlName="telefono" />
+                @if (form.controls.telefono.touched && form.controls.telefono.errors?.['backend']) {
+                  <mat-error>{{ form.controls.telefono.errors?.['backend'] }}</mat-error>
+                }
+              </mat-form-field>
+            </section>
+
+            <mat-divider />
+
+            <section>
+              <h3>Datos profesionales</h3>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Título</mat-label>
+                <input matInput formControlName="titulo" />
+                @if (form.controls.titulo.touched && form.controls.titulo.errors; as e) {
+                  @if (e['required']) { <mat-error>Obligatorio</mat-error> }
+                  @else if (e['backend']) { <mat-error>{{ e['backend'] }}</mat-error> }
+                }
+              </mat-form-field>
+
+              <div class="row-2">
+                <mat-form-field appearance="outline">
+                  <mat-label>Regional</mat-label>
+                  <mat-select formControlName="regionalId">
+                    @for (r of regionales(); track r.id) {
+                      <mat-option [value]="r.id">{{ r.nombre }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (form.controls.regionalId.touched && form.controls.regionalId.errors?.['required']) {
+                    <mat-error>Seleccioná una regional</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Condición frente al IVA</mat-label>
+                  <mat-select formControlName="condicionIvaId">
+                    @for (c of condicionesIva(); track c.id) {
+                      <mat-option [value]="c.id">{{ c.descripcion }}</mat-option>
+                    }
+                  </mat-select>
+                  @if (form.controls.condicionIvaId.touched && form.controls.condicionIvaId.errors?.['required']) {
+                    <mat-error>Seleccioná una opción</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-checkbox formControlName="afiliadoCaja8470" class="checkbox-row">
+                Estoy afiliado a la Caja de Previsión Ley 8470
+              </mat-checkbox>
+            </section>
+
+            @if (errorGeneral(); as error) {
+              <div class="error-banner">
+                <mat-icon>error_outline</mat-icon>
+                <span>{{ error }}</span>
+              </div>
+            }
+
+            <div class="form-actions">
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="cancelarEdicion()"
+                [disabled]="guardando()"
+              >
+                Cancelar
+              </button>
+              <button
+                mat-flat-button
+                type="submit"
+                [disabled]="guardando()"
+              >
+                @if (guardando()) {
+                  <mat-spinner diameter="20" />
+                } @else {
+                  <span>Guardar cambios</span>
+                }
+              </button>
+            </div>
+
+          </form>
+
+        }
+
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+}

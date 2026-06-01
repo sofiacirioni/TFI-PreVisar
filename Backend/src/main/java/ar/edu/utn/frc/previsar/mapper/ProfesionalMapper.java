@@ -19,6 +19,8 @@ public interface ProfesionalMapper {
     @Mapping(source = "usuario.email", target = "email")
     @Mapping(source = "usuario.rol", target = "rol")
     @Mapping(source = "usuario.activo", target = "activo")
+    @Mapping(target = "tituloId", source = "titulo.id")
+    @Mapping(target = "tituloNombre", source = "titulo.nombre")
     @Mapping(source = "regional.id", target = "regionalId")
     @Mapping(source = "regional.nombre", target = "regionalNombre")
     @Mapping(source = "regional.provincia.nombre", target = "provinciaNombre")
