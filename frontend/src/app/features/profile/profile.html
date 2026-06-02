@@ -198,7 +198,14 @@
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Título</mat-label>
                 <mat-select formControlName="tituloId">
-                  @for (t of titulos(); track t.id) {
+                  <mat-option>
+                    <ngx-mat-select-search
+                      [formControl]="tituloFilterCtrl"
+                      placeholderLabel="Buscar título..."
+                      noEntriesFoundLabel="Sin resultados"
+                    ></ngx-mat-select-search>
+                  </mat-option>
+                  @for (t of titulosFiltrados(); track t.id) {
                     <mat-option [value]="t.id">{{ t.nombre }}</mat-option>
                   }
                 </mat-select>

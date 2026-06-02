@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ProfesionalService } from '../../core/services/profesional.service';
 import { CondicionIva, Regional, Titulo } from '../../core/models/catalogos.model';
 import { forkJoin } from 'rxjs/internal/observable/forkJoin';
@@ -35,6 +36,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     MatCheckboxModule,
     MatDividerModule,
     MatChipsModule,
+    NgxMatSelectSearchModule,
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
@@ -125,6 +127,20 @@ readonly tituloRequiereDescripcion = computed(() => {
   if (!id) return false;
    const titulo = this.titulos().find((t) => t.id === id);
    return titulo?.permiteTextoLibre ?? false;
+  });
+
+  // Control y signal del buscador del select de títulos
+  readonly tituloFilterCtrl = new FormControl('', { nonNullable: true });
+  private readonly tituloFilterSignal = toSignal(this.tituloFilterCtrl.valueChanges, {
+    initialValue: '',
+  });
+
+  // Lista filtrada por el texto del buscador (case-insensitive)
+  readonly titulosFiltrados = computed(() => {
+    const filtro = this.tituloFilterSignal().toLowerCase().trim();
+    const lista = this.titulos();
+    if (!filtro) return lista;
+    return lista.filter((t) => t.nombre.toLowerCase().includes(filtro));
   });
 
   comenzarEdicion(): void {

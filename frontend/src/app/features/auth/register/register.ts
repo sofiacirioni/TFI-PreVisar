@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
 import { AuthService } from '@core/services/auth.service';
 import { CatalogoService } from '@core/services/catalogo.service';
@@ -36,6 +37,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     MatSelectModule,
     MatCheckboxModule,
     MatDividerModule,
+    NgxMatSelectSearchModule,
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
@@ -93,10 +95,24 @@ export class Register implements OnInit {
 
   // True si el título seleccionado tiene permite_texto_libre = true
   readonly tituloRequiereDescripcion = computed(() => {
-  const id = this.form.controls.tituloId.value;
-  if (!id) return false;
-  const titulo = this.titulos().find((t) => t.id === id);
-  return titulo?.permiteTextoLibre ?? false;
+    const id = this.tituloIdSignal();
+    if (!id) return false;
+    const titulo = this.titulos().find((t) => t.id === id);
+    return titulo?.permiteTextoLibre ?? false;
+  });
+
+  // Control y signal del buscador del select de títulos
+  readonly tituloFilterCtrl = new FormControl('', { nonNullable: true });
+  private readonly tituloFilterSignal = toSignal(this.tituloFilterCtrl.valueChanges, {
+    initialValue: '',
+  });
+
+  // Lista filtrada por el texto del buscador (case-insensitive)
+  readonly titulosFiltrados = computed(() => {
+    const filtro = this.tituloFilterSignal().toLowerCase().trim();
+    const lista = this.titulos();
+    if (!filtro) return lista;
+    return lista.filter((t) => t.nombre.toLowerCase().includes(filtro));
   });
 
   ngOnInit(): void {
