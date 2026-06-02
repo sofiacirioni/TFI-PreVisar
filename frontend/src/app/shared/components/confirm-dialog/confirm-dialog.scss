@@ -1,0 +1,70 @@
+.confirm-dialog {
+  min-width: 320px;
+  max-width: 480px;
+
+  // ===== Variantes =====
+
+  &[data-variant='destructive'] {
+    .dialog-icon { color: #c62828; }
+    .btn-confirmar {
+      background-color: #c62828 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  &[data-variant='warning'] {
+    .dialog-icon { color: #ef6c00; }
+    .btn-confirmar {
+      background-color: #ef6c00 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  &[data-variant='info'] {
+    .dialog-icon { color: #00838f; }
+    .btn-confirmar {
+      background-color: #00838f !important;
+      color: #ffffff !important;
+    }
+  }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px 8px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #1a2733;
+  }
+}
+
+.dialog-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.mensaje {
+  margin: 0 0 8px;
+  color: #1a2733;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.detalle {
+  margin: 0;
+  color: #5a6b78;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+mat-dialog-actions {
+  padding: 12px 24px 20px !important;
+  gap: 8px;
+}

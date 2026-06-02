@@ -1,0 +1,22 @@
+<div class="confirm-dialog" [attr.data-variant]="variant">
+  <div class="dialog-header">
+    <mat-icon class="dialog-icon">{{ iconoVariant }}</mat-icon>
+    <h2 mat-dialog-title>{{ data.titulo }}</h2>
+  </div>
+
+  <mat-dialog-content>
+    <p class="mensaje">{{ data.mensaje }}</p>
+    @if (data.detalle) {
+      <p class="detalle">{{ data.detalle }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancelar()" cdkFocusInitial>
+      {{ textoCancelar }}
+    </button>
+    <button mat-flat-button class="btn-confirmar" (click)="confirmar()">
+      {{ textoConfirmar }}
+    </button>
+  </mat-dialog-actions>
+</div>

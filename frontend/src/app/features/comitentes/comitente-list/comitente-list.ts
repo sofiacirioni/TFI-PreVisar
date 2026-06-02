@@ -17,13 +17,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog';
+import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 
 @Component({
   selector: 'app-comitente-list',
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
+    RouterLink, //ver
     MatTableModule,
     MatButtonModule,
     MatIconModule,
@@ -106,15 +108,30 @@ export class ComitenteList implements OnInit {
     this.router.navigate(['/comitentes', comitente.id, 'editar']);
   }
 
-  confirmarEliminar(comitente: Comitente): void {
-    // Acá vendrá el diálogo (Sub-paso 10.4.5). Por ahora, confirmación nativa.
-    const ok = confirm(
-      `¿Eliminar a "${comitente.nombreRazonSocial}"? Sus obras dejarán de ser visibles.`
-    );
-    if (!ok) return;
+  async confirmarEliminar(comitente: Comitente): Promise<void> {
+  const data: ConfirmDialogData = {
+    titulo: 'Eliminar comitente',
+    mensaje: `¿Estás seguro de que querés eliminar a "${comitente.nombreRazonSocial}"?`,
+    detalle: 'Sus obras dejarán de ser visibles. Esta acción no se puede deshacer.',
+    textoConfirmar: 'Eliminar',
+    textoCancelar: 'Cancelar',
+    variant: 'destructive',
+  };
 
+  const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData, boolean>(
+    ConfirmDialog,
+    {
+      data,
+      width: '420px',
+      disableClose: false, // permite cerrar con Escape o click afuera
+    }
+  );
+
+  const confirmado = await firstValueFrom(ref.afterClosed());
+  if (confirmado) {
     this.eliminar(comitente);
   }
+}
 
   private eliminar(comitente: Comitente): void {
     this.comitenteService.eliminar(comitente.id).subscribe({
