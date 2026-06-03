@@ -104,6 +104,10 @@ export class ComitenteList implements OnInit {
     this.router.navigate(['/comitentes/nuevo']);
   }
 
+  irADetalle(comitente: Comitente): void {
+    this.router.navigate(['/comitentes', comitente.id]);
+  }
+
   irAEditar(comitente: Comitente): void {
     this.router.navigate(['/comitentes', comitente.id, 'editar']);
   }

@@ -1,0 +1,137 @@
+@if (cargando()) {
+  <div class="loader-wrap">
+    <mat-spinner diameter="40" />
+    <span>Cargando comitente...</span>
+  </div>
+} @else if (errorCarga(); as error) {
+  <div class="error-banner">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+    <button mat-button (click)="volver()">Volver al listado</button>
+  </div>
+} @else if (comitente(); as c) {
+  <div class="detail-page">
+    <header class="page-header">
+      <button
+        mat-icon-button
+        (click)="volver()"
+        matTooltip="Volver al listado"
+        aria-label="Volver al listado"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-wrap">
+        <h1>{{ c.nombreRazonSocial }}</h1>
+        <mat-chip
+          class="chip-tipo"
+          [class.chip-juridica]="c.tipoPersona === 'JURIDICA'"
+        >
+          {{ c.tipoPersona === 'FISICA' ? 'Persona física' : 'Persona jurídica' }}
+        </mat-chip>
+      </div>
+      <button mat-flat-button class="cta-editar" (click)="irAEditar()">
+        <mat-icon>edit</mat-icon>
+        Editar
+      </button>
+    </header>
+
+    <mat-card appearance="outlined" class="detail-card">
+      <mat-card-content>
+        <section class="info-section">
+          <h3>Datos del comitente</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">DNI / CUIT</span>
+              <span class="value">{{ c.dniCuit }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Email</span>
+              <span class="value">{{ c.email || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Teléfono</span>
+              <span class="value">{{ c.telefono || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Alta</span>
+              <span class="value">{{ c.createdAt | date: 'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="info-item info-item-wide">
+              <span class="label">Domicilio</span>
+              <span class="value">{{ c.domicilio }}</span>
+            </div>
+          </div>
+        </section>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="detail-card">
+      <mat-card-content>
+        <section class="info-section">
+          <div class="section-header">
+            <h3>Obras asociadas</h3>
+            <button mat-stroked-button (click)="nuevaObra()">
+              <mat-icon>add</mat-icon>
+              Nueva obra
+            </button>
+          </div>
+
+          @if (obrasOrdenadas().length === 0) {
+            <div class="empty-state">
+              <mat-icon>construction</mat-icon>
+              <h4>Este comitente todavía no tiene obras</h4>
+              <p>Cuando cargues una obra para este comitente, vas a verla acá.</p>
+            </div>
+          } @else {
+            <div class="tabla-wrap">
+              <table mat-table [dataSource]="obrasOrdenadas()" class="obras-table">
+                <ng-container matColumnDef="designacion">
+                  <th mat-header-cell *matHeaderCellDef>Designación</th>
+                  <td mat-cell *matCellDef="let o">{{ o.designacion }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="localidad">
+                  <th mat-header-cell *matHeaderCellDef>Localidad</th>
+                  <td mat-cell *matCellDef="let o">
+                    {{ o.localidad }}@if (o.provinciaNombre) {, {{ o.provinciaNombre }}}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="fecha">
+                  <th mat-header-cell *matHeaderCellDef>Alta</th>
+                  <td mat-cell *matCellDef="let o">{{ o.createdAt | date: 'dd/MM/yyyy' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="acciones">
+                  <th mat-header-cell *matHeaderCellDef class="col-acciones">Acciones</th>
+                  <td mat-cell *matCellDef="let o" class="col-acciones">
+                    <button
+                      mat-icon-button
+                      matTooltip="Editar obra"
+                      aria-label="Editar obra"
+                      (click)="verObra(o)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="columnasObras"></tr>
+                <tr mat-row *matRowDef="let row; columns: columnasObras"></tr>
+              </table>
+            </div>
+
+            <div class="resumen-resultados">
+              {{ obrasOrdenadas().length }}
+              @if (obrasOrdenadas().length === 1) {
+                obra asociada
+              } @else {
+                obras asociadas
+              }
+            </div>
+          }
+        </section>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}

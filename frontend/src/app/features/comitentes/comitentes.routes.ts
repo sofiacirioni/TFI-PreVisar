@@ -16,4 +16,9 @@ export const COMITENTES_ROUTES: Routes = [
     loadComponent: () =>
       import('./comitente-form/comitente-form').then((m) => m.ComitenteForm),
   },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./comitente-detail/comitente-detail').then((m) => m.ComitenteDetail),
+  },
 ];
