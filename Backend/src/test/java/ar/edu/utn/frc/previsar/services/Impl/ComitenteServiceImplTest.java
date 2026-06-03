@@ -293,4 +293,60 @@ class ComitenteServiceImplTest {
         // El comitente debió quedar con deletedAt seteado
         assertNotNull(comitenteDelActual.getDeletedAt());
     }
+
+    @Test
+    @DisplayName("eliminar: lanza 404 si el comitente no existe")
+    void eliminar_inexistente_lanza404() {
+        when(securityUtils.getProfesionalActual()).thenReturn(profesionalActual);
+        when(comitenteRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> comitenteService.eliminar(999L));
+    }
+
+    @Test
+    @DisplayName("eliminar: lanza 404 si el comitente pertenece a otro profesional (aislamiento)")
+    void eliminar_deOtroProfesional_lanza404() {
+        when(securityUtils.getProfesionalActual()).thenReturn(profesionalActual);
+        when(comitenteRepository.findById(200L)).thenReturn(Optional.of(comitenteDelOtro));
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> comitenteService.eliminar(200L));
+
+        // El comitente ajeno NO debió quedar marcado como eliminado
+        assertNull(comitenteDelOtro.getDeletedAt());
+    }
+
+    @Test
+    @DisplayName("eliminar: lanza 404 si el comitente ya está soft-deleted")
+    void eliminar_yaSoftDeleted_lanza404() {
+        LocalDateTime deletedAtOriginal = LocalDateTime.now().minusDays(1);
+        comitenteDelActual.setDeletedAt(deletedAtOriginal);
+
+        when(securityUtils.getProfesionalActual()).thenReturn(profesionalActual);
+        when(comitenteRepository.findById(100L)).thenReturn(Optional.of(comitenteDelActual));
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> comitenteService.eliminar(100L));
+
+        // No debió pisarse el deletedAt original
+        assertEquals(deletedAtOriginal, comitenteDelActual.getDeletedAt());
+    }
+
+    @Test
+    @DisplayName("buscarPorDniCuit: devuelve empty si el dniCuit existe pero pertenece a otro profesional (aislamiento)")
+    void buscarPorDniCuit_existenteDeOtroProfesional_devuelveEmpty() {
+        // El query del repo filtra por profesionalId, así que si el dniCuit
+        // existe en la base pero es de otro profesional, devuelve Optional.empty().
+        String dniCuit = "30-71252386-3";
+        when(securityUtils.getProfesionalActual()).thenReturn(profesionalActual);
+        when(comitenteRepository.findByProfesionalIdAndDniCuitAndDeletedAtIsNull(
+                10L, dniCuit))
+                .thenReturn(Optional.empty());
+
+        Optional<ComitenteResponseDto> resultado = comitenteService.buscarPorDniCuit(dniCuit);
+
+        assertTrue(resultado.isEmpty());
+        verify(comitenteMapper, never()).toResponse(any());
+    }
 }

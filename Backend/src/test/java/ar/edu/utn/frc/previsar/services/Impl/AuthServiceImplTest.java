@@ -8,10 +8,7 @@ import ar.edu.utn.frc.previsar.entities.*;
 import ar.edu.utn.frc.previsar.enums.Rol;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
-import ar.edu.utn.frc.previsar.repositories.CondicionIvaRepository;
-import ar.edu.utn.frc.previsar.repositories.ProfesionalRepository;
-import ar.edu.utn.frc.previsar.repositories.RegionalRepository;
-import ar.edu.utn.frc.previsar.repositories.UsuarioRepository;
+import ar.edu.utn.frc.previsar.repositories.*;
 import ar.edu.utn.frc.previsar.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +50,9 @@ class AuthServiceImplTest {
 
     @Mock
     private CondicionIvaRepository condicionIvaRepository;
+
+    @Mock
+    private TituloRepository tituloRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -97,7 +97,7 @@ class AuthServiceImplTest {
                 .nombre("Sofía")
                 .apellido("Cirioni")
                 .dni("40123456")
-                .cuit("27-40123456-3")
+                .cuit("27-40123456-5")
                 .matricula("99999")
                 .tituloId(2L)
                 .domicilio("Calle Falsa 123")
@@ -118,6 +118,7 @@ class AuthServiceImplTest {
         when(profesionalRepository.existsByMatricula(registerRequest.getMatricula())).thenReturn(false);
         when(regionalRepository.findById(3L)).thenReturn(Optional.of(regional));
         when(condicionIvaRepository.findById(1L)).thenReturn(Optional.of(condicionIva));
+        when(tituloRepository.findById(2L)).thenReturn(Optional.of(titulo));
         when(passwordEncoder.encode("miPassword123")).thenReturn("$2a$10$hashFake");
 
         Usuario usuarioGuardado = Usuario.builder()
@@ -157,7 +158,7 @@ class AuthServiceImplTest {
         verify(profesionalRepository).save(profCaptor.capture());
         Profesional profGuardado = profCaptor.getValue();
         assertEquals("Sofía", profGuardado.getNombre());
-        assertEquals("27-40123456-3", profGuardado.getCuit());
+        assertEquals("27-40123456-5", profGuardado.getCuit());
         assertEquals(regional, profGuardado.getRegional());
         assertEquals(condicionIva, profGuardado.getCondicionIva());
     }
