@@ -1,8 +1,10 @@
 package ar.edu.utn.frc.previsar.controllers;
 
+import ar.edu.utn.frc.previsar.dtos.request.CambiarPasswordRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ProfesionalUpdateRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProfesionalResponseDto;
 import ar.edu.utn.frc.previsar.services.ProfesionalService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +33,13 @@ public class ProfesionalController {
     public ResponseEntity<ProfesionalResponseDto> actualizarPerfilActual(
             @Valid @RequestBody ProfesionalUpdateRequestDto request) {
         return ResponseEntity.ok(profesionalService.actualizarPerfilActual(request));
+    }
+
+    @PostMapping("/me/cambiar-password")
+    @Operation(summary = "Cambia la contraseña del profesional autenticado")
+    public ResponseEntity<Void> cambiarPassword(
+            @Valid @RequestBody CambiarPasswordRequestDto request) {
+        profesionalService.cambiarPassword(request);
+        return ResponseEntity.noContent().build();
     }
 }

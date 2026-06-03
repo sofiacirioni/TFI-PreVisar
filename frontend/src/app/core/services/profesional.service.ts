@@ -4,6 +4,7 @@ import { tap } from 'rxjs/internal/operators/tap';
 import { HttpClient } from '@angular/common/http';
 import { API } from '../constants/api.constants';
 import { Profesional, ProfesionalUpdateRequest } from '../models/profesional.model';
+import { CambiarPasswordRequest } from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +29,11 @@ export class ProfesionalService {
     return this.http.put<Profesional>(API.PROFESIONAL_ME, datos).pipe(
       tap((perfil) => this._perfilActual.set(perfil))
     );
+  }
+
+  /** Cambia la contraseña del profesional. No devuelve datos, solo éxito o error. */
+  cambiarPassword(request: CambiarPasswordRequest): Observable<void> {
+    return this.http.post<void>(API.PROFESIONAL_CAMBIAR_PASSWORD, request);
   }
 
   /** Limpia el cache (al logout). */

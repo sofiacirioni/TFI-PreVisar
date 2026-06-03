@@ -33,6 +33,11 @@ export interface RegisterRequest {
   afiliadoCaja8470: boolean;
 }
 
+export interface CambiarPasswordRequest {
+  passwordActual: string;
+  passwordNueva: string;
+}
+
 // --- Response ---
 
 export interface AuthResponse {

@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.previsar.services;
 
+import ar.edu.utn.frc.previsar.dtos.request.CambiarPasswordRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ProfesionalUpdateRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProfesionalResponseDto;
 
@@ -16,4 +17,9 @@ public interface ProfesionalService {
      * Actualiza el perfil del profesional autenticado.
      */
     ProfesionalResponseDto actualizarPerfilActual(ProfesionalUpdateRequestDto request);
+
+    /**
+     * Cambiar contraseña, requiere la actual para compara
+     */
+    void cambiarPassword(CambiarPasswordRequestDto request);
 }

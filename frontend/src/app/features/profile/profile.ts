@@ -20,6 +20,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
+import { CambiarPasswordDialog } from '../../shared/components/cambiar-password-dialog/cambiar-password-dialog';
+import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 
 @Component({
   selector: 'app-profile',
@@ -46,6 +49,7 @@ export class Profile implements OnInit {
   private readonly profesionalService = inject(ProfesionalService);
   private readonly catalogoService = inject(CatalogoService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   // Estado UI
   readonly cargando = signal(true);
@@ -215,6 +219,21 @@ readonly tituloRequiereDescripcion = computed(() => {
       },
     });
   }
+
+  async abrirCambiarPassword(): Promise<void> {
+    const ref = this.dialog.open<CambiarPasswordDialog, void, boolean>(
+      CambiarPasswordDialog,
+      { width: '460px', disableClose: false }
+    );
+
+    const exito = await firstValueFrom(ref.afterClosed());
+    if (exito) {
+      this.snackBar.open('Contraseña cambiada correctamente', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-success'],
+      });
+  }
+}
 
   private manejarErrorBackend(err: HttpErrorResponse): void {
     if (err.status === 0) {

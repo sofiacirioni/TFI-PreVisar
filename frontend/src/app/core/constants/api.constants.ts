@@ -13,6 +13,7 @@ export const API = {
 
   // --- Profesional ---
   PROFESIONAL_ME: `${environment.apiBaseUrl}/profesional/me`,
+  PROFESIONAL_CAMBIAR_PASSWORD: `${environment.apiBaseUrl}/profesional/me/cambiar-password`,
 
   // --- Comitentes ---
   COMITENTES: `${environment.apiBaseUrl}/comitentes`,

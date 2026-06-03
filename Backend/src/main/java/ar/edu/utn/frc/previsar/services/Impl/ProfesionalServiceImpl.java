@@ -1,11 +1,9 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
+import ar.edu.utn.frc.previsar.dtos.request.CambiarPasswordRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ProfesionalUpdateRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProfesionalResponseDto;
-import ar.edu.utn.frc.previsar.entities.CondicionIva;
-import ar.edu.utn.frc.previsar.entities.Profesional;
-import ar.edu.utn.frc.previsar.entities.Regional;
-import ar.edu.utn.frc.previsar.entities.Titulo;
+import ar.edu.utn.frc.previsar.entities.*;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ProfesionalMapper;
@@ -14,6 +12,7 @@ import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import ar.edu.utn.frc.previsar.services.ProfesionalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ProfesionalServiceImpl implements ProfesionalService {
     private final ProfesionalRepository profesionalRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
     private final RegionalRepository regionalRepository;
     private final CondicionIvaRepository condicionIvaRepository;
     private final TituloRepository tituloRepository;
@@ -82,6 +83,26 @@ public class ProfesionalServiceImpl implements ProfesionalService {
                 .orElseThrow();
 
         return mapearAResponse(actualizado, esRevisor);
+    }
+
+    @Override
+    public void cambiarPassword(CambiarPasswordRequestDto request) {
+        Profesional profesional = securityUtils.getProfesionalActual();
+        Usuario usuario = profesional.getUsuario();
+
+        // 1. Validar que la password actual coincida
+        if (!passwordEncoder.matches(request.getPasswordActual(), usuario.getPasswordHash())) {
+            throw new BusinessException("La contraseña actual es incorrecta");
+        }
+
+        // 2. Evitar que la nueva sea igual a la actual (UX, no seguridad)
+        if (passwordEncoder.matches(request.getPasswordNueva(), usuario.getPasswordHash())) {
+            throw new BusinessException("La nueva contraseña debe ser distinta de la actual");
+        }
+
+        // 3. Hashear y guardar la nueva
+        usuario.setPasswordHash(passwordEncoder.encode(request.getPasswordNueva()));
+        usuarioRepository.save(usuario);
     }
 
     // -------------------------- Mappers --------------------------

@@ -20,6 +20,7 @@ import { AuthService } from '@core/services/auth.service';
 import { CatalogoService } from '@core/services/catalogo.service';
 import { Regional, CondicionIva, RegisterRequest, Titulo } from '@core/models';
 import { passwordMatchValidator } from '@shared/validators/password-match.validator';
+import { PasswordMismatchMatcher } from '@shared/validators/password-mismatch.matcher';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { cuitDigitoVerificadorValidator, cuitPrefijoValidator, dniCuitCoherenciaValidator, dniValidator } from '../../../shared/validators/dni-cuit.validators';
 
@@ -55,6 +56,8 @@ export class Register implements OnInit {
   readonly errorGeneral = signal<string | null>(null);
   readonly mostrarPassword = signal(false);
   readonly mostrarConfirmPassword = signal(false);
+
+  readonly mismatchMatcher = new PasswordMismatchMatcher();
 
   // Catálogos
   readonly regionales = signal<Regional[]>([]);

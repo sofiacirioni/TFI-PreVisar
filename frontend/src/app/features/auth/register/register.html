@@ -67,6 +67,7 @@
                 [type]="mostrarConfirmPassword() ? 'text' : 'password'"
                 formControlName="confirmarPassword"
                 autocomplete="new-password"
+                [errorStateMatcher]="mismatchMatcher"
               />
               <button
                 mat-icon-button
