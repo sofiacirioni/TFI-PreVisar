@@ -130,7 +130,7 @@
               @if (form.controls.dni.touched && form.controls.dni.errors; as e) {
                 @if (e['required']) {
                   <mat-error>Obligatorio</mat-error>
-                } @else if (e['pattern']) {
+                } @else if (e['dniInvalido']) {
                   <mat-error>7 u 8 dígitos sin puntos</mat-error>
                 } @else if (e['backend']) {
                   <mat-error>{{ e['backend'] }}</mat-error>
@@ -146,6 +146,12 @@
                   <mat-error>Obligatorio</mat-error>
                 } @else if (e['pattern']) {
                   <mat-error>Formato: XX-XXXXXXXX-X</mat-error>
+                } @else if (e['cuitPrefijoInvalido']) {
+                  <mat-error>El CUIT debe empezar con 20, 23 o 27 (persona física)</mat-error>
+                } @else if (e['cuitVerificadorInvalido']) {
+                  <mat-error>El dígito verificador del CUIT es incorrecto</mat-error>
+                } @else if (e['cuitNoCoincideConDni']) {
+                  <mat-error>El CUIT no coincide con el DNI ingresado</mat-error>
                 } @else if (e['backend']) {
                   <mat-error>{{ e['backend'] }}</mat-error>
                 }

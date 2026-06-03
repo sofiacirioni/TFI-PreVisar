@@ -93,6 +93,16 @@
                   <mat-error>DNI inválido (7-8 dígitos sin puntos)</mat-error>
                 } @else if (e['cuitInvalido']) {
                   <mat-error>CUIT inválido (formato XX-XXXXXXXX-X)</mat-error>
+                } @else if (e['cuitPrefijoInvalido']) {
+                  <mat-error>
+                    @if (form.controls.tipoPersona.value === 'JURIDICA') {
+                      El CUIT de una persona jurídica debe empezar con 30, 33 o 34
+                    } @else {
+                      El CUIT de una persona física debe empezar con 20, 23 o 27
+                    }
+                  </mat-error>
+                } @else if (e['cuitVerificadorInvalido']) {
+                  <mat-error>El dígito verificador del CUIT es incorrecto</mat-error>
                 } @else if (e['backend']) {
                   <mat-error>{{ e['backend'] }}</mat-error>
                 }

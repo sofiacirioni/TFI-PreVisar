@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,7 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ComitenteService } from '../../../core/services/comitente.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComitenteRequest, TipoPersona } from '../../../core/models';
-import { dniOCuitSegunTipoValidator } from '../../../shared/validators/dni-cuit.validators';
+import { cuitDigitoVerificadorValidator, cuitPrefijoValidator, dniOCuitSegunTipoValidator } from '../../../shared/validators/dni-cuit.validators';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
@@ -31,7 +31,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     MatProgressSpinnerModule,
     MatRadioModule,
     MatDividerModule,
-    MatTooltipModule,
+    MatTooltipModule
   ],
   templateUrl: './comitente-form.html',
   styleUrl: './comitente-form.scss',
@@ -53,11 +53,26 @@ export class ComitenteForm implements OnInit {
   private readonly comitenteId = signal<number | null>(null);
   readonly modoEdicion = computed(() => this.comitenteId() !== null);
 
+  // Validator de prefijo que respeta el tipoPersona del propio formulario
+  private validarPrefijoSegunTipo = (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) return null;
+    const digitos = value.replace(/\D/g, '');
+    if (digitos.length !== 11) return null; // si es DNI puro, no aplica
+
+    const tipoPersona = this.form?.controls.tipoPersona?.value ?? 'FISICA';
+    const tipoEntidad = tipoPersona === 'JURIDICA' ? 'JURIDICA' : 'FISICA';
+    return cuitPrefijoValidator(tipoEntidad)(control);
+  };
+
   // Form
   readonly form = this.fb.nonNullable.group({
     tipoPersona: ['FISICA' as TipoPersona, [Validators.required]],
     nombreRazonSocial: ['', [Validators.required, Validators.maxLength(200)]],
-    dniCuit: ['', [Validators.required, dniOCuitSegunTipoValidator('tipoPersona')]],
+    dniCuit: [ '', [ Validators.required,
+      dniOCuitSegunTipoValidator('tipoPersona'),
+      cuitDigitoVerificadorValidator,
+      this.validarPrefijoSegunTipo ]],
     email: ['', [Validators.email, Validators.maxLength(255)]],
     telefono: ['', [Validators.maxLength(30)]],
     domicilio: ['', [Validators.required, Validators.maxLength(255)]],
@@ -208,5 +223,4 @@ export class ComitenteForm implements OnInit {
 
     this.errorGeneral.set('Ocurrió un error al guardar. Intentá de nuevo.');
   }
-
 }

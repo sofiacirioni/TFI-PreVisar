@@ -1,2 +1,137 @@
-<h1>Mis obras</h1>
-<p>placeholder Sprint 1</p>
+<div class="obras-page">
+  <header class="page-header">
+    <div>
+      <h1>Mis obras</h1>
+      <p class="subtitle">Inmuebles donde realizás tus tareas profesionales</p>
+    </div>
+
+    <button mat-flat-button class="cta-button" (click)="irANueva()">
+      <mat-icon>add</mat-icon>
+      Nueva obra
+    </button>
+  </header>
+
+  @if (cargando()) {
+    <div class="loader-wrap">
+      <mat-spinner diameter="40" />
+      <span>Cargando obras...</span>
+    </div>
+  } @else if (errorCarga()) {
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorCarga() }}</span>
+      <button mat-button (click)="cargarObras()">Reintentar</button>
+    </div>
+  } @else {
+    <mat-form-field appearance="outline" class="buscador">
+      <mat-label>Buscar por designación, comitente, dirección o localidad</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
+      @if (filtroControl.value) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Limpiar búsqueda"
+          (click)="filtroControl.setValue('')"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+
+    @if (obrasFiltradas().length === 0) {
+      @if (obras().length === 0) {
+        <div class="empty-state">
+          <mat-icon>home_work</mat-icon>
+          <h3>Todavía no tenés obras cargadas</h3>
+          <p>Una obra es el inmueble sobre el que realizás una tarea profesional.</p>
+          <button mat-flat-button (click)="irANueva()">
+            <mat-icon>add</mat-icon>
+            Nueva obra
+          </button>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <mat-icon>search_off</mat-icon>
+          <h3>No hay resultados</h3>
+          <p>Ninguna obra coincide con "{{ filtroControl.value }}".</p>
+        </div>
+      }
+    } @else {
+      <div class="tabla-wrap">
+        <table mat-table [dataSource]="obrasFiltradas()" class="obras-table">
+          <ng-container matColumnDef="designacion">
+            <th mat-header-cell *matHeaderCellDef>Designación</th>
+            <td mat-cell *matCellDef="let o">
+              <span class="designacion">{{ o.designacion }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="comitente">
+            <th mat-header-cell *matHeaderCellDef>Comitente</th>
+            <td mat-cell *matCellDef="let o">
+              <div class="comitente-cell">
+                <span class="comitente-nombre">{{ o.comitenteNombre }}</span>
+                <span class="comitente-dni">{{ o.comitenteDniCuit }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="ubicacion">
+            <th mat-header-cell *matHeaderCellDef>Ubicación</th>
+            <td mat-cell *matCellDef="let o">
+              <div class="ubicacion-cell">
+                <span>{{ o.calle }} {{ o.numero }}</span>
+                <span class="localidad"
+                  >{{ o.localidad }}{{ o.barrio ? ' · ' + o.barrio : '' }}</span
+                >
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="provincia">
+            <th mat-header-cell *matHeaderCellDef>Provincia</th>
+            <td mat-cell *matCellDef="let o">{{ o.provinciaNombre }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef class="col-acciones">Acciones</th>
+            <td mat-cell *matCellDef="let o" class="col-acciones">
+              <button
+                mat-icon-button
+                matTooltip="Editar"
+                aria-label="Editar obra"
+                (click)="irAEditar(o)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                matTooltip="Eliminar"
+                aria-label="Eliminar obra"
+                (click)="confirmarEliminar(o)"
+              >
+                <mat-icon class="icono-eliminar">delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columnasMostradas"></tr>
+          <tr mat-row *matRowDef="let row; columns: columnasMostradas"></tr>
+        </table>
+      </div>
+
+      <div class="resumen-resultados">
+        {{ obrasFiltradas().length }}
+        @if (obrasFiltradas().length === 1) {
+          obra
+        } @else {
+          obras
+        }
+        @if (filtroControl.value) {
+          coinciden con la búsqueda
+        }
+      </div>
+    }
+  }
+</div>

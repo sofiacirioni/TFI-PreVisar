@@ -6,5 +6,14 @@ export const OBRAS_ROUTES: Routes = [
     loadComponent: () =>
       import('./obra-list/obra-list').then((m) => m.ObraList),
   },
-  // Más adelante: 'nueva', ':id/editar', etc.
+  {
+    path: 'nueva',
+    loadComponent: () =>
+      import('./obra-form/obra-form').then((m) => m.ObraForm),
+  },
+  {
+    path: ':id/editar',
+    loadComponent: () =>
+      import('./obra-form/obra-form').then((m) => m.ObraForm),
+  },
 ];

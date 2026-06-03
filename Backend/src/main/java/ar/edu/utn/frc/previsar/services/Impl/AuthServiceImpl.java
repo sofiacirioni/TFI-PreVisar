@@ -11,6 +11,7 @@ import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.repositories.*;
 import ar.edu.utn.frc.previsar.security.JwtService;
 import ar.edu.utn.frc.previsar.services.AuthService;
+import ar.edu.utn.frc.previsar.utils.CuitValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,6 +61,16 @@ public class AuthServiceImpl implements AuthService {
         }
         if (profesionalRepository.existsByMatricula(request.getMatricula())) {
             throw new BusinessException("Ya existe un profesional con esa matrícula");
+        }
+        // Validaciones de CUIT
+        if (!CuitValidator.tieneDigitoVerificadorValido(request.getCuit())) {
+            throw new BusinessException("El dígito verificador del CUIT es incorrecto");
+        }
+        if (!CuitValidator.tienePrefijoValido(request.getCuit(), CuitValidator.TipoEntidad.PROFESIONAL)) {
+            throw new BusinessException("El CUIT debe corresponder a una persona física (prefijo 20, 23 o 27)");
+        }
+        if (!CuitValidator.coincideConDni(request.getCuit(), request.getDni())) {
+            throw new BusinessException("El CUIT no coincide con el DNI ingresado");
         }
 
         // 2. Cargar referencias a catálogos

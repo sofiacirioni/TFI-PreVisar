@@ -4,12 +4,14 @@ import ar.edu.utn.frc.previsar.dtos.request.ComitenteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ComitenteResponseDto;
 import ar.edu.utn.frc.previsar.entities.Comitente;
 import ar.edu.utn.frc.previsar.entities.Profesional;
+import ar.edu.utn.frc.previsar.enums.TipoPersona;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ComitenteMapper;
 import ar.edu.utn.frc.previsar.repositories.ComitenteRepository;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import ar.edu.utn.frc.previsar.services.ComitenteService;
+import ar.edu.utn.frc.previsar.utils.CuitValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -68,6 +70,23 @@ public class ComitenteServiceImpl implements ComitenteService {
                             + request.getDniCuit());
         }
 
+        // Si el dniCuit tiene 11 dígitos (formato CUIT), validamos prefijo y verificador
+        String digitos = CuitValidator.soloDigitos(request.getDniCuit());
+        if (digitos != null) {  // si es un CUIT, no un DNI suelto
+            if (!CuitValidator.tieneDigitoVerificadorValido(request.getDniCuit())) {
+                throw new BusinessException("El dígito verificador del CUIT es incorrecto");
+            }
+            CuitValidator.TipoEntidad tipo = request.getTipoPersona() == TipoPersona.JURIDICA
+                    ? CuitValidator.TipoEntidad.JURIDICA
+                    : CuitValidator.TipoEntidad.FISICA;
+            if (!CuitValidator.tienePrefijoValido(request.getDniCuit(), tipo)) {
+                String esperado = tipo == CuitValidator.TipoEntidad.JURIDICA
+                        ? "una persona jurídica (30, 33 o 34)"
+                        : "una persona física (20, 23 o 27)";
+                throw new BusinessException("El prefijo del CUIT no corresponde a " + esperado);
+            }
+        }
+
         Comitente nuevo = Comitente.builder()
                 .profesional(profesional)
                 .tipoPersona(request.getTipoPersona())
@@ -79,9 +98,6 @@ public class ComitenteServiceImpl implements ComitenteService {
                 .build();
 
         Comitente guardado = comitenteRepository.save(nuevo);
-
-        log.info("Comitente creado: id={}, profesional={}, dniCuit={}",
-                guardado.getId(), profesional.getId(), guardado.getDniCuit());
 
         return comitenteMapper.toResponse(guardado);
     }
@@ -103,6 +119,23 @@ public class ComitenteServiceImpl implements ComitenteService {
             }
         }
 
+        // Si el dniCuit tiene 11 dígitos (formato CUIT), validamos prefijo y verificador
+        String digitos = CuitValidator.soloDigitos(request.getDniCuit());
+        if (digitos != null) {  // si es un CUIT, no un DNI suelto
+            if (!CuitValidator.tieneDigitoVerificadorValido(request.getDniCuit())) {
+                throw new BusinessException("El dígito verificador del CUIT es incorrecto");
+            }
+            CuitValidator.TipoEntidad tipo = request.getTipoPersona() == TipoPersona.JURIDICA
+                    ? CuitValidator.TipoEntidad.JURIDICA
+                    : CuitValidator.TipoEntidad.FISICA;
+            if (!CuitValidator.tienePrefijoValido(request.getDniCuit(), tipo)) {
+                String esperado = tipo == CuitValidator.TipoEntidad.JURIDICA
+                        ? "una persona jurídica (30, 33 o 34)"
+                        : "una persona física (20, 23 o 27)";
+                throw new BusinessException("El prefijo del CUIT no corresponde a " + esperado);
+            }
+        }
+
         comitente.setTipoPersona(request.getTipoPersona());
         comitente.setNombreRazonSocial(request.getNombreRazonSocial());
         comitente.setDniCuit(request.getDniCuit());
@@ -110,10 +143,7 @@ public class ComitenteServiceImpl implements ComitenteService {
         comitente.setEmail(request.getEmail());
         comitente.setTelefono(request.getTelefono());
 
-        log.info("Comitente actualizado: id={}", comitente.getId());
-
         return comitenteMapper.toResponse(comitente);
-
     }
 
     @Override
@@ -121,7 +151,6 @@ public class ComitenteServiceImpl implements ComitenteService {
     public void eliminar(Long id) {
         Comitente comitente = buscarYValidarPropiedad(id);
         comitente.softDelete();
-        log.info("Comitente eliminado (soft): id={}", comitente.getId());
     }
 
     // -------------------------- Helpers --------------------------

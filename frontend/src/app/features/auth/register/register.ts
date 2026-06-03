@@ -21,6 +21,7 @@ import { CatalogoService } from '@core/services/catalogo.service';
 import { Regional, CondicionIva, RegisterRequest, Titulo } from '@core/models';
 import { passwordMatchValidator } from '@shared/validators/password-match.validator';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { cuitDigitoVerificadorValidator, cuitPrefijoValidator, dniCuitCoherenciaValidator, dniValidator } from '../../../shared/validators/dni-cuit.validators';
 
 @Component({
   selector: 'app-register',
@@ -37,7 +38,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     MatSelectModule,
     MatCheckboxModule,
     MatDividerModule,
-    NgxMatSelectSearchModule,
+    NgxMatSelectSearchModule
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
@@ -70,8 +71,10 @@ export class Register implements OnInit {
       // Sección 2: datos personales
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
       apellido: ['', [Validators.required, Validators.maxLength(100)]],
-      dni: ['', [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
-      cuit: ['', [Validators.required, Validators.pattern(/^\d{2}-\d{8}-\d{1}$/)]],
+      dni: ['', [Validators.required, dniValidator]],
+      cuit: ['',[Validators.required, Validators.pattern(/^\d{2}-\d{8}-\d{1}$/),
+        cuitDigitoVerificadorValidator,
+        cuitPrefijoValidator('PROFESIONAL'),]],
       domicilio: ['', [Validators.required, Validators.maxLength(255)]],
       telefono: ['', [Validators.maxLength(30)]],
 
@@ -84,7 +87,9 @@ export class Register implements OnInit {
       afiliadoCaja8470: [false, [Validators.required]],
     },
     {
-      validators: [passwordMatchValidator('password', 'confirmarPassword')],
+      validators: [passwordMatchValidator('password', 'confirmarPassword'),
+        dniCuitCoherenciaValidator('dni', 'cuit')
+      ],
     }
   );
 
@@ -124,6 +129,11 @@ export class Register implements OnInit {
         this.form.controls.tituloOtroDescripcion.setValue('');
         this.form.controls.tituloOtroDescripcion.setErrors(null);
       }
+    });
+
+    // Re-disparar validación del CUIT cuando cambia el DNI
+    this.form.controls.dni.valueChanges.subscribe(() => {
+      this.form.controls.cuit.updateValueAndValidity({ emitEvent: false });
     });
   }
 
