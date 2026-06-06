@@ -1,2 +1,43 @@
-<h1>Dashboard</h1>
-<p>Pantalla principal — placeholder Sprint 1</p>
+<div class="dashboard-page">
+  <!-- Bienvenida -->
+  <header class="welcome-section">
+    @if (perfil(); as p) {
+      <h1>{{ saludo() }}, {{ p.nombre }} 👋</h1>
+    } @else {
+      <h1>{{ saludo() }} 👋</h1>
+    }
+    <p class="welcome-subtitle">Acá vas a poder gestionar tus expedientes técnicos del CIEC.</p>
+  </header>
+
+  <!-- Fila de expedientes recientes -->
+  <section class="expedientes-section">
+    <h2 class="section-title">Expedientes recientes</h2>
+
+    <div class="expedientes-row">
+      <!-- Card "Nuevo expediente" (deshabilitada en Sprint 1) -->
+      <div
+        class="expediente-card expediente-nuevo expediente-disabled"
+        matTooltip="Disponible en Sprint 2"
+        matTooltipPosition="above"
+      >
+        <mat-icon class="card-icon">add</mat-icon>
+        <span class="card-label">Nuevo expediente</span>
+      </div>
+
+      <!-- Placeholder informativo: cuando aparezcan expedientes, esto se reemplaza por cards reales -->
+      <div class="expediente-placeholder">
+        <mat-icon class="placeholder-icon">description</mat-icon>
+        <div class="placeholder-text">
+          <p class="placeholder-title">Tus expedientes aparecerán acá</p>
+          <p class="placeholder-subtitle">
+            Cuando crees tu primer expediente, vas a poder retomarlo rápidamente desde esta vista.
+          </p>
+          <span class="placeholder-badge">
+            <mat-icon>schedule</mat-icon>
+            Funcionalidad disponible en Sprint 2
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,9 +1,6 @@
 package ar.edu.utn.frc.previsar.controllers;
 
-import ar.edu.utn.frc.previsar.dtos.response.CondicionIvaResponseDto;
-import ar.edu.utn.frc.previsar.dtos.response.ProvinciaResponseDto;
-import ar.edu.utn.frc.previsar.dtos.response.RegionalResponseDto;
-import ar.edu.utn.frc.previsar.dtos.response.TituloResponseDto;
+import ar.edu.utn.frc.previsar.dtos.response.*;
 import ar.edu.utn.frc.previsar.services.CatalogoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,5 +41,10 @@ public class CatalogoController {
     @Operation(summary = "Lista todos los títulos de ingeniería habilitados")
     public ResponseEntity<List<TituloResponseDto>> listarTitulos() {
         return ResponseEntity.ok(catalogoService.listarTitulos());
+    }
+
+    @GetMapping("/tipos-tarea")
+    public ResponseEntity<List<TipoTareaResponseDto>> listarTiposTarea() {
+        return ResponseEntity.ok(catalogoService.listarTiposTarea());
     }
 }

@@ -27,8 +27,8 @@ CREATE TABLE expediente (
                             aporte_caja_comitente    NUMERIC(15,2),
 
                             activo                   BOOLEAN       NOT NULL DEFAULT TRUE,   -- soft delete (consistente con comitente)
-                            fecha_creacion           TIMESTAMP     NOT NULL DEFAULT now(),
-                            fecha_actualizacion      TIMESTAMP     NOT NULL DEFAULT now(),
+                            created_at               TIMESTAMP     NOT NULL DEFAULT now(),
+                            updated_at               TIMESTAMP     NOT NULL DEFAULT now(),
 
                             CONSTRAINT chk_expediente_estado
                                 CHECK (estado IN ('BORRADOR', 'COMPLETO')),

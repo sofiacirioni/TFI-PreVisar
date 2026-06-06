@@ -84,9 +84,15 @@ class JwtServiceTest {
     void validarYExtraerClaims_tokenModificado_devuelveOptionalVacio() {
         String tokenOriginal = jwtService.generarToken(usuarioDePrueba);
 
-        // Cambia el último caracter del token: rompe la firma
-        String tokenAlterado = tokenOriginal.substring(0, tokenOriginal.length() - 1)
-                + (tokenOriginal.endsWith("A") ? "B" : "A");
+        // Alteramos un caracter del MEDIO de la firma. El último caracter no sirve
+        // porque en HS512 los últimos 2 bits son padding implícito de base64URL, y
+        // varios caracteres mapean a los mismos bits significativos (flaky).
+        int inicioFirma = tokenOriginal.lastIndexOf('.') + 1;
+        int mitadFirma = inicioFirma + (tokenOriginal.length() - inicioFirma) / 2;
+        char original = tokenOriginal.charAt(mitadFirma);
+        String tokenAlterado = tokenOriginal.substring(0, mitadFirma)
+                + (original == 'A' ? 'B' : 'A')
+                + tokenOriginal.substring(mitadFirma + 1);
 
         Optional<Claims> claimsOpt = jwtService.validarYExtraerClaims(tokenAlterado);
 
