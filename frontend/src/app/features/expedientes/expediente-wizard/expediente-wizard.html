@@ -1,0 +1,47 @@
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<mat-stepper [linear]="false" (selectionChange)="onStepChange($event)" #stepper>
+  <mat-step [stepControl]="tareaForm" label="Tipo de tarea">
+    <!-- Paso 1 (lo armamos ahora) -->
+    <p>Tipo de tarea — pendiente</p>
+    <div class="acciones">
+      <button mat-button matStepperNext>Siguiente</button>
+    </div>
+  </mat-step>
+
+  <mat-step [stepControl]="comitenteForm" label="Comitente">
+    <p>Comitente — pendiente (reusa el form de comitente)</p>
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button mat-button matStepperNext>Siguiente</button>
+    </div>
+  </mat-step>
+
+  <mat-step [stepControl]="obraForm" label="Obra">
+    <p>Obra — pendiente (reusa el CRUD de obras)</p>
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button mat-button matStepperNext>Siguiente</button>
+    </div>
+  </mat-step>
+
+  <mat-step [stepControl]="economicoForm" label="Datos económicos">
+    <p>Honorarios y aportes — pendiente</p>
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button mat-button matStepperNext>Siguiente</button>
+    </div>
+  </mat-step>
+
+  <mat-step label="Resumen">
+    <p>Resumen — pendiente</p>
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button mat-flat-button class="cta-button" (click)="finalizar()" [disabled]="guardando()">
+        Finalizar expediente
+      </button>
+    </div>
+  </mat-step>
+</mat-stepper>

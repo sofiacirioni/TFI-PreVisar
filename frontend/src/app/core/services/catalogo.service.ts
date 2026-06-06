@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { CondicionIva, Provincia, Regional, Titulo } from '../models';
+import { CondicionIva, Provincia, Regional, TipoTarea, Titulo } from '../models';
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '../constants/api.constants';
 
@@ -23,6 +23,10 @@ export class CatalogoService {
   }
 
   listarTitulos(): Observable<Titulo[]> {
-  return this.http.get<Titulo[]>(API.CATALOGO_TITULOS);
+    return this.http.get<Titulo[]>(API.CATALOGO_TITULOS);
+  }
+
+  listarTiposTarea(): Observable<TipoTarea[]> {
+    return this.http.get<TipoTarea[]>(API.CATALOGO_TIPOS_TAREA);
   }
 }

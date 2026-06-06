@@ -22,3 +22,9 @@ export interface Titulo {
   nombre: string;
   permiteTextoLibre: boolean;
 }
+
+export interface TipoTarea {
+  id: number;
+  codigo: string;
+  nombre: string;
+}

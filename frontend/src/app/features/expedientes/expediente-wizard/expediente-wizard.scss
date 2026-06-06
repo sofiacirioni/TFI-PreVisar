@@ -1,0 +1,12 @@
+.acciones {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+// CTA crítico naranja consistente con el resto del proyecto (ej. comitente-list)
+.cta-button {
+  background-color: #ef6c00 !important;
+  color: #ffffff !important;
+}
