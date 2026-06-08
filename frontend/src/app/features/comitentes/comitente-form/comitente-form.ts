@@ -16,6 +16,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComitenteRequest, TipoPersona } from '../../../core/models';
 import { cuitDigitoVerificadorValidator, cuitPrefijoValidator, dniOCuitSegunTipoValidator } from '../../../shared/validators/dni-cuit.validators';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Comitente } from '../../../core/models/comitente.model';
 
 @Component({
   selector: 'app-comitente-form',
@@ -52,6 +53,10 @@ export class ComitenteForm implements OnInit {
   // Modo: alta o edición
   private readonly comitenteId = signal<number | null>(null);
   readonly modoEdicion = computed(() => this.comitenteId() !== null);
+
+  //
+  readonly comitenteEstado = signal<'inicial' | 'buscando' | 'encontrado' | 'nuevo'>('inicial');
+  readonly comitenteSeleccionado = signal<Comitente | null>(null);
 
   // Validator de prefijo que respeta el tipoPersona del propio formulario
   private validarPrefijoSegunTipo = (control: AbstractControl): ValidationErrors | null => {

@@ -21,6 +21,9 @@ public class Expediente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "nombre", length = 150)
+    private String nombre;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "profesional_id", nullable = false)
     private Profesional profesional;

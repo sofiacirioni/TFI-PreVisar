@@ -12,6 +12,7 @@
 
 CREATE TABLE expediente (
                             id                       BIGSERIAL     PRIMARY KEY,
+                            nombre                   VARCHAR(150),
                             profesional_id           BIGINT        NOT NULL REFERENCES profesional (id),
                             obra_id                  BIGINT                 REFERENCES obra (id),
                             tipo_tarea_id            BIGINT                 REFERENCES tipo_tarea (id),

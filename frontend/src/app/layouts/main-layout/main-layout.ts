@@ -48,6 +48,7 @@ export class MainLayout {
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
     { label: 'Mis comitentes', icon: 'people', route: '/comitentes' },
     { label: 'Mis obras', icon: 'home_work', route: '/obras' },
+    { label: 'Mis expedientes', icon: 'description', route: '/expedientes' },
     { label: 'Mi perfil', icon: 'person', route: '/profile' },
   ];
 

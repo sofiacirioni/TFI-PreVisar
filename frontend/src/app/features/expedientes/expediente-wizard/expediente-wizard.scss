@@ -10,3 +10,94 @@
   background-color: #ef6c00 !important;
   color: #ffffff !important;
 }
+
+.campo-full {
+  width: 100%;
+}
+
+// ===== Paso Comitente =====
+
+.comitente-busqueda {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  .campo-busqueda {
+    flex: 1;
+  }
+
+  button {
+    margin-top: 8px; // alinea visualmente con el mat-form-field
+  }
+}
+
+.comitente-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f5f9fa;
+  border: 1px solid #cfe6ea;
+  border-radius: 8px;
+  margin-top: 8px;
+
+  .check-icon {
+    color: #00838f;
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .comitente-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.9rem;
+    color: #1a2733;
+    min-width: 0;
+
+    .muted {
+      color: #5a6b78;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+.comitente-nuevo {
+  margin-top: 8px;
+  padding: 16px;
+  background-color: #fff8e1;
+  border: 1px dashed #ffcc80;
+  border-radius: 8px;
+
+  .info-text {
+    margin: 0 0 16px;
+    color: #5a6b78;
+    font-size: 0.875rem;
+  }
+}
+
+.form-nuevo-comitente {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}

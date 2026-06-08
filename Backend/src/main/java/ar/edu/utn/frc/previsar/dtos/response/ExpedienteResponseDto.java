@@ -12,8 +12,10 @@ import java.time.LocalDateTime;
 @Builder
 public class ExpedienteResponseDto {
     private Long id;
+    private String nombre;
     private String estado;
     private Long obraId;
+    private Long comitenteId;   // derivado de obra -> comitente (para el wizard)
     private Long tipoTareaId;
     private String tipoTareaCodigo;
     private String tipoTareaNombre;

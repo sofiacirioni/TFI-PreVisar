@@ -97,6 +97,9 @@ public class ExpedienteServiceImpl implements ExpedienteService {
 
     /** Aplica solo los campos presentes (PATCH parcial) y recalcula aportes. */
     private void aplicar(Expediente e, ExpedienteRequestDto req) {
+        if (req.getNombre() != null) {
+            e.setNombre(req.getNombre());
+        }
         if (req.getTipoTareaId() != null) {
             e.setTipoTarea(buscarTipoTarea(req.getTipoTareaId()));
         }

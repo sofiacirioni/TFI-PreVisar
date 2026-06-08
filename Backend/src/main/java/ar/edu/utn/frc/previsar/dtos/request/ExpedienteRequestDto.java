@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @Builder
 public class ExpedienteRequestDto {
     private Long obraId;
+    private String nombre;
     private Long tipoTareaId;
     private BigDecimal honorariosReferenciales;
 }

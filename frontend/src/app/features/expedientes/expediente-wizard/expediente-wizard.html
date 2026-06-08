@@ -2,20 +2,169 @@
   <mat-progress-bar mode="indeterminate" />
 }
 
+<mat-form-field appearance="outline" class="campo-full">
+  <mat-label>Nombre del expediente</mat-label>
+  <input
+    matInput
+    [formControl]="nombreControl"
+    placeholder="Ej: Instalación BT — Edificio Mykonos"
+    maxlength="150"
+  />
+</mat-form-field>
+
 <mat-stepper [linear]="false" (selectionChange)="onStepChange($event)" #stepper>
   <mat-step [stepControl]="tareaForm" label="Tipo de tarea">
-    <!-- Paso 1 (lo armamos ahora) -->
-    <p>Tipo de tarea — pendiente</p>
+    <form [formGroup]="tareaForm">
+      <p>Elegí el tipo de tarea profesional que vas a presentar.</p>
+
+      <mat-form-field appearance="outline" class="campo-full">
+        <mat-label>Tipo de tarea</mat-label>
+        <mat-select formControlName="tipoTareaId">
+          @for (tipo of tiposTarea(); track tipo.id) {
+            <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+          }
+        </mat-select>
+        @if (
+          tareaForm.controls.tipoTareaId.hasError('required') &&
+          tareaForm.controls.tipoTareaId.touched
+        ) {
+          <mat-error>Seleccioná un tipo de tarea</mat-error>
+        }
+      </mat-form-field>
+    </form>
+
     <div class="acciones">
       <button mat-button matStepperNext>Siguiente</button>
     </div>
   </mat-step>
 
   <mat-step [stepControl]="comitenteForm" label="Comitente">
-    <p>Comitente — pendiente (reusa el form de comitente)</p>
+    <p>
+      Ingresá el DNI o CUIT del comitente. Si ya está en tu cartera lo cargamos
+      automáticamente; si no, vas a poder darlo de alta acá mismo.
+    </p>
+
+    <!-- Búsqueda -->
+    <div class="comitente-busqueda">
+      <mat-form-field appearance="outline" class="campo-busqueda">
+        <mat-label>DNI o CUIT</mat-label>
+        <input
+          matInput
+          [formControl]="dniCuitBusqueda"
+          placeholder="40123456 o 27-40123456-5"
+          (keydown.enter)="$event.preventDefault(); buscarComitente()"
+        />
+        @if (dniCuitBusqueda.touched && dniCuitBusqueda.errors; as e) {
+          @if (e['required']) {
+            <mat-error>Ingresá un DNI o CUIT</mat-error>
+          } @else if (e['pattern']) {
+            <mat-error>Formato inválido (DNI 7-8 dígitos o CUIT XX-XXXXXXXX-X)</mat-error>
+          }
+        }
+      </mat-form-field>
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="buscarComitente()"
+        [disabled]="buscandoComitente()"
+      >
+        <mat-icon>search</mat-icon>
+        Buscar
+      </button>
+    </div>
+
+    @if (buscandoComitente()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <!-- Caso 1: existe en la cartera -->
+    @if (comitenteEncontrado(); as c) {
+      <div class="comitente-card">
+        <mat-icon class="check-icon">check_circle</mat-icon>
+        <div class="comitente-info">
+          <strong>{{ c.nombreRazonSocial }}</strong>
+          <span>
+            {{ c.tipoPersona === 'FISICA' ? 'Persona física' : 'Persona jurídica' }}
+            — {{ c.dniCuit }}
+          </span>
+          <span class="muted">{{ c.email || 'Sin email' }} · {{ c.telefono || 'Sin teléfono' }}</span>
+          <span class="muted">{{ c.domicilio }}</span>
+        </div>
+        <button mat-button type="button" (click)="cambiarBusqueda()">Cambiar</button>
+      </div>
+    }
+
+    <!-- Caso 2: no existe, mostramos el form inline para crearlo -->
+    @if (modoNuevoComitente()) {
+      <div class="comitente-nuevo">
+        <p class="info-text">
+          No encontramos un comitente con ese DNI/CUIT en tu cartera. Completá los datos
+          para darlo de alta — se va a guardar cuando pases al próximo paso.
+        </p>
+
+        <form [formGroup]="nuevoComitenteForm" class="form-nuevo-comitente">
+          <mat-radio-group formControlName="tipoPersona" class="radio-group">
+            <mat-radio-button value="FISICA">Persona física</mat-radio-button>
+            <mat-radio-button value="JURIDICA">Persona jurídica</mat-radio-button>
+          </mat-radio-group>
+
+          <mat-form-field appearance="outline" class="campo-full">
+            <mat-label>Nombre / Razón social</mat-label>
+            <input matInput formControlName="nombreRazonSocial" maxlength="200" />
+            @if (
+              nuevoComitenteForm.controls.nombreRazonSocial.touched &&
+              nuevoComitenteForm.controls.nombreRazonSocial.errors?.['required']
+            ) {
+              <mat-error>Obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="campo-full">
+            <mat-label>Domicilio</mat-label>
+            <input matInput formControlName="domicilio" maxlength="255" />
+            @if (
+              nuevoComitenteForm.controls.domicilio.touched &&
+              nuevoComitenteForm.controls.domicilio.errors?.['required']
+            ) {
+              <mat-error>Obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="dos-columnas">
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" maxlength="255" />
+              @if (
+                nuevoComitenteForm.controls.email.touched &&
+                nuevoComitenteForm.controls.email.errors?.['email']
+              ) {
+                <mat-error>Email inválido</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono (opcional)</mat-label>
+              <input matInput formControlName="telefono" maxlength="30" />
+            </mat-form-field>
+          </div>
+        </form>
+      </div>
+    }
+
     <div class="acciones">
       <button mat-button matStepperPrevious>Atrás</button>
-      <button mat-button matStepperNext>Siguiente</button>
+      <button
+        mat-flat-button
+        type="button"
+        (click)="continuarDesdeComitente(stepper)"
+        [disabled]="creandoComitente()"
+      >
+        @if (creandoComitente()) {
+          Guardando...
+        } @else {
+          Siguiente
+        }
+      </button>
     </div>
   </mat-step>
 
