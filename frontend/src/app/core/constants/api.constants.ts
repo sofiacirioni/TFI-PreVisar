@@ -10,7 +10,8 @@ export const API = {
   CATALOGO_REGIONALES: `${environment.apiBaseUrl}/catalogos/regionales`,
   CATALOGO_CONDICIONES_IVA: `${environment.apiBaseUrl}/catalogos/condiciones-iva`,
   CATALOGO_TITULOS: `${environment.apiBaseUrl}/catalogos/titulos`,
-  CATALOGO_TIPOS_TAREA: `${environment.apiBaseUrl}/catalogos/tipos-tarea`,
+  CATALOGO_ESPECIALIDADES: `${environment.apiBaseUrl}/catalogos/especialidades`,
+  CATALOGO_TIPOS_TAREA: `${environment.apiBaseUrl}/catalogos/tipos-tarea`, // ?especialidadId=XXX (opcional)
 
   // --- Profesional ---
   PROFESIONAL_ME: `${environment.apiBaseUrl}/profesional/me`,

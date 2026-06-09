@@ -18,5 +18,7 @@ public interface ExpedienteMapper {
     @Mapping(target = "tipoTareaId", source = "tipoTarea.id")
     @Mapping(target = "tipoTareaCodigo", source = "tipoTarea.codigo")
     @Mapping(target = "tipoTareaNombre", source = "tipoTarea.nombre")
+    @Mapping(target = "especialidadId", source = "tipoTarea.especialidad.id")
+    @Mapping(target = "especialidadNombre", source = "tipoTarea.especialidad.nombre")
     ExpedienteResponseDto toResponse(Expediente expediente);
 }

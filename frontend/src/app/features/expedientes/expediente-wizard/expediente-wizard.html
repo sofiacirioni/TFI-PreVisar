@@ -15,15 +15,40 @@
 <mat-stepper [linear]="false" (selectionChange)="onStepChange($event)" #stepper>
   <mat-step [stepControl]="tareaForm" label="Tipo de tarea">
     <form [formGroup]="tareaForm">
-      <p>Elegí el tipo de tarea profesional que vas a presentar.</p>
+      <p>Elegí primero la especialidad y luego el tipo de tarea a presentar.</p>
+
+      <mat-form-field appearance="outline" class="campo-full">
+        <mat-label>Especialidad</mat-label>
+        <mat-select formControlName="especialidadId">
+          @for (esp of especialidades(); track esp.id) {
+            <mat-option [value]="esp.id">{{ esp.nombre }}</mat-option>
+          }
+        </mat-select>
+        @if (
+          tareaForm.controls.especialidadId.hasError('required') &&
+          tareaForm.controls.especialidadId.touched
+        ) {
+          <mat-error>Seleccioná una especialidad</mat-error>
+        }
+      </mat-form-field>
 
       <mat-form-field appearance="outline" class="campo-full">
         <mat-label>Tipo de tarea</mat-label>
-        <mat-select formControlName="tipoTareaId">
+        <mat-select
+          formControlName="tipoTareaId"
+          [disabled]="tareaForm.controls.especialidadId.value === null || cargandoTipos()"
+        >
           @for (tipo of tiposTarea(); track tipo.id) {
             <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
           }
         </mat-select>
+        @if (tareaForm.controls.especialidadId.value === null) {
+          <mat-hint>Elegí primero la especialidad</mat-hint>
+        } @else if (cargandoTipos()) {
+          <mat-hint>Cargando tipos de tarea...</mat-hint>
+        } @else if (tiposTarea().length === 0) {
+          <mat-hint>No hay tipos de tarea cargados para esta especialidad</mat-hint>
+        }
         @if (
           tareaForm.controls.tipoTareaId.hasError('required') &&
           tareaForm.controls.tipoTareaId.touched

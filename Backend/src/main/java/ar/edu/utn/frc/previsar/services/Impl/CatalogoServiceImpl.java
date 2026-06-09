@@ -1,6 +1,7 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
 import ar.edu.utn.frc.previsar.dtos.response.*;
+import ar.edu.utn.frc.previsar.mapper.EspecialidadMapper;
 import ar.edu.utn.frc.previsar.mapper.TipoTareaMapper;
 import ar.edu.utn.frc.previsar.repositories.*;
 import ar.edu.utn.frc.previsar.services.CatalogoService;
@@ -21,6 +22,8 @@ public class CatalogoServiceImpl implements CatalogoService {
     private final TituloRepository tituloRepository;
     private final TipoTareaRepository tipoTareaRepository;
     private final TipoTareaMapper tipoTareaMapper;
+    private final EspecialidadRepository especialidadRepository;
+    private final EspecialidadMapper especialidadMapper;
 
     @Override
     public List<ProvinciaResponseDto> listarProvincias() {
@@ -68,9 +71,19 @@ public class CatalogoServiceImpl implements CatalogoService {
     }
 
     @Override
-    public List<TipoTareaResponseDto> listarTiposTarea() {
-        return tipoTareaRepository.findByActivoTrueOrderByOrden()
+    public List<EspecialidadResponseDto> listarEspecialidades() {
+        return especialidadRepository.findByActivoTrueOrderByNombre()
                 .stream()
+                .map(especialidadMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<TipoTareaResponseDto> listarTiposTarea(Long especialidadId) {
+        var tipos = especialidadId == null
+                ? tipoTareaRepository.findByActivoTrueOrderByOrden()
+                : tipoTareaRepository.findByEspecialidadIdAndActivoTrueOrderByOrden(especialidadId);
+        return tipos.stream()
                 .map(tipoTareaMapper::toResponse)
                 .toList();
     }

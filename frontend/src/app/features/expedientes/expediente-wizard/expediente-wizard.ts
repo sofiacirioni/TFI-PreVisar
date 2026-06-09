@@ -16,7 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
 import { CatalogoService } from '../../../core/services/catalogo.service';
-import { Provincia, TipoTarea } from '../../../core/models';
+import { Especialidad, Provincia, TipoTarea } from '../../../core/models';
 import { ComitenteService } from '../../../core/services/comitente.service';
 import { Comitente, ComitenteRequest, TipoPersona } from '../../../core/models/comitente.model';
 import { ObraService } from '../../../core/services/obra.service';
@@ -51,7 +51,9 @@ export class ExpedienteWizard implements OnInit {
   private readonly obraService = inject(ObraService);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly especialidades = signal<Especialidad[]>([]);
   readonly tiposTarea = signal<TipoTarea[]>([]);
+  readonly cargandoTipos = signal(false);
   readonly provincias = signal<Provincia[]>([]);
 
   readonly nombreControl = this.fb.control<string>('');
@@ -109,6 +111,7 @@ export class ExpedienteWizard implements OnInit {
 
   // Un FormGroup por paso
   readonly tareaForm = this.fb.group({
+    especialidadId: this.fb.control<number | null>(null, Validators.required),
     tipoTareaId: this.fb.control<number | null>(null, Validators.required),
   });
   readonly comitenteForm = this.fb.group({
@@ -122,15 +125,28 @@ export class ExpedienteWizard implements OnInit {
   });
 
   ngOnInit(): void {
-    this.catalogoService.listarTiposTarea().subscribe({
-      next: (tipos) => this.tiposTarea.set(tipos),
-      error: () => this.snackBar.open('No se pudieron cargar los tipos de tarea', 'Cerrar', { duration: 4000 }),
+    this.catalogoService.listarEspecialidades().subscribe({
+      next: (esps) => this.especialidades.set(esps),
+      error: () => this.snackBar.open('No se pudieron cargar las especialidades', 'Cerrar', { duration: 4000 }),
     });
 
     this.catalogoService.listarProvincias().subscribe({
       next: (provs) => this.provincias.set(provs),
       error: () => this.snackBar.open('No se pudieron cargar las provincias', 'Cerrar', { duration: 4000 }),
     });
+
+    // Cuando cambia la especialidad, recargamos los tipos filtrados y limpiamos
+    // el tipo previamente elegido si ya no pertenece a la nueva especialidad.
+    this.tareaForm.controls.especialidadId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((especialidadId) => {
+        if (especialidadId === null) {
+          this.tiposTarea.set([]);
+          this.tareaForm.controls.tipoTareaId.setValue(null);
+          return;
+        }
+        this.cargarTiposTarea(especialidadId);
+      });
 
     // Cuando cambia el comitente (selección o creación), precargamos sus obras
     // y reseteamos cualquier obra previamente elegida para evitar cruces.
@@ -160,7 +176,15 @@ export class ExpedienteWizard implements OnInit {
         this.expedienteId.set(exp.id);
         this.expediente.set(exp);
         this.nombreControl.setValue(exp.nombre ?? '');
-        this.tareaForm.patchValue({ tipoTareaId: exp.tipoTareaId });
+        // OJO: el patchValue de especialidadId dispara cargarTiposTarea via
+        // valueChanges. Seteamos tipoTareaId DESPUÉS de que termine la carga,
+        // para que el select tenga el valor disponible al hacer el match.
+        this.tareaForm.patchValue({ especialidadId: exp.especialidadId });
+        if (exp.tipoTareaId !== null && exp.especialidadId !== null) {
+          this.cargarTiposTarea(exp.especialidadId, () => {
+            this.tareaForm.patchValue({ tipoTareaId: exp.tipoTareaId });
+          });
+        }
         this.obraForm.patchValue({ obraId: exp.obraId });
         this.economicoForm.patchValue({ honorariosReferenciales: exp.honorariosReferenciales });
         this.comitenteForm.patchValue({ comitenteId: exp.comitenteId });
@@ -170,6 +194,28 @@ export class ExpedienteWizard implements OnInit {
         this.cargando.set(false);
         this.snackBar.open('No se encontró el expediente', 'Cerrar', { duration: 4000 });
         this.router.navigate(['/expedientes']);
+      },
+    });
+  }
+
+  /** Recarga los tipos de tarea filtrados por especialidad. */
+  private cargarTiposTarea(especialidadId: number, onDone?: () => void): void {
+    this.cargandoTipos.set(true);
+    this.catalogoService.listarTiposTarea(especialidadId).subscribe({
+      next: (tipos) => {
+        this.tiposTarea.set(tipos);
+        this.cargandoTipos.set(false);
+        // Si el tipoTarea elegido ya no pertenece a la especialidad, lo limpio.
+        const tipoActual = this.tareaForm.controls.tipoTareaId.value;
+        if (tipoActual !== null && !tipos.some((t) => t.id === tipoActual)) {
+          this.tareaForm.controls.tipoTareaId.setValue(null);
+        }
+        onDone?.();
+      },
+      error: () => {
+        this.tiposTarea.set([]);
+        this.cargandoTipos.set(false);
+        this.snackBar.open('No se pudieron cargar los tipos de tarea', 'Cerrar', { duration: 4000 });
       },
     });
   }

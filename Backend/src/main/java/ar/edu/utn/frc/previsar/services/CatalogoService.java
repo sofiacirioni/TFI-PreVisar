@@ -9,5 +9,7 @@ public interface CatalogoService {
     List<RegionalResponseDto> listarRegionales();
     List<CondicionIvaResponseDto> listarCondicionesIva();
     List<TituloResponseDto> listarTitulos();
-    List<TipoTareaResponseDto> listarTiposTarea();
+    List<EspecialidadResponseDto> listarEspecialidades();
+    /** Si especialidadId es null, devuelve todos los tipos activos. */
+    List<TipoTareaResponseDto> listarTiposTarea(Long especialidadId);
 }

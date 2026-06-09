@@ -19,6 +19,8 @@ public class ExpedienteResponseDto {
     private Long tipoTareaId;
     private String tipoTareaCodigo;
     private String tipoTareaNombre;
+    private Long especialidadId;
+    private String especialidadNombre;
     private BigDecimal honorariosReferenciales;
     private BigDecimal aporteRod;
     private BigDecimal aporteArancelAdmin;

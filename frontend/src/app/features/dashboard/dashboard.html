@@ -16,13 +16,15 @@
     <div class="expedientes-row">
       <!-- Card "Nuevo expediente": ahora navega al wizard -->
       <a
-        class="expediente-card expediente-nuevo"
+        class="expediente-wrapper"
         routerLink="/expedientes/nuevo"
         matTooltip="Crear un nuevo expediente"
         matTooltipPosition="above"
       >
-        <mat-icon class="card-icon">add</mat-icon>
-        <span class="card-label">Nuevo expediente</span>
+        <div class="expediente-card expediente-nuevo">
+          <mat-icon class="card-icon">add</mat-icon>
+        </div>
+        <span class="card-filename">Nuevo expediente</span>
       </a>
 
       @if (cargandoExpedientes()) {
@@ -42,17 +44,20 @@
         <!-- Cards reales de expedientes recientes (retomar wizard) -->
         @for (exp of expedientesRecientes(); track exp.id) {
           <a
-            class="expediente-card expediente-recent"
+            class="expediente-wrapper"
             [routerLink]="['/expedientes', exp.id]"
             [matTooltip]="exp.tipoTareaNombre || 'Sin tipo definido'"
             matTooltipPosition="above"
           >
-            <mat-icon class="card-icon">description</mat-icon>
-            <span class="card-label">{{ exp.tipoTareaCodigo || 'Borrador' }}</span>
-            <span class="card-meta">{{ exp.updatedAt | date: 'dd/MM/yyyy' }}</span>
-            <span class="card-estado" [class.estado-completo]="exp.estado === 'COMPLETO'">
-              {{ exp.estado === 'COMPLETO' ? 'Completo' : 'Borrador' }}
-            </span>
+            <div class="expediente-card expediente-recent">
+              <mat-icon class="card-icon">description</mat-icon>
+              <span class="card-label">{{ exp.tipoTareaCodigo || 'Borrador' }}</span>
+              <span class="card-meta">{{ exp.updatedAt | date: 'dd/MM/yyyy' }}</span>
+              <span class="card-estado" [class.estado-completo]="exp.estado === 'COMPLETO'">
+                {{ exp.estado === 'COMPLETO' ? 'Completo' : 'Borrador' }}
+              </span>
+            </div>
+            <span class="card-filename">{{ exp.nombre || 'Sin nombre' }}</span>
           </a>
         }
       }

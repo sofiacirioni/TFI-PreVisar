@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { CondicionIva, Provincia, Regional, TipoTarea, Titulo } from '../models';
+import { CondicionIva, Especialidad, Provincia, Regional, TipoTarea, Titulo } from '../models';
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '../constants/api.constants';
 
@@ -26,7 +26,15 @@ export class CatalogoService {
     return this.http.get<Titulo[]>(API.CATALOGO_TITULOS);
   }
 
-  listarTiposTarea(): Observable<TipoTarea[]> {
-    return this.http.get<TipoTarea[]>(API.CATALOGO_TIPOS_TAREA);
+  listarEspecialidades(): Observable<Especialidad[]> {
+    return this.http.get<Especialidad[]>(API.CATALOGO_ESPECIALIDADES);
+  }
+
+  /** Si especialidadId viene, el back devuelve solo los tipos de esa especialidad. */
+  listarTiposTarea(especialidadId?: number | null): Observable<TipoTarea[]> {
+    const params = especialidadId != null
+      ? new HttpParams().set('especialidadId', String(especialidadId))
+      : undefined;
+    return this.http.get<TipoTarea[]>(API.CATALOGO_TIPOS_TAREA, { params });
   }
 }

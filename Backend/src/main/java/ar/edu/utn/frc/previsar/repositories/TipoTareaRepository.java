@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface TipoTareaRepository extends JpaRepository<TipoTarea, Long> {
     List<TipoTarea> findByActivoTrueOrderByOrden();
+    List<TipoTarea> findByEspecialidadIdAndActivoTrueOrderByOrden(Long especialidadId);
     Optional<TipoTarea> findByCodigo(String codigo);
 }

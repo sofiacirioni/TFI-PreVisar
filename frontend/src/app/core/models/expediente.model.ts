@@ -18,6 +18,8 @@ export interface ExpedienteResponse {
   tipoTareaId: number | null;
   tipoTareaCodigo: string | null;
   tipoTareaNombre: string | null;
+  especialidadId: number | null;
+  especialidadNombre: string | null;
   honorariosReferenciales: number | null;
   aporteRod: number | null;
   aporteArancelAdmin: number | null;

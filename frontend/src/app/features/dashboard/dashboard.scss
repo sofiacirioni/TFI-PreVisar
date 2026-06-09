@@ -160,9 +160,37 @@
   }
 }
 
-// El <a> de la card "Nuevo" también necesita resetear estilos de link
-.expediente-nuevo {
+// Wrapper que envuelve la card + el filename debajo (estilo "ícono de Word").
+// El <a> aplica acá para que ambas piezas sean un único objeto clickeable.
+.expediente-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 160px;
   text-decoration: none;
+  color: inherit;
+
+  @media (max-width: 700px) {
+    width: 100%;
+  }
+}
+
+// Filename debajo de la card. Truncado con ellipsis si es largo.
+.card-filename {
+  font-size: 0.85rem;
+  color: #1a2733;
+  text-align: center;
+  line-height: 1.25;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  word-break: break-word;
 }
 
 // Placeholder informativo grande (mientras no hay expedientes)

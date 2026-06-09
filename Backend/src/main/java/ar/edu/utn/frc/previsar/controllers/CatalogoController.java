@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -43,8 +44,16 @@ public class CatalogoController {
         return ResponseEntity.ok(catalogoService.listarTitulos());
     }
 
+    @GetMapping("/especialidades")
+    @Operation(summary = "Lista las especialidades habilitadas")
+    public ResponseEntity<List<EspecialidadResponseDto>> listarEspecialidades() {
+        return ResponseEntity.ok(catalogoService.listarEspecialidades());
+    }
+
     @GetMapping("/tipos-tarea")
-    public ResponseEntity<List<TipoTareaResponseDto>> listarTiposTarea() {
-        return ResponseEntity.ok(catalogoService.listarTiposTarea());
+    @Operation(summary = "Lista los tipos de tarea; si se pasa especialidadId, filtra por esa especialidad")
+    public ResponseEntity<List<TipoTareaResponseDto>> listarTiposTarea(
+            @RequestParam(required = false) Long especialidadId) {
+        return ResponseEntity.ok(catalogoService.listarTiposTarea(especialidadId));
     }
 }
