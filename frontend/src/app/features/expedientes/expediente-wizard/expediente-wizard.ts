@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExpedienteService } from '../../../core/services/expediente.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,9 +16,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
 import { CatalogoService } from '../../../core/services/catalogo.service';
-import { TipoTarea } from '../../../core/models';
+import { Provincia, TipoTarea } from '../../../core/models';
 import { ComitenteService } from '../../../core/services/comitente.service';
 import { Comitente, ComitenteRequest, TipoPersona } from '../../../core/models/comitente.model';
+import { ObraService } from '../../../core/services/obra.service';
+import { Obra, ObraRequest } from '../../../core/models/obra.model';
 import { MatInputModule } from '@angular/material/input';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -45,8 +48,11 @@ export class ExpedienteWizard implements OnInit {
   private readonly expedienteService = inject(ExpedienteService);
   private readonly catalogoService = inject(CatalogoService);
   private readonly comitenteService = inject(ComitenteService);
+  private readonly obraService = inject(ObraService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly tiposTarea = signal<TipoTarea[]>([]);
+  readonly provincias = signal<Provincia[]>([]);
 
   readonly nombreControl = this.fb.control<string>('');
 
@@ -71,6 +77,28 @@ export class ExpedienteWizard implements OnInit {
     email: ['', [Validators.email, Validators.maxLength(255)]],
     telefono: ['', [Validators.maxLength(30)]],
     domicilio: ['', [Validators.required, Validators.maxLength(255)]],
+  });
+
+  // ===== Estado del paso "Obra" =====
+  readonly obrasDelComitente = signal<Obra[]>([]);
+  readonly cargandoObras = signal(false);
+  readonly creandoObra = signal(false);
+  readonly modoNuevaObra = signal(false);
+
+  // Form inline para dar de alta una obra nueva (no incluye comitenteId:
+  // se toma del paso anterior).
+  readonly nuevaObraForm = this.fb.nonNullable.group({
+    designacion: ['', [Validators.required, Validators.maxLength(255)]],
+    calle: ['', [Validators.required, Validators.maxLength(150)]],
+    numero: ['', [Validators.required, Validators.maxLength(20)]],
+    barrio: ['', [Validators.maxLength(100)]],
+    localidad: ['', [Validators.required, Validators.maxLength(100)]],
+    provinciaId: [null as number | null, [Validators.required]],
+    codigoPostal: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4,10}$/)]],
+    circunscripcion: ['', [Validators.pattern(/^\d{1,10}$/)]],
+    seccion: ['', [Validators.pattern(/^\d{1,10}$/)]],
+    manzana: ['', [Validators.pattern(/^\d{1,10}$/)]],
+    parcela: ['', [Validators.pattern(/^\d{1,10}$/)]],
   });
 
   // Estado del wizard (vive en el componente, no en el service stateless)
@@ -98,6 +126,29 @@ export class ExpedienteWizard implements OnInit {
       next: (tipos) => this.tiposTarea.set(tipos),
       error: () => this.snackBar.open('No se pudieron cargar los tipos de tarea', 'Cerrar', { duration: 4000 }),
     });
+
+    this.catalogoService.listarProvincias().subscribe({
+      next: (provs) => this.provincias.set(provs),
+      error: () => this.snackBar.open('No se pudieron cargar las provincias', 'Cerrar', { duration: 4000 }),
+    });
+
+    // Cuando cambia el comitente (selección o creación), precargamos sus obras
+    // y reseteamos cualquier obra previamente elegida para evitar cruces.
+    this.comitenteForm.controls.comitenteId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((comitenteId) => {
+        if (comitenteId !== null) {
+          this.cargarObrasDelComitente(comitenteId);
+        } else {
+          this.obrasDelComitente.set([]);
+        }
+        // Solo limpiamos la obra si NO coincide con la del expediente cargado
+        // (en modo retomar, el patchValue de obraId viene antes y queremos preservarla).
+        const obraActual = this.obraForm.controls.obraId.value;
+        if (obraActual !== null && !this.obrasDelComitente().some((o) => o.id === obraActual)) {
+          this.obraForm.controls.obraId.setValue(null);
+        }
+      });
 
     const idParam = this.route.snapshot.paramMap.get('id');
     if (!idParam) return; // modo "nuevo": el borrador se crea recien al primer guardado
@@ -216,6 +267,112 @@ export class ExpedienteWizard implements OnInit {
       return false;
     } finally {
       this.creandoComitente.set(false);
+    }
+  }
+
+  // ===== Métodos del paso "Obra" =====
+
+  /** Carga las obras del comitente para mostrarlas como opciones a elegir. */
+  private cargarObrasDelComitente(comitenteId: number): void {
+    this.cargandoObras.set(true);
+    this.obraService.listarPorComitente(comitenteId).subscribe({
+      next: (obras) => {
+        this.obrasDelComitente.set(obras);
+        this.cargandoObras.set(false);
+      },
+      error: () => {
+        this.obrasDelComitente.set([]);
+        this.cargandoObras.set(false);
+        this.snackBar.open('No se pudieron cargar las obras del comitente', 'Cerrar', { duration: 4000 });
+      },
+    });
+  }
+
+  /** Selecciona una obra existente como la del expediente. */
+  seleccionarObraExistente(o: Obra): void {
+    this.obraForm.controls.obraId.setValue(o.id);
+    this.modoNuevaObra.set(false);
+  }
+
+  /** Cambia al modo "crear obra nueva" y limpia la selección actual. */
+  iniciarNuevaObra(): void {
+    this.modoNuevaObra.set(true);
+    this.obraForm.controls.obraId.setValue(null);
+    this.nuevaObraForm.reset();
+  }
+
+  /** Vuelve al modo "elegir obra existente" descartando el form. */
+  cancelarNuevaObra(): void {
+    this.modoNuevaObra.set(false);
+    this.nuevaObraForm.reset();
+  }
+
+  /**
+   * Handler del botón "Siguiente" del paso Obra. Antes de avanzar
+   * asegura que haya un obraId seleccionado (creando una nueva si hace falta).
+   */
+  async continuarDesdeObra(stepper: MatStepper): Promise<void> {
+    const ok = await this.asegurarObra();
+    if (ok) stepper.next();
+  }
+
+  /** Devuelve true si ya hay (o se creó) un obraId válido para este expediente. */
+  private async asegurarObra(): Promise<boolean> {
+    // Caso 1: ya está seleccionada una obra existente
+    if (this.obraForm.controls.obraId.value !== null) {
+      return true;
+    }
+
+    // Caso 2: el usuario no eligió ni está creando una nueva
+    if (!this.modoNuevaObra()) {
+      this.snackBar.open('Elegí una obra o creá una nueva para continuar', 'Cerrar', { duration: 3000 });
+      return false;
+    }
+
+    // Caso 3: validar el form inline de nueva obra
+    if (this.nuevaObraForm.invalid) {
+      this.nuevaObraForm.markAllAsTouched();
+      this.snackBar.open('Completá los datos de la nueva obra', 'Cerrar', { duration: 3000 });
+      return false;
+    }
+
+    const comitenteId = this.comitenteForm.controls.comitenteId.value;
+    if (comitenteId === null) {
+      // No debería pasar (el wizard fuerza el orden), pero por las dudas.
+      this.snackBar.open('Faltó elegir el comitente en el paso anterior', 'Cerrar', { duration: 3000 });
+      return false;
+    }
+
+    const raw = this.nuevaObraForm.getRawValue();
+    const request: ObraRequest = {
+      designacion: raw.designacion.trim(),
+      calle: raw.calle.trim(),
+      numero: raw.numero.trim(),
+      barrio: raw.barrio.trim() || undefined,
+      localidad: raw.localidad.trim(),
+      provinciaId: raw.provinciaId!,
+      codigoPostal: raw.codigoPostal.trim(),
+      circunscripcion: raw.circunscripcion.trim() || undefined,
+      seccion: raw.seccion.trim() || undefined,
+      manzana: raw.manzana.trim() || undefined,
+      parcela: raw.parcela.trim() || undefined,
+    };
+
+    this.creandoObra.set(true);
+    try {
+      const creada = await firstValueFrom(this.obraService.crear(comitenteId, request));
+      this.obrasDelComitente.update((list) => [creada, ...list]);
+      this.obraForm.controls.obraId.setValue(creada.id);
+      this.modoNuevaObra.set(false);
+      this.nuevaObraForm.reset();
+      return true;
+    } catch (err: unknown) {
+      const httpErr = err as HttpErrorResponse | undefined;
+      const msg = httpErr?.error?.mensaje ?? 'No se pudo crear la obra';
+      this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
+      return false;
+    } finally {
+      this.creandoObra.set(false);
     }
   }
 
