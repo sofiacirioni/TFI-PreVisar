@@ -1,13 +1,12 @@
 import { Routes } from '@angular/router';
 
 export const EXPEDIENTES_ROUTES: Routes = [
-  // Por ahora no hay listado de expedientes; mientras tanto, '/expedientes'
-  // arranca el wizard en modo "nuevo". Cuando exista ExpedienteList,
-  // reemplazar este redirect por su loadComponent.
+  // '/expedientes' → listado de expedientes del usuario.
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'nuevo',
+    loadComponent: () =>
+      import('./expediente-list/expediente-list').then((m) => m.ExpedienteList),
   },
   {
     path: 'nuevo',
