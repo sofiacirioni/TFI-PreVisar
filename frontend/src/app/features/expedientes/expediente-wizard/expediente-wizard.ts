@@ -1,5 +1,5 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, inject, OnInit, signal, computed } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ExpedienteService } from '../../../core/services/expediente.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,6 +23,8 @@ import { ObraService } from '../../../core/services/obra.service';
 import { Obra, ObraRequest } from '../../../core/models/obra.model';
 import { MatInputModule } from '@angular/material/input';
 import { HttpErrorResponse } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-expediente-wizard',
@@ -36,6 +38,8 @@ import { HttpErrorResponse } from '@angular/common/http';
     MatProgressBarModule,
     MatIconModule,
     MatInputModule,
+    CurrencyPipe,
+    MatProgressBarModule,
   ],
   templateUrl: './expediente-wizard.html',
   styleUrl: './expediente-wizard.scss',
@@ -58,13 +62,12 @@ export class ExpedienteWizard implements OnInit {
 
   readonly nombreControl = this.fb.control<string>('');
 
+  readonly calculandoAportes = signal(false);
+
   // ===== Estado del paso "Comitente" =====
   readonly dniCuitBusqueda = this.fb.control<string>('', {
     nonNullable: true,
-    validators: [
-      Validators.required,
-      Validators.pattern(/^(\d{7,8}|\d{2}-\d{8}-\d{1})$/),
-    ],
+    validators: [Validators.required, Validators.pattern(/^(\d{7,8}|\d{2}-\d{8}-\d{1})$/)],
   });
   readonly buscandoComitente = signal(false);
   readonly creandoComitente = signal(false);
@@ -121,18 +124,25 @@ export class ExpedienteWizard implements OnInit {
     obraId: this.fb.control<number | null>(null, Validators.required),
   });
   readonly economicoForm = this.fb.group({
-    honorariosReferenciales: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    honorariosReferenciales: this.fb.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
   });
 
   ngOnInit(): void {
     this.catalogoService.listarEspecialidades().subscribe({
       next: (esps) => this.especialidades.set(esps),
-      error: () => this.snackBar.open('No se pudieron cargar las especialidades', 'Cerrar', { duration: 4000 }),
+      error: () =>
+        this.snackBar.open('No se pudieron cargar las especialidades', 'Cerrar', {
+          duration: 4000,
+        }),
     });
 
     this.catalogoService.listarProvincias().subscribe({
       next: (provs) => this.provincias.set(provs),
-      error: () => this.snackBar.open('No se pudieron cargar las provincias', 'Cerrar', { duration: 4000 }),
+      error: () =>
+        this.snackBar.open('No se pudieron cargar las provincias', 'Cerrar', { duration: 4000 }),
     });
 
     // Cuando cambia la especialidad, recargamos los tipos filtrados y limpiamos
@@ -196,6 +206,29 @@ export class ExpedienteWizard implements OnInit {
         this.router.navigate(['/expedientes']);
       },
     });
+
+    this.economicoForm.controls.honorariosReferenciales.valueChanges
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(),
+        filter((v) => v != null && v >= 0),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.calcularAportes());
+  }
+
+  private calcularAportes(): void {
+    // El back sólo calcula si hay tarea + honorarios. Si falta la tarea, no tiene sentido pegar.
+    if (this.tareaForm.controls.tipoTareaId.value == null) return;
+
+    this.calculandoAportes.set(true);
+    this.guardarParcial().subscribe({
+      next: () => this.calculandoAportes.set(false), // expediente() ya tiene los aportes frescos
+      error: () => {
+        this.calculandoAportes.set(false);
+        this.snackBar.open('No se pudieron calcular los aportes', 'Cerrar', { duration: 4000 });
+      },
+    });
   }
 
   /** Recarga los tipos de tarea filtrados por especialidad. */
@@ -215,7 +248,9 @@ export class ExpedienteWizard implements OnInit {
       error: () => {
         this.tiposTarea.set([]);
         this.cargandoTipos.set(false);
-        this.snackBar.open('No se pudieron cargar los tipos de tarea', 'Cerrar', { duration: 4000 });
+        this.snackBar.open('No se pudieron cargar los tipos de tarea', 'Cerrar', {
+          duration: 4000,
+        });
       },
     });
   }
@@ -329,7 +364,9 @@ export class ExpedienteWizard implements OnInit {
       error: () => {
         this.obrasDelComitente.set([]);
         this.cargandoObras.set(false);
-        this.snackBar.open('No se pudieron cargar las obras del comitente', 'Cerrar', { duration: 4000 });
+        this.snackBar.open('No se pudieron cargar las obras del comitente', 'Cerrar', {
+          duration: 4000,
+        });
       },
     });
   }
@@ -371,7 +408,9 @@ export class ExpedienteWizard implements OnInit {
 
     // Caso 2: el usuario no eligió ni está creando una nueva
     if (!this.modoNuevaObra()) {
-      this.snackBar.open('Elegí una obra o creá una nueva para continuar', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('Elegí una obra o creá una nueva para continuar', 'Cerrar', {
+        duration: 3000,
+      });
       return false;
     }
 
@@ -385,7 +424,9 @@ export class ExpedienteWizard implements OnInit {
     const comitenteId = this.comitenteForm.controls.comitenteId.value;
     if (comitenteId === null) {
       // No debería pasar (el wizard fuerza el orden), pero por las dudas.
-      this.snackBar.open('Faltó elegir el comitente en el paso anterior', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('Faltó elegir el comitente en el paso anterior', 'Cerrar', {
+        duration: 3000,
+      });
       return false;
     }
 
@@ -447,13 +488,15 @@ export class ExpedienteWizard implements OnInit {
       .subscribe({
         next: () => {
           this.guardando.set(false);
-          this.snackBar.open('Expediente finalizado', 'Cerrar', { duration: 3000 });
+          this.snackBar.open('Expediente generado', 'Cerrar', { duration: 3000 });
           this.router.navigate(['/expedientes']);
         },
         error: (err) => {
           this.guardando.set(false);
           if (err?.message === 'SIN_DATOS') {
-            this.snackBar.open('Cargá al menos un dato antes de finalizar', 'Cerrar', { duration: 4000 });
+            this.snackBar.open('Cargá al menos un dato antes de finalizar', 'Cerrar', {
+              duration: 4000,
+            });
             return;
           }
           // El back devuelve 400 con el detalle de que falta
@@ -470,9 +513,10 @@ export class ExpedienteWizard implements OnInit {
       return of(null); // nada que guardar todavia, no creo un borrador vacio
     }
     const id = this.expedienteId();
-    const obs$ = id === null
-      ? this.expedienteService.crear(req)
-      : this.expedienteService.actualizarParcial(id, req);
+    const obs$ =
+      id === null
+        ? this.expedienteService.crear(req)
+        : this.expedienteService.actualizarParcial(id, req);
 
     return obs$.pipe(
       tap((resp) => {
@@ -492,7 +536,50 @@ export class ExpedienteWizard implements OnInit {
   }
 
   private estaVacio(req: ExpedienteRequest): boolean {
-    return req.nombre == null && req.tipoTareaId == null
-      && req.obraId == null && req.honorariosReferenciales == null;
+    return (
+      req.nombre == null &&
+      req.tipoTareaId == null &&
+      req.obraId == null &&
+      req.honorariosReferenciales == null
+    );
   }
+
+  // === Valores reactivos de los forms usados en el resumen ===
+  // computed() no rastrea form.controls.X.value (no es signal). Hay que
+  // exponer los valueChanges como signals para que el resumen se recalcule.
+  private readonly especialidadIdValue = toSignal(
+    this.tareaForm.controls.especialidadId.valueChanges,
+    { initialValue: this.tareaForm.controls.especialidadId.value },
+  );
+  private readonly tipoTareaIdValue = toSignal(
+    this.tareaForm.controls.tipoTareaId.valueChanges,
+    { initialValue: this.tareaForm.controls.tipoTareaId.value },
+  );
+  private readonly obraIdValue = toSignal(this.obraForm.controls.obraId.valueChanges, {
+    initialValue: this.obraForm.controls.obraId.value,
+  });
+  private readonly honorariosValue = toSignal(
+    this.economicoForm.controls.honorariosReferenciales.valueChanges,
+    { initialValue: this.economicoForm.controls.honorariosReferenciales.value },
+  );
+
+  // nombres derivados para mostrar en el resumen (paso 5)
+  readonly especialidadNombreSeleccionada = computed(() => {
+    const id = this.especialidadIdValue();
+    return this.especialidades().find((e) => e.id === id)?.nombre ?? null;
+  });
+
+  readonly tipoTareaNombreSeleccionado = computed(() => {
+    const id = this.tipoTareaIdValue();
+    return this.tiposTarea().find((t) => t.id === id)?.nombre ?? null;
+  });
+
+  // el mismo criterio que valida el back en "generar", pero para feedback en vivo
+  readonly faltanDatos = computed(() => {
+    const faltan: string[] = [];
+    if (this.tipoTareaIdValue() == null) faltan.push('tipo de tarea');
+    if (this.obraIdValue() == null) faltan.push('obra');
+    if (this.honorariosValue() == null) faltan.push('honorarios referenciales');
+    return faltan;
+  });
 }

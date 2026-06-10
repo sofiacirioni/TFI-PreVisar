@@ -65,8 +65,8 @@
 
   <mat-step [stepControl]="comitenteForm" label="Comitente">
     <p>
-      Ingresá el DNI o CUIT del comitente. Si ya está en tu cartera lo cargamos
-      automáticamente; si no, vas a poder darlo de alta acá mismo.
+      Ingresá el DNI o CUIT del comitente. Si ya está en tu cartera lo cargamos automáticamente; si
+      no, vas a poder darlo de alta acá mismo.
     </p>
 
     <!-- Búsqueda -->
@@ -112,7 +112,9 @@
             {{ c.tipoPersona === 'FISICA' ? 'Persona física' : 'Persona jurídica' }}
             — {{ c.dniCuit }}
           </span>
-          <span class="muted">{{ c.email || 'Sin email' }} · {{ c.telefono || 'Sin teléfono' }}</span>
+          <span class="muted"
+            >{{ c.email || 'Sin email' }} · {{ c.telefono || 'Sin teléfono' }}</span
+          >
           <span class="muted">{{ c.domicilio }}</span>
         </div>
         <button mat-button type="button" (click)="cambiarBusqueda()">Cambiar</button>
@@ -123,8 +125,8 @@
     @if (modoNuevoComitente()) {
       <div class="comitente-nuevo">
         <p class="info-text">
-          No encontramos un comitente con ese DNI/CUIT en tu cartera. Completá los datos
-          para darlo de alta — se va a guardar cuando pases al próximo paso.
+          No encontramos un comitente con ese DNI/CUIT en tu cartera. Completá los datos para darlo
+          de alta — se va a guardar cuando pases al próximo paso.
         </p>
 
         <form [formGroup]="nuevoComitenteForm" class="form-nuevo-comitente">
@@ -194,9 +196,7 @@
   </mat-step>
 
   <mat-step [stepControl]="obraForm" label="Obra">
-    <p>
-      Elegí una obra existente del comitente o creá una nueva.
-    </p>
+    <p>Elegí una obra existente del comitente o creá una nueva.</p>
 
     @if (cargandoObras()) {
       <mat-progress-bar mode="indeterminate" />
@@ -216,8 +216,11 @@
               <div class="obra-info">
                 <strong>{{ o.designacion }}</strong>
                 <span class="muted">
-                  {{ o.calle }} {{ o.numero }}@if (o.barrio) {, {{ o.barrio }}},
-                  {{ o.localidad }} ({{ o.provinciaNombre }})
+                  {{ o.calle }} {{ o.numero }}
+                  @if (o.barrio) {
+                    , {{ o.barrio }}
+                  }
+                  , {{ o.localidad }} ({{ o.provinciaNombre }})
                 </span>
               </div>
               @if (obraForm.controls.obraId.value === o.id) {
@@ -227,9 +230,7 @@
           }
         </div>
       } @else if (!cargandoObras()) {
-        <p class="info-text">
-          Este comitente todavía no tiene obras cargadas. Creá la primera.
-        </p>
+        <p class="info-text">Este comitente todavía no tiene obras cargadas. Creá la primera.</p>
       }
 
       <button mat-stroked-button type="button" class="boton-nueva" (click)="iniciarNuevaObra()">
@@ -323,7 +324,11 @@
             <mat-form-field appearance="outline">
               <mat-label>Código postal</mat-label>
               <input matInput formControlName="codigoPostal" maxlength="10" />
-              @if (nuevaObraForm.controls.codigoPostal.touched && nuevaObraForm.controls.codigoPostal.errors; as e) {
+              @if (
+                nuevaObraForm.controls.codigoPostal.touched &&
+                  nuevaObraForm.controls.codigoPostal.errors;
+                as e
+              ) {
                 @if (e['required']) {
                   <mat-error>Obligatorio</mat-error>
                 } @else if (e['pattern']) {
@@ -403,7 +408,84 @@
   </mat-step>
 
   <mat-step [stepControl]="economicoForm" label="Datos económicos">
-    <p>Honorarios y aportes — pendiente</p>
+    <form [formGroup]="economicoForm">
+      <p>Ingresá los honorarios referenciales. Los aportes se calculan automáticamente.</p>
+
+      <mat-form-field appearance="outline" class="campo-full">
+        <mat-label>Honorarios referenciales</mat-label>
+        <span matTextPrefix>$&nbsp;</span>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="honorariosReferenciales"
+        />
+        @if (
+          economicoForm.controls.honorariosReferenciales.hasError('required') &&
+          economicoForm.controls.honorariosReferenciales.touched
+        ) {
+          <mat-error>Ingresá los honorarios</mat-error>
+        }
+        @if (economicoForm.controls.honorariosReferenciales.hasError('min')) {
+          <mat-error>Debe ser un valor positivo</mat-error>
+        }
+      </mat-form-field>
+
+      @if (tareaForm.controls.tipoTareaId.value == null) {
+        <p class="aviso">Elegí primero el tipo de tarea (paso 1) para calcular los aportes.</p>
+      }
+
+      @if (calculandoAportes()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      @if (expediente(); as exp) {
+        @if (exp.aporteRod != null) {
+          <div class="aportes-desglose">
+            <h3>Aportes calculados</h3>
+
+            <div class="grupo">
+              <span class="grupo-titulo">CIEC</span>
+              <div class="linea">
+                <span>Aporte por Registro de Obra (5%)</span
+                ><span>{{ exp.aporteRod | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea">
+                <span>Arancel administrativo</span
+                ><span>{{ exp.aporteArancelAdmin | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea subtotal">
+                <span>Subtotal CIEC</span
+                ><span>{{ exp.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="grupo">
+              <span class="grupo-titulo">Caja Ley 8470</span>
+              <div class="linea">
+                <span>Aporte profesional (9%)</span
+                ><span>{{ exp.aporteCajaProfesional | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea">
+                <span>Aporte comitente (9%)</span
+                ><span>{{ exp.aporteCajaComitente | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea subtotal">
+                <span>Subtotal Caja</span
+                ><span>{{ exp.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="linea total">
+              <span>Total de aportes</span
+              ><span>{{ exp.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+          </div>
+        }
+      }
+    </form>
+
     <div class="acciones">
       <button mat-button matStepperPrevious>Atrás</button>
       <button mat-button matStepperNext>Siguiente</button>
@@ -411,11 +493,93 @@
   </mat-step>
 
   <mat-step label="Resumen">
-    <p>Resumen — pendiente</p>
+    <div class="resumen">
+      <p>Revisá los datos antes de generar el expediente.</p>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Nombre</span>
+        <span class="valor">{{ nombreControl.value || 'Sin nombre' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Especialidad</span>
+        <span class="valor">{{ especialidadNombreSeleccionada() ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Tipo de tarea</span>
+        <span class="valor">{{ tipoTareaNombreSeleccionado() ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Comitente</span>
+        <span class="valor">{{ expediente()?.comitenteNombre ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Obra</span>
+        <span class="valor">{{ expediente()?.obraDesignacion ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Honorarios referenciales</span>
+        <span class="valor">
+          @if (economicoForm.controls.honorariosReferenciales.value != null) {
+            {{
+              economicoForm.controls.honorariosReferenciales.value
+                | currency: 'ARS' : 'symbol' : '1.2-2'
+            }}
+          } @else {
+            —
+          }
+        </span>
+      </div>
+
+      @if (expediente(); as exp) {
+        @if (exp.aporteRod != null) {
+          <div class="resumen-aportes">
+            <div class="linea">
+              <span>Subtotal CIEC</span
+              ><span>{{ exp.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+            <div class="linea">
+              <span>Subtotal Caja Ley 8470</span
+              ><span>{{ exp.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+            <div class="linea total">
+              <span>Total de aportes</span
+              ><span>{{ exp.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+          </div>
+        }
+      }
+
+      @if (faltanDatos().length > 0) {
+        <div class="resumen-faltantes">
+          <span>Para generar el expediente falta cargar:</span>
+          <ul>
+            @for (f of faltanDatos(); track f) {
+              <li>{{ f }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+
     <div class="acciones">
       <button mat-button matStepperPrevious>Atrás</button>
-      <button mat-flat-button class="cta-button" (click)="finalizar()" [disabled]="guardando()">
-        Finalizar expediente
+      <button
+        mat-flat-button
+        type="button"
+        class="cta-button"
+        (click)="finalizar()"
+        [disabled]="guardando() || faltanDatos().length > 0"
+      >
+        @if (guardando()) {
+          Generando...
+        } @else {
+          Generar expediente
+        }
       </button>
     </div>
   </mat-step>

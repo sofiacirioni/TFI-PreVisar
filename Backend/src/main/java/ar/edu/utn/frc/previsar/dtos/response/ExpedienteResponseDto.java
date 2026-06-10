@@ -15,7 +15,9 @@ public class ExpedienteResponseDto {
     private String nombre;
     private String estado;
     private Long obraId;
+    private String obraDesignacion;
     private Long comitenteId;   // derivado de obra -> comitente (para el wizard)
+    private String comitenteNombre;
     private Long tipoTareaId;
     private String tipoTareaCodigo;
     private String tipoTareaNombre;

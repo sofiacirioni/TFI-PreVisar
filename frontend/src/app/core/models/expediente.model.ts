@@ -14,7 +14,9 @@ export interface ExpedienteResponse {
   nombre?: string | null;
   estado: EstadoExpediente;
   obraId: number | null;
+  obraDesignacion: string | null;
   comitenteId: number | null;
+  comitenteNombre: string | null;
   tipoTareaId: number | null;
   tipoTareaCodigo: string | null;
   tipoTareaNombre: string | null;

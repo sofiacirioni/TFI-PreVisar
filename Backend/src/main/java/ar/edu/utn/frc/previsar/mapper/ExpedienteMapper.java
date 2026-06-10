@@ -14,7 +14,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ExpedienteMapper {
     @Mapping(target = "obraId", source = "obra.id")
+    @Mapping(target = "obraDesignacion", source = "obra.designacion")
     @Mapping(target = "comitenteId", source = "obra.comitente.id")
+    @Mapping(target = "comitenteNombre", source = "obra.comitente.nombreRazonSocial")
     @Mapping(target = "tipoTareaId", source = "tipoTarea.id")
     @Mapping(target = "tipoTareaCodigo", source = "tipoTarea.codigo")
     @Mapping(target = "tipoTareaNombre", source = "tipoTarea.nombre")
