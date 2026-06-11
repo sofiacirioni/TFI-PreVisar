@@ -4,12 +4,14 @@ Documentación visual del backend Spring Boot. Refleja el estado actual del cód
 en `backend/src/main/java/ar/edu/utn/frc/previsar/`.
 
 > Los diagramas usan **Mermaid**. Se previsualizan en GitHub y en VS Code
-> (vista previa de Markdown `Ctrl+Shift+V` + extensión *Markdown Preview Mermaid Support*).
+> (vista previa de Markdown `Ctrl+Shift+V` + extensión _Markdown Preview Mermaid Support_).
+> El esquema de base de datos (sección 3) se ve directamente en **dbdiagram.io**.
 
 Contenido:
 
 1. [Diagrama de clases (modelo de dominio)](#1-diagrama-de-clases--modelo-de-dominio)
 2. [Arquitectura por capas](#2-arquitectura-por-capas)
+3. [Esquema de base de datos (DBML)](#3-esquema-de-base-de-datos--dbml)
 
 ---
 
@@ -221,12 +223,12 @@ classDiagram
 
 ### Notas del modelo
 
-- **Usuario ⇄ Profesional**: composición. Un `Profesional` *tiene* un `Usuario`
+- **Usuario ⇄ Profesional**: composición. Un `Profesional` _tiene_ un `Usuario`
   que lo autentica (`@OneToOne`). Los datos de login (email, hash, rol) viven en
   `Usuario`; los datos personales/profesionales en `Profesional`.
 - **RolRevisor**: rol secundario opcional. Si un `Profesional` tiene un
   `RolRevisor` (relación `@OneToOne`), queda habilitado a revisar expedientes
-  de la `Provincia` indicada. *Revisor no es un valor del enum `Rol`.*
+  de la `Provincia` indicada. _Revisor no es un valor del enum `Rol`._
 - **Soft delete**: `Comitente` y `Obra` no se borran físicamente; se marca
   `deletedAt` para preservar la integridad de expedientes históricos.
 - **Expediente**: en estado `BORRADOR` puede no tener `obra` ni `tipoTarea`
@@ -239,12 +241,12 @@ classDiagram
 
 ### Leyenda
 
-| Notación | Significado |
-|----------|-------------|
-| `A *-- B` | Composición (A contiene a B) |
-| `A --> B` | Asociación / referencia (`@ManyToOne` / `@OneToOne`) |
-| `A ..> B` | Dependencia (uso de un `enum`) |
-| `"1"`, `"*"`, `"0..1"` | Multiplicidad de la relación |
+| Notación               | Significado                                          |
+| ---------------------- | ---------------------------------------------------- |
+| `A *-- B`              | Composición (A contiene a B)                         |
+| `A --> B`              | Asociación / referencia (`@ManyToOne` / `@OneToOne`) |
+| `A ..> B`              | Dependencia (uso de un `enum`)                       |
+| `"1"`, `"*"`, `"0..1"` | Multiplicidad de la relación                         |
 
 ---
 
@@ -405,14 +407,43 @@ flowchart LR
 
 ### Responsabilidades por capa
 
-| Capa | Componentes | Rol |
-|------|-------------|-----|
-| **Web** | `*Controller` (`@RestController`) | Exponen los endpoints REST, reciben/validan DTOs request y devuelven DTOs response. |
-| **Negocio** | `*Service` (interfaz) + `*ServiceImpl` (`@Service`, `@Transactional`) | Lógica de negocio, validaciones y orquestación. `ExpedienteService` delega el cálculo de aportes en `AporteCalculatorService`. |
-| **Mappers** | `ComitenteMapper`, `EspecialidadMapper`, `ExpedienteMapper`, `ObraMapper`, `ProfesionalMapper`, `TipoTareaMapper` | Conversión entidad ↔ DTO. |
-| **Datos** | `*Repository` (Spring Data JPA) | Persistencia sobre PostgreSQL. |
-| **Seguridad** | `SecurityConfig`, `JwtService`, `JwtAuthenticationFilter`, `JwtAuthenticationEntryPoint`, `CustomUserDetailsService`, `SecurityUtils` | Autenticación stateless con JWT en cada request. |
-| **Transversal** | `GlobalExceptionHandler`, `BusinessException`, `ResourceNotFoundException`, DTOs, `CuitValidator`, `CorsProperties`, `JwtProperties` | Manejo de errores, validación y configuración. |
+| Capa            | Componentes                                                                                                                           | Rol                                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Web**         | `*Controller` (`@RestController`)                                                                                                     | Exponen los endpoints REST, reciben/validan DTOs request y devuelven DTOs response.                                            |
+| **Negocio**     | `*Service` (interfaz) + `*ServiceImpl` (`@Service`, `@Transactional`)                                                                 | Lógica de negocio, validaciones y orquestación. `ExpedienteService` delega el cálculo de aportes en `AporteCalculatorService`. |
+| **Mappers**     | `ComitenteMapper`, `EspecialidadMapper`, `ExpedienteMapper`, `ObraMapper`, `ProfesionalMapper`, `TipoTareaMapper`                     | Conversión entidad ↔ DTO.                                                                                                      |
+| **Datos**       | `*Repository` (Spring Data JPA)                                                                                                       | Persistencia sobre PostgreSQL.                                                                                                 |
+| **Seguridad**   | `SecurityConfig`, `JwtService`, `JwtAuthenticationFilter`, `JwtAuthenticationEntryPoint`, `CustomUserDetailsService`, `SecurityUtils` | Autenticación stateless con JWT en cada request.                                                                               |
+| **Transversal** | `GlobalExceptionHandler`, `BusinessException`, `ResourceNotFoundException`, DTOs, `CuitValidator`, `CorsProperties`, `JwtProperties`  | Manejo de errores, validación y configuración.                                                                                 |
 
 > Estas dos vistas (conceptual y cableado real) documentan la **arquitectura de
 > aplicación**; el modelo persistente está en la [sección 1](#1-diagrama-de-clases--modelo-de-dominio).
+
+---
+
+## 3. Esquema de base de datos (DBML)
+
+Esquema físico de la base, generado a partir de las migraciones Flyway
+`V001`–`V015` (refleja el estado final).
+
+**▶ Ver el diagrama en dbdiagram.io:**
+https://dbdiagram.io/d/PreVisar-Esquema-de-base-de-datos-6a0db795b62396d22c2afed1
+
+### Notas del esquema
+
+- **Estado final tras los `ALTER`**: `rol_revisor.provincia_id` se eliminó en
+  `V008` y se restauró en `V010`; `profesional.titulo` (texto libre) se reemplazó
+  por `titulo_id` (FK) + `titulo_otro_descripcion` en `V012`; `obra.provincia_id`
+  se agregó en `V010`.
+- **Enums = `VARCHAR + CHECK`**: en Postgres no son tipos enum nativos; en el
+  diagrama se representan como enumeraciones solo para documentar los valores
+  válidos (`rol`, `tipo_persona`, `estado`, `concepto`, `tipo_valor`, `base_calculo`).
+- **Índices parciales** (cláusula `WHERE`): unicidad de `comitente`
+  (`profesional_id, dni_cuit` solo entre activos, `WHERE deleted_at IS NULL`),
+  un único vigente por `concepto` en `parametro_aporte`
+  (`WHERE vigencia_hasta IS NULL AND activo`) e índice de `expediente`
+  por `profesional_id` `WHERE activo`.
+- **Relaciones 1:1** (`usuario`↔`profesional`, `profesional`↔`rol_revisor`):
+  garantizadas por el `UNIQUE` en la FK.
+- **`parametro_aporte`** no tiene FK a propósito: es configuración (con vigencia)
+  que consume el cálculo de aportes.
