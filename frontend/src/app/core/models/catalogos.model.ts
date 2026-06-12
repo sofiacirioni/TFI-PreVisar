@@ -22,3 +22,17 @@ export interface Titulo {
   nombre: string;
   permiteTextoLibre: boolean;
 }
+
+export interface Especialidad {
+  readonly id: number;
+  codigo: string;
+  nombre: string;
+}
+
+export interface TipoTarea {
+  id: number;
+  codigo: string;
+  nombre: string;
+  especialidadId: number | null;
+  especialidadNombre: string | null;
+}

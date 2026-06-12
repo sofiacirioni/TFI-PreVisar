@@ -6,7 +6,7 @@
     </div>
 
     <button mat-flat-button class="cta-button" (click)="irANueva()">
-      <mat-icon>add</mat-icon>
+      <mat-icon svgIcon="add"></mat-icon>
       Nueva obra
     </button>
   </header>
@@ -18,14 +18,14 @@
     </div>
   } @else if (errorCarga()) {
     <div class="error-banner">
-      <mat-icon>error_outline</mat-icon>
+      <mat-icon svgIcon="error_outline"></mat-icon>
       <span>{{ errorCarga() }}</span>
       <button mat-button (click)="cargarObras()">Reintentar</button>
     </div>
   } @else {
     <mat-form-field appearance="outline" class="buscador">
       <mat-label>Buscar por designación, comitente, dirección o localidad</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
+      <mat-icon matPrefix svgIcon="search"></mat-icon>
       <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
       @if (filtroControl.value) {
         <button
@@ -34,7 +34,7 @@
           aria-label="Limpiar búsqueda"
           (click)="filtroControl.setValue('')"
         >
-          <mat-icon>close</mat-icon>
+          <mat-icon svgIcon="close"></mat-icon>
         </button>
       }
     </mat-form-field>
@@ -42,17 +42,17 @@
     @if (obrasFiltradas().length === 0) {
       @if (obras().length === 0) {
         <div class="empty-state">
-          <mat-icon>home_work</mat-icon>
+          <img class="empty-illustration" src="illustrations/onboarding.svg" alt="" />
           <h3>Todavía no tenés obras cargadas</h3>
           <p>Una obra es el inmueble sobre el que realizás una tarea profesional.</p>
           <button mat-flat-button (click)="irANueva()">
-            <mat-icon>add</mat-icon>
+            <mat-icon svgIcon="add"></mat-icon>
             Nueva obra
           </button>
         </div>
       } @else {
         <div class="empty-state">
-          <mat-icon>search_off</mat-icon>
+          <mat-icon svgIcon="search_off"></mat-icon>
           <h3>No hay resultados</h3>
           <p>Ninguna obra coincide con "{{ filtroControl.value }}".</p>
         </div>
@@ -103,7 +103,7 @@
                 aria-label="Editar obra"
                 (click)="irAEditar(o)"
               >
-                <mat-icon>edit</mat-icon>
+                <mat-icon svgIcon="edit"></mat-icon>
               </button>
               <button
                 mat-icon-button
@@ -111,7 +111,7 @@
                 aria-label="Eliminar obra"
                 (click)="confirmarEliminar(o)"
               >
-                <mat-icon class="icono-eliminar">delete</mat-icon>
+                <mat-icon class="icono-eliminar" svgIcon="delete"></mat-icon>
               </button>
             </td>
           </ng-container>

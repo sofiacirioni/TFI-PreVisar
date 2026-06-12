@@ -44,7 +44,7 @@ section {
   margin: 8px 0 12px;
   font-size: 1rem;
   font-weight: 500;
-  color: #00838f;
+  color: var(--accent);
   letter-spacing: 0.2px;
 }
 
@@ -65,7 +65,7 @@ section {
   border-radius: 8px;
 
   mat-icon {
-    color: #00838f;
+    color: var(--accent);
     flex-shrink: 0;
   }
 
@@ -147,7 +147,7 @@ section {
   gap: 12px;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #e0e6eb;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .submit-button {

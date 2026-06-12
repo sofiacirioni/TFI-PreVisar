@@ -1,2 +1,66 @@
-<h1>Dashboard</h1>
-<p>Pantalla principal — placeholder Sprint 1</p>
+<div class="dashboard-page">
+  <!-- Bienvenida -->
+  <header class="welcome-section">
+    @if (perfil(); as p) {
+      <h1>{{ saludo() }}, {{ p.nombre }} 👋</h1>
+    } @else {
+      <h1>{{ saludo() }} 👋</h1>
+    }
+    <p class="welcome-subtitle">Acá vas a poder gestionar tus expedientes técnicos del CIEC.</p>
+  </header>
+
+  <!-- Fila de expedientes recientes -->
+  <section class="expedientes-section">
+    <h2 class="section-title">Expedientes recientes</h2>
+
+    <div class="expedientes-row">
+      <!-- Card "Nuevo expediente": ahora navega al wizard -->
+      <a
+        class="expediente-wrapper"
+        routerLink="/expedientes/nuevo"
+        matTooltip="Crear un nuevo expediente"
+        matTooltipPosition="above"
+      >
+        <div class="expediente-card expediente-nuevo">
+          <mat-icon class="card-icon" svgIcon="add"></mat-icon>
+        </div>
+        <span class="card-filename">Nuevo expediente</span>
+      </a>
+
+      @if (cargandoExpedientes()) {
+        <!-- Nada visible mientras carga; evita parpadeo del placeholder -->
+      } @else if (expedientesRecientes().length === 0) {
+        <!-- Sin expedientes: placeholder informativo -->
+        <div class="expediente-placeholder">
+          <img class="placeholder-illustration" src="illustrations/empty-expedientes.svg" alt="" />
+          <div class="placeholder-text">
+            <p class="placeholder-title">Tus expedientes aparecerán acá</p>
+            <p class="placeholder-subtitle">
+              Cuando crees tu primer expediente, vas a poder retomarlo rápidamente desde esta vista.
+            </p>
+          </div>
+        </div>
+      } @else {
+        <!-- Cards reales de expedientes recientes (retomar wizard) -->
+        @for (exp of expedientesRecientes(); track exp.id) {
+          <a
+            class="expediente-wrapper"
+            [routerLink]="['/expedientes', exp.id]"
+            [matTooltip]="exp.tipoTareaNombre || 'Sin tipo definido'"
+            matTooltipPosition="above"
+          >
+            <div class="expediente-card expediente-recent">
+              <mat-icon class="card-icon" svgIcon="description"></mat-icon>
+              <span class="card-label">{{ exp.tipoTareaCodigo || 'Borrador' }}</span>
+              <span class="card-meta">{{ exp.updatedAt | date: 'dd/MM/yyyy' }}</span>
+              <span class="card-estado" [class.estado-completo]="exp.estado === 'COMPLETO'">
+                {{ exp.estado === 'COMPLETO' ? 'Completo' : 'Borrador' }}
+              </span>
+            </div>
+            <span class="card-filename">{{ exp.nombre || 'Sin nombre' }}</span>
+          </a>
+        }
+      }
+    </div>
+  </section>
+</div>

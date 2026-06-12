@@ -5,7 +5,7 @@
   </div>
 } @else if (errorCarga()) {
   <div class="error-banner">
-    <mat-icon>error_outline</mat-icon>
+    <mat-icon svgIcon="error_outline"></mat-icon>
     <span>{{ errorCarga() }}</span>
   </div>
 } @else if (perfil(); as p) {
@@ -18,7 +18,7 @@
 
       @if (!editando()) {
         <button mat-flat-button (click)="comenzarEdicion()">
-          <mat-icon>edit</mat-icon>
+          <mat-icon svgIcon="edit"></mat-icon>
           Editar
         </button>
       }
@@ -37,7 +37,7 @@
                 (click)="abrirCambiarPassword()"
                 class="btn-cambiar-password"
               >
-                <mat-icon>lock</mat-icon>
+                <mat-icon svgIcon="lock"></mat-icon>
                 Cambiar contraseña
               </button>
             </div>
@@ -285,7 +285,7 @@
 
             @if (errorGeneral(); as error) {
               <div class="error-banner">
-                <mat-icon>error_outline</mat-icon>
+                <mat-icon svgIcon="error_outline"></mat-icon>
                 <span>{{ error }}</span>
               </div>
             }

@@ -99,7 +99,7 @@
 .tabla-wrap {
   background-color: #ffffff;
   border-radius: 8px;
-  border: 1px solid #e0e6eb;
+  border: 1px solid var(--border-subtle);
   overflow: hidden;
 }
 
@@ -131,8 +131,8 @@
 }
 
 .chip-tipo {
-  background-color: #e0f7fa !important;
-  color: #00838f !important;
+  background-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
   font-size: 0.75rem !important;
   height: 22px !important;
   font-weight: 500 !important;

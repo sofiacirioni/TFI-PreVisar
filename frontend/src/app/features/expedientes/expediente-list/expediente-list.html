@@ -1,0 +1,143 @@
+<div class="expedientes-page">
+  <header class="page-header">
+    <div>
+      <h1>Mis expedientes</h1>
+      <p class="subtitle">Tus expedientes técnicos en borrador y completados</p>
+    </div>
+
+    <button mat-flat-button class="cta-button" (click)="irANuevo()">
+      <mat-icon svgIcon="add"></mat-icon>
+      Nuevo expediente
+    </button>
+  </header>
+
+  @if (cargando()) {
+    <div class="loader-wrap">
+      <mat-spinner diameter="40" />
+      <span>Cargando expedientes...</span>
+    </div>
+  } @else if (errorCarga()) {
+    <div class="error-banner">
+      <mat-icon svgIcon="error_outline"></mat-icon>
+      <span>{{ errorCarga() }}</span>
+      <button mat-button (click)="cargarExpedientes()">Reintentar</button>
+    </div>
+  } @else {
+    <!-- Buscador -->
+    <mat-form-field appearance="outline" class="buscador">
+      <mat-label>Buscar por nombre, comitente, obra o tarea</mat-label>
+      <mat-icon matPrefix svgIcon="search"></mat-icon>
+      <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
+      @if (filtroControl.value) {
+        <button
+          matSuffix
+          mat-icon-button
+          aria-label="Limpiar búsqueda"
+          (click)="filtroControl.setValue('')"
+        >
+          <mat-icon svgIcon="close"></mat-icon>
+        </button>
+      }
+    </mat-form-field>
+
+    <!-- Lista vacía o tabla -->
+    @if (expedientesFiltrados().length === 0) {
+      @if (expedientes().length === 0) {
+        <div class="empty-state">
+          <img class="empty-illustration" src="illustrations/empty-expedientes.svg" alt="" />
+          <h3>Todavía no tenés expedientes</h3>
+          <p>Creá tu primer expediente para empezar a armar la documentación técnica.</p>
+          <button mat-flat-button (click)="irANuevo()">
+            <mat-icon svgIcon="add"></mat-icon>
+            Nuevo expediente
+          </button>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <mat-icon svgIcon="search_off"></mat-icon>
+          <h3>No hay resultados</h3>
+          <p>Ningún expediente coincide con "{{ filtroControl.value }}".</p>
+        </div>
+      }
+    } @else {
+      <div class="tabla-wrap">
+        <table mat-table [dataSource]="expedientesFiltrados()" class="expedientes-table">
+          <!-- Nombre -->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Nombre</th>
+            <td mat-cell *matCellDef="let e">{{ e.nombre || 'Sin nombre' }}</td>
+          </ng-container>
+
+          <!-- Comitente -->
+          <ng-container matColumnDef="comitente">
+            <th mat-header-cell *matHeaderCellDef>Comitente</th>
+            <td mat-cell *matCellDef="let e">{{ e.comitenteNombre || '—' }}</td>
+          </ng-container>
+
+          <!-- Tarea -->
+          <ng-container matColumnDef="tarea">
+            <th mat-header-cell *matHeaderCellDef>Tarea</th>
+            <td mat-cell *matCellDef="let e">{{ e.tipoTareaNombre || e.tipoTareaCodigo || '—' }}</td>
+          </ng-container>
+
+          <!-- Estado -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let e">
+              <mat-chip
+                class="chip-estado"
+                [class.chip-completo]="e.estado === 'COMPLETO'"
+              >
+                {{ e.estado === 'COMPLETO' ? 'Completo' : 'Borrador' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Última modificación -->
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Última modificación</th>
+            <td mat-cell *matCellDef="let e">{{ e.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+          </ng-container>
+
+          <!-- Acciones -->
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef class="col-acciones">Acciones</th>
+            <td mat-cell *matCellDef="let e" class="col-acciones">
+              <button
+                mat-icon-button
+                matTooltip="Abrir"
+                aria-label="Abrir expediente"
+                (click)="abrir(e)"
+              >
+                <mat-icon svgIcon="open_in_new"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                matTooltip="Eliminar"
+                aria-label="Eliminar expediente"
+                (click)="confirmarEliminar(e)"
+              >
+                <mat-icon class="icono-eliminar" svgIcon="delete"></mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columnasMostradas"></tr>
+          <tr mat-row *matRowDef="let row; columns: columnasMostradas"></tr>
+        </table>
+      </div>
+
+      <div class="resumen-resultados">
+        {{ expedientesFiltrados().length }}
+        @if (expedientesFiltrados().length === 1) {
+          expediente
+        } @else {
+          expedientes
+        }
+        @if (filtroControl.value) {
+          coinciden con la búsqueda
+        }
+      </div>
+    }
+  }
+</div>

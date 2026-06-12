@@ -17,7 +17,7 @@
           autocomplete="email"
           [readonly]="cargando()"
         />
-        <mat-icon matSuffix>mail</mat-icon>
+        <mat-icon matSuffix svgIcon="mail"></mat-icon>
         @if (form.controls.email.touched && form.controls.email.errors; as errors) {
           @if (errors['required']) {
             <mat-error>El email es obligatorio</mat-error>
@@ -44,7 +44,7 @@
           (click)="toggleMostrarPassword()"
           [attr.aria-label]="mostrarPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
         >
-          <mat-icon>{{ mostrarPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          <mat-icon [svgIcon]="mostrarPassword() ? 'visibility_off' : 'visibility'"></mat-icon>
         </button>
         @if (form.controls.password.touched && form.controls.password.errors; as errors) {
           @if (errors['required']) {
@@ -58,7 +58,7 @@
       <!-- Error general (credenciales incorrectas, red caída, etc) -->
       @if (errorGeneral(); as error) {
         <div class="error-banner">
-          <mat-icon>error_outline</mat-icon>
+          <mat-icon svgIcon="error_outline"></mat-icon>
           <span>{{ error }}</span>
         </div>
       }

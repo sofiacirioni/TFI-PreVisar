@@ -10,6 +10,8 @@ export const API = {
   CATALOGO_REGIONALES: `${environment.apiBaseUrl}/catalogos/regionales`,
   CATALOGO_CONDICIONES_IVA: `${environment.apiBaseUrl}/catalogos/condiciones-iva`,
   CATALOGO_TITULOS: `${environment.apiBaseUrl}/catalogos/titulos`,
+  CATALOGO_ESPECIALIDADES: `${environment.apiBaseUrl}/catalogos/especialidades`,
+  CATALOGO_TIPOS_TAREA: `${environment.apiBaseUrl}/catalogos/tipos-tarea`, // ?especialidadId=XXX (opcional)
 
   // --- Profesional ---
   PROFESIONAL_ME: `${environment.apiBaseUrl}/profesional/me`,
@@ -27,4 +29,10 @@ export const API = {
   // --- Obras standalone ---
   OBRAS: `${environment.apiBaseUrl}/obras`,
   OBRA_BY_ID: (id: number) => `${environment.apiBaseUrl}/obras/${id}`,
+
+  // --- Expedientes ---
+  EXPEDIENTES: `${environment.apiBaseUrl}/expedientes`,
+  EXPEDIENTE_BY_ID: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}`,
+  EXPEDIENTE_COMPLETAR: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/completar`,
+  
 } as const;

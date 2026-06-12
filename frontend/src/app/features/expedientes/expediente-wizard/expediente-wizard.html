@@ -1,0 +1,586 @@
+@if (cargando()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<mat-form-field appearance="outline" class="campo-full">
+  <mat-label>Nombre del expediente</mat-label>
+  <input
+    matInput
+    [formControl]="nombreControl"
+    placeholder="Ej: Instalación BT — Edificio Mykonos"
+    maxlength="150"
+  />
+</mat-form-field>
+
+<mat-stepper [linear]="false" (selectionChange)="onStepChange($event)" #stepper>
+  <mat-step [stepControl]="tareaForm" label="Tipo de tarea">
+    <form [formGroup]="tareaForm">
+      <p>Elegí primero la especialidad y luego el tipo de tarea a presentar.</p>
+
+      <mat-form-field appearance="outline" class="campo-full">
+        <mat-label>Especialidad</mat-label>
+        <mat-select formControlName="especialidadId">
+          @for (esp of especialidades(); track esp.id) {
+            <mat-option [value]="esp.id">{{ esp.nombre }}</mat-option>
+          }
+        </mat-select>
+        @if (
+          tareaForm.controls.especialidadId.hasError('required') &&
+          tareaForm.controls.especialidadId.touched
+        ) {
+          <mat-error>Seleccioná una especialidad</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="campo-full">
+        <mat-label>Tipo de tarea</mat-label>
+        <mat-select
+          formControlName="tipoTareaId"
+          [disabled]="tareaForm.controls.especialidadId.value === null || cargandoTipos()"
+        >
+          @for (tipo of tiposTarea(); track tipo.id) {
+            <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+          }
+        </mat-select>
+        @if (tareaForm.controls.especialidadId.value === null) {
+          <mat-hint>Elegí primero la especialidad</mat-hint>
+        } @else if (cargandoTipos()) {
+          <mat-hint>Cargando tipos de tarea...</mat-hint>
+        } @else if (tiposTarea().length === 0) {
+          <mat-hint>No hay tipos de tarea cargados para esta especialidad</mat-hint>
+        }
+        @if (
+          tareaForm.controls.tipoTareaId.hasError('required') &&
+          tareaForm.controls.tipoTareaId.touched
+        ) {
+          <mat-error>Seleccioná un tipo de tarea</mat-error>
+        }
+      </mat-form-field>
+    </form>
+
+    <div class="acciones">
+      <button mat-button matStepperNext>Siguiente</button>
+    </div>
+  </mat-step>
+
+  <mat-step [stepControl]="comitenteForm" label="Comitente">
+    <p>
+      Ingresá el DNI o CUIT del comitente. Si ya está en tu cartera lo cargamos automáticamente; si
+      no, vas a poder darlo de alta acá mismo.
+    </p>
+
+    <!-- Búsqueda -->
+    <div class="comitente-busqueda">
+      <mat-form-field appearance="outline" class="campo-busqueda">
+        <mat-label>DNI o CUIT</mat-label>
+        <input
+          matInput
+          [formControl]="dniCuitBusqueda"
+          placeholder="40123456 o 27-40123456-5"
+          (keydown.enter)="$event.preventDefault(); buscarComitente()"
+        />
+        @if (dniCuitBusqueda.touched && dniCuitBusqueda.errors; as e) {
+          @if (e['required']) {
+            <mat-error>Ingresá un DNI o CUIT</mat-error>
+          } @else if (e['pattern']) {
+            <mat-error>Formato inválido (DNI 7-8 dígitos o CUIT XX-XXXXXXXX-X)</mat-error>
+          }
+        }
+      </mat-form-field>
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="buscarComitente()"
+        [disabled]="buscandoComitente()"
+      >
+        <mat-icon svgIcon="search"></mat-icon>
+        Buscar
+      </button>
+    </div>
+
+    @if (buscandoComitente()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <!-- Caso 1: existe en la cartera -->
+    @if (comitenteEncontrado(); as c) {
+      <div class="comitente-card">
+        <mat-icon class="check-icon" svgIcon="check_circle"></mat-icon>
+        <div class="comitente-info">
+          <strong>{{ c.nombreRazonSocial }}</strong>
+          <span>
+            {{ c.tipoPersona === 'FISICA' ? 'Persona física' : 'Persona jurídica' }}
+            — {{ c.dniCuit }}
+          </span>
+          <span class="muted"
+            >{{ c.email || 'Sin email' }} · {{ c.telefono || 'Sin teléfono' }}</span
+          >
+          <span class="muted">{{ c.domicilio }}</span>
+        </div>
+        <button mat-button type="button" (click)="cambiarBusqueda()">Cambiar</button>
+      </div>
+    }
+
+    <!-- Caso 2: no existe, mostramos el form inline para crearlo -->
+    @if (modoNuevoComitente()) {
+      <div class="comitente-nuevo">
+        <p class="info-text">
+          No encontramos un comitente con ese DNI/CUIT en tu cartera. Completá los datos para darlo
+          de alta — se va a guardar cuando pases al próximo paso.
+        </p>
+
+        <form [formGroup]="nuevoComitenteForm" class="form-nuevo-comitente">
+          <mat-radio-group formControlName="tipoPersona" class="radio-group">
+            <mat-radio-button value="FISICA">Persona física</mat-radio-button>
+            <mat-radio-button value="JURIDICA">Persona jurídica</mat-radio-button>
+          </mat-radio-group>
+
+          <mat-form-field appearance="outline" class="campo-full">
+            <mat-label>Nombre / Razón social</mat-label>
+            <input matInput formControlName="nombreRazonSocial" maxlength="200" />
+            @if (
+              nuevoComitenteForm.controls.nombreRazonSocial.touched &&
+              nuevoComitenteForm.controls.nombreRazonSocial.errors?.['required']
+            ) {
+              <mat-error>Obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="campo-full">
+            <mat-label>Domicilio</mat-label>
+            <input matInput formControlName="domicilio" maxlength="255" />
+            @if (
+              nuevoComitenteForm.controls.domicilio.touched &&
+              nuevoComitenteForm.controls.domicilio.errors?.['required']
+            ) {
+              <mat-error>Obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="dos-columnas">
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" maxlength="255" />
+              @if (
+                nuevoComitenteForm.controls.email.touched &&
+                nuevoComitenteForm.controls.email.errors?.['email']
+              ) {
+                <mat-error>Email inválido</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono (opcional)</mat-label>
+              <input matInput formControlName="telefono" maxlength="30" />
+            </mat-form-field>
+          </div>
+        </form>
+      </div>
+    }
+
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button
+        mat-flat-button
+        type="button"
+        (click)="continuarDesdeComitente(stepper)"
+        [disabled]="creandoComitente()"
+      >
+        @if (creandoComitente()) {
+          Guardando...
+        } @else {
+          Siguiente
+        }
+      </button>
+    </div>
+  </mat-step>
+
+  <mat-step [stepControl]="obraForm" label="Obra">
+    <p>Elegí una obra existente del comitente o creá una nueva.</p>
+
+    @if (cargandoObras()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <!-- Lista de obras existentes (modo selección) -->
+    @if (!modoNuevaObra()) {
+      @if (obrasDelComitente().length > 0) {
+        <div class="obras-existentes">
+          @for (o of obrasDelComitente(); track o.id) {
+            <button
+              type="button"
+              class="obra-option"
+              [class.seleccionada]="obraForm.controls.obraId.value === o.id"
+              (click)="seleccionarObraExistente(o)"
+            >
+              <div class="obra-info">
+                <strong>{{ o.designacion }}</strong>
+                <span class="muted">
+                  {{ o.calle }} {{ o.numero }}
+                  @if (o.barrio) {
+                    , {{ o.barrio }}
+                  }
+                  , {{ o.localidad }} ({{ o.provinciaNombre }})
+                </span>
+              </div>
+              @if (obraForm.controls.obraId.value === o.id) {
+                <mat-icon class="check-icon" svgIcon="check_circle"></mat-icon>
+              }
+            </button>
+          }
+        </div>
+      } @else if (!cargandoObras()) {
+        <p class="info-text">Este comitente todavía no tiene obras cargadas. Creá la primera.</p>
+      }
+
+      <button mat-stroked-button type="button" class="boton-nueva" (click)="iniciarNuevaObra()">
+        <mat-icon svgIcon="add"></mat-icon>
+        Nueva obra
+      </button>
+    }
+
+    <!-- Form inline para nueva obra -->
+    @if (modoNuevaObra()) {
+      <div class="obra-nueva">
+        <div class="cabecera-nueva">
+          <h4>Nueva obra</h4>
+          <button mat-button type="button" (click)="cancelarNuevaObra()">
+            <mat-icon svgIcon="arrow_back"></mat-icon>
+            Volver a la lista
+          </button>
+        </div>
+
+        <form [formGroup]="nuevaObraForm" class="form-nueva-obra">
+          <mat-form-field appearance="outline" class="campo-full">
+            <mat-label>Designación</mat-label>
+            <input matInput formControlName="designacion" maxlength="255" />
+            <mat-hint>Ej: Edificio Mykonos — Instalación BT</mat-hint>
+            @if (
+              nuevaObraForm.controls.designacion.touched &&
+              nuevaObraForm.controls.designacion.errors?.['required']
+            ) {
+              <mat-error>Obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="dos-columnas">
+            <mat-form-field appearance="outline">
+              <mat-label>Calle</mat-label>
+              <input matInput formControlName="calle" maxlength="150" />
+              @if (
+                nuevaObraForm.controls.calle.touched &&
+                nuevaObraForm.controls.calle.errors?.['required']
+              ) {
+                <mat-error>Obligatorio</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Número</mat-label>
+              <input matInput formControlName="numero" maxlength="20" />
+              @if (
+                nuevaObraForm.controls.numero.touched &&
+                nuevaObraForm.controls.numero.errors?.['required']
+              ) {
+                <mat-error>Obligatorio</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="dos-columnas">
+            <mat-form-field appearance="outline">
+              <mat-label>Barrio (opcional)</mat-label>
+              <input matInput formControlName="barrio" maxlength="100" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Localidad</mat-label>
+              <input matInput formControlName="localidad" maxlength="100" />
+              @if (
+                nuevaObraForm.controls.localidad.touched &&
+                nuevaObraForm.controls.localidad.errors?.['required']
+              ) {
+                <mat-error>Obligatorio</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="dos-columnas">
+            <mat-form-field appearance="outline">
+              <mat-label>Provincia</mat-label>
+              <mat-select formControlName="provinciaId">
+                @for (p of provincias(); track p.id) {
+                  <mat-option [value]="p.id">{{ p.nombre }}</mat-option>
+                }
+              </mat-select>
+              @if (
+                nuevaObraForm.controls.provinciaId.touched &&
+                nuevaObraForm.controls.provinciaId.errors?.['required']
+              ) {
+                <mat-error>Seleccioná una provincia</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Código postal</mat-label>
+              <input matInput formControlName="codigoPostal" maxlength="10" />
+              @if (
+                nuevaObraForm.controls.codigoPostal.touched &&
+                  nuevaObraForm.controls.codigoPostal.errors;
+                as e
+              ) {
+                @if (e['required']) {
+                  <mat-error>Obligatorio</mat-error>
+                } @else if (e['pattern']) {
+                  <mat-error>4 a 10 caracteres (letras o números)</mat-error>
+                }
+              }
+            </mat-form-field>
+          </div>
+
+          <details class="catastrales">
+            <summary>Datos catastrales (opcionales)</summary>
+            <div class="catastrales-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Circunscripción</mat-label>
+                <input matInput formControlName="circunscripcion" />
+                @if (
+                  nuevaObraForm.controls.circunscripcion.touched &&
+                  nuevaObraForm.controls.circunscripcion.errors?.['pattern']
+                ) {
+                  <mat-error>Solo números</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Sección</mat-label>
+                <input matInput formControlName="seccion" />
+                @if (
+                  nuevaObraForm.controls.seccion.touched &&
+                  nuevaObraForm.controls.seccion.errors?.['pattern']
+                ) {
+                  <mat-error>Solo números</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Manzana</mat-label>
+                <input matInput formControlName="manzana" />
+                @if (
+                  nuevaObraForm.controls.manzana.touched &&
+                  nuevaObraForm.controls.manzana.errors?.['pattern']
+                ) {
+                  <mat-error>Solo números</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Parcela</mat-label>
+                <input matInput formControlName="parcela" />
+                @if (
+                  nuevaObraForm.controls.parcela.touched &&
+                  nuevaObraForm.controls.parcela.errors?.['pattern']
+                ) {
+                  <mat-error>Solo números</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </details>
+        </form>
+      </div>
+    }
+
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button
+        mat-flat-button
+        type="button"
+        (click)="continuarDesdeObra(stepper)"
+        [disabled]="creandoObra()"
+      >
+        @if (creandoObra()) {
+          Guardando...
+        } @else {
+          Siguiente
+        }
+      </button>
+    </div>
+  </mat-step>
+
+  <mat-step [stepControl]="economicoForm" label="Datos económicos">
+    <form [formGroup]="economicoForm">
+      <p>Ingresá los honorarios referenciales. Los aportes se calculan automáticamente.</p>
+
+      <mat-form-field appearance="outline" class="campo-full">
+        <mat-label>Honorarios referenciales</mat-label>
+        <span matTextPrefix>$&nbsp;</span>
+        <input
+          matInput
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="honorariosReferenciales"
+        />
+        @if (
+          economicoForm.controls.honorariosReferenciales.hasError('required') &&
+          economicoForm.controls.honorariosReferenciales.touched
+        ) {
+          <mat-error>Ingresá los honorarios</mat-error>
+        }
+        @if (economicoForm.controls.honorariosReferenciales.hasError('min')) {
+          <mat-error>Debe ser un valor positivo</mat-error>
+        }
+      </mat-form-field>
+
+      @if (tareaForm.controls.tipoTareaId.value == null) {
+        <p class="aviso">Elegí primero el tipo de tarea (paso 1) para calcular los aportes.</p>
+      }
+
+      @if (calculandoAportes()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      @if (expediente(); as exp) {
+        @if (exp.aporteRod != null) {
+          <div class="aportes-desglose">
+            <h3>Aportes calculados</h3>
+
+            <div class="grupo">
+              <span class="grupo-titulo">CIEC</span>
+              <div class="linea">
+                <span>Aporte por Registro de Obra (5%)</span
+                ><span>{{ exp.aporteRod | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea">
+                <span>Arancel administrativo</span
+                ><span>{{ exp.aporteArancelAdmin | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea subtotal">
+                <span>Subtotal CIEC</span
+                ><span>{{ exp.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="grupo">
+              <span class="grupo-titulo">Caja Ley 8470</span>
+              <div class="linea">
+                <span>Aporte profesional (9%)</span
+                ><span>{{ exp.aporteCajaProfesional | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea">
+                <span>Aporte comitente (9%)</span
+                ><span>{{ exp.aporteCajaComitente | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+              <div class="linea subtotal">
+                <span>Subtotal Caja</span
+                ><span>{{ exp.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="linea total">
+              <span>Total de aportes</span
+              ><span>{{ exp.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+          </div>
+        }
+      }
+    </form>
+
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button mat-button matStepperNext>Siguiente</button>
+    </div>
+  </mat-step>
+
+  <mat-step label="Resumen">
+    <div class="resumen">
+      <p>Revisá los datos antes de generar el expediente.</p>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Nombre</span>
+        <span class="valor">{{ nombreControl.value || 'Sin nombre' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Especialidad</span>
+        <span class="valor">{{ especialidadNombreSeleccionada() ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Tipo de tarea</span>
+        <span class="valor">{{ tipoTareaNombreSeleccionado() ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Comitente</span>
+        <span class="valor">{{ expediente()?.comitenteNombre ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Obra</span>
+        <span class="valor">{{ expediente()?.obraDesignacion ?? '—' }}</span>
+      </div>
+
+      <div class="resumen-grupo">
+        <span class="etiqueta">Honorarios referenciales</span>
+        <span class="valor">
+          @if (economicoForm.controls.honorariosReferenciales.value != null) {
+            {{
+              economicoForm.controls.honorariosReferenciales.value
+                | currency: 'ARS' : 'symbol' : '1.2-2'
+            }}
+          } @else {
+            —
+          }
+        </span>
+      </div>
+
+      @if (expediente(); as exp) {
+        @if (exp.aporteRod != null) {
+          <div class="resumen-aportes">
+            <div class="linea">
+              <span>Subtotal CIEC</span
+              ><span>{{ exp.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+            <div class="linea">
+              <span>Subtotal Caja Ley 8470</span
+              ><span>{{ exp.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+            <div class="linea total">
+              <span>Total de aportes</span
+              ><span>{{ exp.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+          </div>
+        }
+      }
+
+      @if (faltanDatos().length > 0) {
+        <div class="resumen-faltantes">
+          <span>Para generar el expediente falta cargar:</span>
+          <ul>
+            @for (f of faltanDatos(); track f) {
+              <li>{{ f }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+
+    <div class="acciones">
+      <button mat-button matStepperPrevious>Atrás</button>
+      <button
+        mat-flat-button
+        type="button"
+        class="cta-button"
+        (click)="finalizar()"
+        [disabled]="guardando() || faltanDatos().length > 0"
+      >
+        @if (guardando()) {
+          Generando...
+        } @else {
+          Generar expediente
+        }
+      </button>
+    </div>
+  </mat-step>
+</mat-stepper>

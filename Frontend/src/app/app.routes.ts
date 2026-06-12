@@ -47,6 +47,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('@features/obras/obras.routes').then((m) => m.OBRAS_ROUTES),
       },
+      {
+        path: 'expedientes',
+        loadChildren: () =>
+          import('@features/expedientes/expedientes.routes').then((m) => m.EXPEDIENTES_ROUTES),
+      },
     ],
   },
 

@@ -1,7 +1,7 @@
 <div class="form-page">
   <header class="page-header">
     <a routerLink="/comitentes" mat-icon-button matTooltip="Volver al listado" aria-label="Volver">
-      <mat-icon>arrow_back</mat-icon>
+      <mat-icon svgIcon="arrow_back"></mat-icon>
     </a>
     <div>
       <h1>{{ modoEdicion() ? 'Editar comitente' : 'Nuevo comitente' }}</h1>
@@ -22,7 +22,7 @@
     </div>
   } @else if (errorCarga()) {
     <div class="error-banner">
-      <mat-icon>error_outline</mat-icon>
+      <mat-icon svgIcon="error_outline"></mat-icon>
       <span>{{ errorCarga() }}</span>
       <a routerLink="/comitentes" mat-button>Volver al listado</a>
     </div>
@@ -36,13 +36,13 @@
             <mat-radio-group formControlName="tipoPersona" class="radio-row">
               <mat-radio-button value="FISICA">
                 <span class="radio-label">
-                  <mat-icon>person</mat-icon>
+                  <mat-icon svgIcon="person"></mat-icon>
                   Persona física
                 </span>
               </mat-radio-button>
               <mat-radio-button value="JURIDICA">
                 <span class="radio-label">
-                  <mat-icon>business</mat-icon>
+                  <mat-icon svgIcon="business"></mat-icon>
                   Persona jurídica
                 </span>
               </mat-radio-button>
@@ -154,7 +154,7 @@
           <!-- Banner de error general -->
           @if (errorGeneral(); as error) {
             <div class="error-banner-inline">
-              <mat-icon>error_outline</mat-icon>
+              <mat-icon svgIcon="error_outline"></mat-icon>
               <span>{{ error }}</span>
             </div>
           }

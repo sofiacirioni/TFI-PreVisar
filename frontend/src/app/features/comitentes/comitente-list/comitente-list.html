@@ -6,7 +6,7 @@
     </div>
 
     <button mat-flat-button class="cta-button" (click)="irANuevo()">
-      <mat-icon>add</mat-icon>
+      <mat-icon svgIcon="add"></mat-icon>
       Nuevo comitente
     </button>
   </header>
@@ -18,7 +18,7 @@
     </div>
   } @else if (errorCarga()) {
     <div class="error-banner">
-      <mat-icon>error_outline</mat-icon>
+      <mat-icon svgIcon="error_outline"></mat-icon>
       <span>{{ errorCarga() }}</span>
       <button mat-button (click)="cargarComitentes()">Reintentar</button>
     </div>
@@ -26,7 +26,7 @@
     <!-- Buscador -->
     <mat-form-field appearance="outline" class="buscador">
       <mat-label>Buscar por nombre, DNI/CUIT o email</mat-label>
-      <mat-icon matPrefix>search</mat-icon>
+      <mat-icon matPrefix svgIcon="search"></mat-icon>
       <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
       @if (filtroControl.value) {
         <button
@@ -35,7 +35,7 @@
           aria-label="Limpiar búsqueda"
           (click)="filtroControl.setValue('')"
         >
-          <mat-icon>close</mat-icon>
+          <mat-icon svgIcon="close"></mat-icon>
         </button>
       }
     </mat-form-field>
@@ -44,17 +44,17 @@
     @if (comitentesFiltrados().length === 0) {
       @if (comitentes().length === 0) {
         <div class="empty-state">
-          <mat-icon>people_outline</mat-icon>
+          <img class="empty-illustration" src="illustrations/onboarding.svg" alt="" />
           <h3>Todavía no tenés comitentes</h3>
           <p>Cargá tu primer comitente para usarlo en futuros expedientes.</p>
           <button mat-flat-button (click)="irANuevo()">
-            <mat-icon>add</mat-icon>
+            <mat-icon svgIcon="add"></mat-icon>
             Nuevo comitente
           </button>
         </div>
       } @else {
         <div class="empty-state">
-          <mat-icon>search_off</mat-icon>
+          <mat-icon svgIcon="search_off"></mat-icon>
           <h3>No hay resultados</h3>
           <p>Ningún comitente coincide con "{{ filtroControl.value }}".</p>
         </div>
@@ -114,7 +114,7 @@
                 aria-label="Editar comitente"
                 (click)="irAEditar(c)"
               >
-                <mat-icon>edit</mat-icon>
+                <mat-icon svgIcon="edit"></mat-icon>
               </button>
               <button
                 mat-icon-button
@@ -122,7 +122,7 @@
                 aria-label="Eliminar comitente"
                 (click)="confirmarEliminar(c)"
               >
-                <mat-icon class="icono-eliminar">delete</mat-icon>
+                <mat-icon class="icono-eliminar" svgIcon="delete"></mat-icon>
               </button>
             </td>
           </ng-container>

@@ -1,0 +1,433 @@
+.acciones {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+// CTA crítico naranja consistente con el resto del proyecto (ej. comitente-list)
+.cta-button {
+  background-color: #ef6c00 !important;
+  color: #ffffff !important;
+}
+
+.campo-full {
+  width: 100%;
+}
+
+// ===== Paso Comitente =====
+
+.comitente-busqueda {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  .campo-busqueda {
+    flex: 1;
+  }
+
+  button {
+    margin-top: 8px; // alinea visualmente con el mat-form-field
+  }
+}
+
+.comitente-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f5f9fa;
+  border: 1px solid #cfe6ea;
+  border-radius: 8px;
+  margin-top: 8px;
+
+  .check-icon {
+    color: var(--accent);
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .comitente-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.9rem;
+    color: #1a2733;
+    min-width: 0;
+
+    .muted {
+      color: #5a6b78;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+.comitente-nuevo {
+  margin-top: 8px;
+  padding: 16px;
+  background-color: #fff8e1;
+  border: 1px dashed #ffcc80;
+  border-radius: 8px;
+
+  .info-text {
+    margin: 0 0 16px;
+    color: #5a6b78;
+    font-size: 0.875rem;
+  }
+}
+
+.form-nuevo-comitente {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ===== Paso Obra =====
+
+.obras-existentes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.obra-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 120ms ease;
+  font: inherit;
+
+  &:hover {
+    background-color: #f5f9fa;
+    border-color: #cfe6ea;
+  }
+
+  &.seleccionada {
+    background-color: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .obra-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    strong {
+      color: #1a2733;
+      font-size: 0.95rem;
+    }
+
+    .muted {
+      color: #5a6b78;
+      font-size: 0.85rem;
+    }
+  }
+
+  .check-icon {
+    color: var(--accent);
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+}
+
+.boton-nueva {
+  margin-top: 4px;
+}
+
+.info-text {
+  margin: 0 0 16px;
+  color: #5a6b78;
+  font-size: 0.875rem;
+}
+
+.obra-nueva {
+  margin-top: 8px;
+  padding: 16px;
+  background-color: #fff8e1;
+  border: 1px dashed #ffcc80;
+  border-radius: 8px;
+}
+
+.cabecera-nueva {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a2733;
+  }
+}
+
+.form-nueva-obra {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.catastrales {
+  margin-top: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #ffcc80;
+
+  summary {
+    cursor: pointer;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    color: #5a6b78;
+    font-weight: 500;
+  }
+}
+
+.catastrales-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// ===== Paso Datos económicos =====
+
+.aviso {
+  margin: 4px 0 12px;
+  padding: 10px 14px;
+  background-color: #fff8e1;
+  border-left: 3px solid #ef6c00;
+  border-radius: 4px;
+  color: #5a6b78;
+  font-size: 0.875rem;
+}
+
+.aportes-desglose {
+  margin-top: 16px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a2733;
+  }
+
+  .grupo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+
+    &:last-of-type {
+      margin-bottom: 8px;
+    }
+  }
+
+  .grupo-titulo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    color: #1a2733;
+
+    span:first-child {
+      color: #5a6b78;
+    }
+
+    span:last-child {
+      font-variant-numeric: tabular-nums;
+    }
+
+    &.subtotal {
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed #d0d8e0;
+      font-weight: 500;
+
+      span:first-child {
+        color: #1a2733;
+      }
+    }
+
+    &.total {
+      margin-top: 8px;
+      padding: 12px 0 4px;
+      border-top: 2px solid #1a2733;
+      font-size: 1.05rem;
+      font-weight: 600;
+
+      span:first-child {
+        color: #1a2733;
+      }
+
+      span:last-child {
+        color: #ef6c00;
+      }
+    }
+  }
+}
+
+// ===== Paso Resumen =====
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  > p {
+    margin: 0 0 12px;
+    color: #5a6b78;
+    font-size: 0.9rem;
+  }
+}
+
+.resumen-grupo {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef1f4;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 8px 0;
+  }
+
+  .etiqueta {
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #5a6b78;
+  }
+
+  .valor {
+    font-size: 0.95rem;
+    color: #1a2733;
+    word-break: break-word;
+  }
+}
+
+.resumen-aportes {
+  margin-top: 16px;
+  padding: 16px 20px;
+  background-color: #f5f9fa;
+  border: 1px solid #cfe6ea;
+  border-radius: 8px;
+
+  .linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    color: #1a2733;
+
+    span:first-child {
+      color: #5a6b78;
+    }
+
+    span:last-child {
+      font-variant-numeric: tabular-nums;
+    }
+
+    &.total {
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 2px solid #1a2733;
+      font-size: 1.05rem;
+      font-weight: 600;
+
+      span:first-child {
+        color: #1a2733;
+      }
+
+      span:last-child {
+        color: #ef6c00;
+      }
+    }
+  }
+}
+
+.resumen-faltantes {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background-color: #fdecea;
+  border: 1px solid #f5c6c0;
+  border-left-width: 4px;
+  border-left-color: #c62828;
+  border-radius: 4px;
+  color: #5a6b78;
+  font-size: 0.875rem;
+
+  > span {
+    display: block;
+    font-weight: 500;
+    color: #1a2733;
+    margin-bottom: 4px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+
+    li {
+      margin: 2px 0;
+      text-transform: capitalize;
+    }
+  }
+}
