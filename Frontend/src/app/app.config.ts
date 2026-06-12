@@ -6,6 +6,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
 import { jwtInterceptor } from '@core/interceptors/jwt.interceptor';
+import { provideLucideIcons } from '@core/icons/provide-lucide-icons';
 
 
 export const appConfig: ApplicationConfig = {
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([jwtInterceptor, errorInterceptor])
     ),
-    provideAnimations()
+    provideAnimations(),
+    provideLucideIcons()
   ]
 };

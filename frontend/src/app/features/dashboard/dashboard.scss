@@ -55,7 +55,7 @@
   justify-content: center;
   gap: 12px;
   background-color: #ffffff;
-  border: 1px solid #e0e6eb;
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   cursor: pointer;
   transition: all 150ms ease;
@@ -79,17 +79,17 @@
     font-size: 40px;
     width: 40px;
     height: 40px;
-    color: #00838f;
+    color: var(--accent);
   }
 
   .card-label {
     font-size: 0.9rem;
     font-weight: 500;
-    color: #00838f;
+    color: var(--accent);
   }
 
   &:hover:not(.expediente-disabled) {
-    background-color: #e0f7fa;
+    background-color: var(--accent-soft);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 131, 143, 0.15);
   }
@@ -148,8 +148,8 @@
     letter-spacing: 0.4px;
 
     &.estado-completo {
-      background-color: #e0f7fa;
-      color: #00838f;
+      background-color: var(--accent-soft);
+      color: var(--accent);
     }
   }
 

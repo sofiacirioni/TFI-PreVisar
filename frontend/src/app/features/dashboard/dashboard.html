@@ -22,7 +22,7 @@
         matTooltipPosition="above"
       >
         <div class="expediente-card expediente-nuevo">
-          <mat-icon class="card-icon">add</mat-icon>
+          <mat-icon class="card-icon" svgIcon="add"></mat-icon>
         </div>
         <span class="card-filename">Nuevo expediente</span>
       </a>
@@ -32,7 +32,7 @@
       } @else if (expedientesRecientes().length === 0) {
         <!-- Sin expedientes: placeholder informativo -->
         <div class="expediente-placeholder">
-          <mat-icon class="placeholder-icon">description</mat-icon>
+          <img class="placeholder-illustration" src="illustrations/empty-expedientes.svg" alt="" />
           <div class="placeholder-text">
             <p class="placeholder-title">Tus expedientes aparecerán acá</p>
             <p class="placeholder-subtitle">
@@ -50,7 +50,7 @@
             matTooltipPosition="above"
           >
             <div class="expediente-card expediente-recent">
-              <mat-icon class="card-icon">description</mat-icon>
+              <mat-icon class="card-icon" svgIcon="description"></mat-icon>
               <span class="card-label">{{ exp.tipoTareaCodigo || 'Borrador' }}</span>
               <span class="card-meta">{{ exp.updatedAt | date: 'dd/MM/yyyy' }}</span>
               <span class="card-estado" [class.estado-completo]="exp.estado === 'COMPLETO'">

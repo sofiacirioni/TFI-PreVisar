@@ -21,9 +21,9 @@
   }
 
   &[data-variant='info'] {
-    .dialog-icon { color: #00838f; }
+    .dialog-icon { color: var(--accent); }
     .btn-confirmar {
-      background-color: #00838f !important;
+      background-color: var(--accent) !important;
       color: #ffffff !important;
     }
   }

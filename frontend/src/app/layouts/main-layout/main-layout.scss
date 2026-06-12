@@ -1,81 +1,75 @@
 .layout-container {
   height: 100vh;
+  background-color: var(--surface-page);
 }
 
 // ===== Sidebar =====
 
 .sidebar {
-  width: 240px;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e6eb;
-  transition: width 200ms ease;
+  width: var(--sidebar-w);
+  background-color: var(--surface-card);
+  border-right: var(--border-width) solid var(--border-subtle);
+  transition: width var(--dur-base) var(--ease-out);
   overflow-x: hidden;
 
   &.colapsado {
-    width: 72px;
+    width: var(--sidebar-w-collapsed);
   }
 }
 
 .sidebar-brand {
-  height: 64px;
+  height: var(--topbar-h);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  color: #00838f;
+  padding: 0 var(--space-4);
 
-  .brand-text {
-    font-size: 1.4rem;
-    letter-spacing: -0.3px;
+  .brand-wordmark {
+    height: 30px;
+    width: auto;
   }
 
-  .brand-mini {
-    font-size: 1.6rem;
-    width: 40px;
-    height: 40px;
-    background: #00838f;
-    color: white;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .brand-mark {
+    width: 34px;
+    height: 34px;
   }
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  padding: 8px;
-  gap: 4px;
+  padding: var(--space-3);
+  gap: var(--space-2);
 }
 
 .nav-item {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin: 0;
+  color: var(--text-body);
 
   &.activo {
-    background-color: rgba(0, 131, 143, 0.08);
-    color: #00838f;
+    background-color: var(--accent-soft);
+    color: var(--accent-text);
 
     mat-icon {
-      color: #00838f;
+      color: var(--accent);
     }
   }
 
   &:hover:not(.activo) {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: var(--surface-hover);
   }
 }
 
 // ===== Topbar =====
 
 .topbar {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e6eb;
-  height: 64px;
+  background-color: var(--surface-card);
+  border-bottom: var(--border-width) solid var(--border-subtle);
+  height: var(--topbar-h);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-sticky);
 }
 
 .spacer {
@@ -85,10 +79,11 @@
 .user-menu-trigger {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
+  color: var(--text-body);
 
   .user-email {
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -99,10 +94,12 @@
 // ===== Área de contenido =====
 
 .content-area {
-  background-color: #fafafa;
+  background-color: var(--surface-page);
 }
 
 .page-content {
-  padding: 24px;
-  min-height: calc(100vh - 64px);
+  padding: var(--container-pad);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  min-height: calc(100vh - var(--topbar-h));
 }

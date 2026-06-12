@@ -1,0 +1,15 @@
+<svg width="240" height="180" viewBox="0 0 240 180" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustración: bienvenida / onboarding">
+  <ellipse cx="120" cy="152" rx="84" ry="13" fill="#EAF5FE"></ellipse>
+  <rect x="70" y="36" width="100" height="108" rx="12" fill="#369AF5"></rect>
+  <rect x="80" y="48" width="80" height="86" rx="7" fill="#FFFFFF"></rect>
+  <rect x="104" y="30" width="32" height="16" rx="6" fill="#0E7FF2"></rect>
+  <rect x="92" y="64" width="12" height="12" rx="3" fill="#0E7FF2"></rect>
+  <path d="M95 70l2 2 4-4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+  <rect x="110" y="67" width="40" height="5" rx="2.5" fill="#CFE7FD"></rect>
+  <rect x="92" y="86" width="12" height="12" rx="3" fill="#0E7FF2"></rect>
+  <path d="M95 92l2 2 4-4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+  <rect x="110" y="89" width="48" height="5" rx="2.5" fill="#E1E1E5"></rect>
+  <rect x="92" y="108" width="12" height="12" rx="3" fill="#E1E1E5"></rect>
+  <rect x="110" y="111" width="34" height="5" rx="2.5" fill="#E1E1E5"></rect>
+  <path d="M182 60l3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z" fill="#A6D3FB"></path>
+</svg>

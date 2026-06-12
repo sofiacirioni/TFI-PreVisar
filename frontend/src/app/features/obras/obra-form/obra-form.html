@@ -1,7 +1,7 @@
 <div class="form-page">
   <header class="page-header">
     <a routerLink="/obras" mat-icon-button matTooltip="Volver al listado" aria-label="Volver">
-      <mat-icon>arrow_back</mat-icon>
+      <mat-icon svgIcon="arrow_back"></mat-icon>
     </a>
     <div>
       <h1>{{ modoEdicion() ? 'Editar obra' : 'Nueva obra' }}</h1>
@@ -22,11 +22,11 @@
     </div>
   } @else if (errorCarga()) {
     <div class="error-banner">
-      <mat-icon>error_outline</mat-icon>
+      <mat-icon svgIcon="error_outline"></mat-icon>
       <span>{{ errorCarga() }}</span>
       @if (!modoEdicion() && comitentes().length === 0) {
         <a routerLink="/comitentes/nuevo" mat-flat-button class="cta-empty">
-          <mat-icon>person_add</mat-icon>
+          <mat-icon svgIcon="person_add"></mat-icon>
           Crear comitente
         </a>
       } @else {
@@ -43,7 +43,7 @@
 
             @if (modoEdicion() && comitenteAsociado(); as c) {
               <div class="comitente-readonly">
-                <mat-icon>person</mat-icon>
+                <mat-icon svgIcon="person"></mat-icon>
                 <div class="comitente-info">
                   <span class="comitente-nombre">{{ c.nombre }}</span>
                   <span class="comitente-dni">{{ c.dniCuit }}</span>
@@ -233,7 +233,7 @@
           <!-- Banner de error general -->
           @if (errorGeneral(); as error) {
             <div class="error-banner-inline">
-              <mat-icon>error_outline</mat-icon>
+              <mat-icon svgIcon="error_outline"></mat-icon>
               <span>{{ error }}</span>
             </div>
           }

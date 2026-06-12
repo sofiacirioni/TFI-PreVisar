@@ -19,7 +19,7 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" autocomplete="email" />
-            <mat-icon matSuffix>mail</mat-icon>
+            <mat-icon matSuffix svgIcon="mail"></mat-icon>
             @if (form.controls.email.touched && form.controls.email.errors; as e) {
               @if (e['required']) {
                 <mat-error>El email es obligatorio</mat-error>
@@ -47,7 +47,7 @@
                 (click)="toggleMostrarPassword()"
                 [attr.aria-label]="mostrarPassword() ? 'Ocultar' : 'Mostrar'"
               >
-                <mat-icon>{{ mostrarPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <mat-icon [svgIcon]="mostrarPassword() ? 'visibility_off' : 'visibility'"></mat-icon>
               </button>
               @if (form.controls.password.touched && form.controls.password.errors; as e) {
                 @if (e['required']) {
@@ -75,9 +75,7 @@
                 type="button"
                 (click)="toggleMostrarConfirmPassword()"
               >
-                <mat-icon>{{
-                  mostrarConfirmPassword() ? 'visibility_off' : 'visibility'
-                }}</mat-icon>
+                <mat-icon [svgIcon]="mostrarConfirmPassword() ? 'visibility_off' : 'visibility'"></mat-icon>
               </button>
               @if (
                 form.controls.confirmarPassword.touched &&
@@ -280,7 +278,7 @@
         <!-- Banner de error general -->
         @if (errorGeneral(); as error) {
           <div class="error-banner">
-            <mat-icon>error_outline</mat-icon>
+            <mat-icon svgIcon="error_outline"></mat-icon>
             <span>{{ error }}</span>
           </div>
         }

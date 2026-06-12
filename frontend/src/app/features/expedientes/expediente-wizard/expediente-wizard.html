@@ -93,7 +93,7 @@
         (click)="buscarComitente()"
         [disabled]="buscandoComitente()"
       >
-        <mat-icon>search</mat-icon>
+        <mat-icon svgIcon="search"></mat-icon>
         Buscar
       </button>
     </div>
@@ -105,7 +105,7 @@
     <!-- Caso 1: existe en la cartera -->
     @if (comitenteEncontrado(); as c) {
       <div class="comitente-card">
-        <mat-icon class="check-icon">check_circle</mat-icon>
+        <mat-icon class="check-icon" svgIcon="check_circle"></mat-icon>
         <div class="comitente-info">
           <strong>{{ c.nombreRazonSocial }}</strong>
           <span>
@@ -224,7 +224,7 @@
                 </span>
               </div>
               @if (obraForm.controls.obraId.value === o.id) {
-                <mat-icon class="check-icon">check_circle</mat-icon>
+                <mat-icon class="check-icon" svgIcon="check_circle"></mat-icon>
               }
             </button>
           }
@@ -234,7 +234,7 @@
       }
 
       <button mat-stroked-button type="button" class="boton-nueva" (click)="iniciarNuevaObra()">
-        <mat-icon>add</mat-icon>
+        <mat-icon svgIcon="add"></mat-icon>
         Nueva obra
       </button>
     }
@@ -245,7 +245,7 @@
         <div class="cabecera-nueva">
           <h4>Nueva obra</h4>
           <button mat-button type="button" (click)="cancelarNuevaObra()">
-            <mat-icon>arrow_back</mat-icon>
+            <mat-icon svgIcon="arrow_back"></mat-icon>
             Volver a la lista
           </button>
         </div>
