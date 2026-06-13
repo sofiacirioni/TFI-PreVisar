@@ -47,6 +47,9 @@ public class Profesional {
     @Column(nullable = false, unique = true, length = 20)
     private String matricula;
 
+    @Column(name = "numero_orden", length = 4)
+    private String numeroOrden;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "titulo_id", nullable = false)
     private Titulo titulo;

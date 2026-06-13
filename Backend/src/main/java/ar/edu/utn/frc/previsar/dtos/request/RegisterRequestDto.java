@@ -54,6 +54,10 @@ public class RegisterRequestDto {
     @Size(max = 20)
     private String matricula;
 
+    @NotBlank(message = "El número de orden es obligatorio")
+    @Pattern(regexp = "^\\d{4}$", message = "El número de orden debe tener 4 dígitos")
+    private String numeroOrden;
+
     @NotNull(message = "Debe seleccionar un título")
     private Long tituloId;
 

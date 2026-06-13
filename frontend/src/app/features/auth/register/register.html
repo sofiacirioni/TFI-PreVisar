@@ -199,6 +199,22 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
+              <mat-label>Número de orden</mat-label>
+              <input matInput formControlName="numeroOrden" placeholder="0123" maxlength="4" />
+              @if (form.controls.numeroOrden.touched && form.controls.numeroOrden.errors; as e) {
+                @if (e['required']) {
+                  <mat-error>Obligatorio</mat-error>
+                } @else if (e['numeroOrden']) {
+                  <mat-error>Deben ser 4 dígitos</mat-error>
+                } @else if (e['backend']) {
+                  <mat-error>{{ e['backend'] }}</mat-error>
+                }
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="row-2">
+            <mat-form-field appearance="outline">
               <mat-label>Título</mat-label>
               <mat-select formControlName="tituloId">
                 <mat-option>

@@ -12,6 +12,7 @@ export interface Profesional {
   dni: string;
   cuit: string;
   matricula: string;
+  numeroOrden: string;
   //Titulo (catalogo)
   tituloId: number;
   tituloNombre: string;

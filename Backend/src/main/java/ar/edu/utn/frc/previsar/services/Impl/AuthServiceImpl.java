@@ -100,6 +100,7 @@ public class AuthServiceImpl implements AuthService {
                 .dni(request.getDni())
                 .cuit(request.getCuit())
                 .matricula(request.getMatricula())
+                .numeroOrden(request.getNumeroOrden())
                 .domicilio(request.getDomicilio())
                 .telefono(request.getTelefono())
                 .regional(regional)

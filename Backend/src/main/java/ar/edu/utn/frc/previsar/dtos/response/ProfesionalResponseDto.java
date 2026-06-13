@@ -26,6 +26,7 @@ public class ProfesionalResponseDto {
     private String dni;
     private String cuit;
     private String matricula;
+    private String numeroOrden;
     private Long tituloId;
     private String tituloNombre;            // del catálogo
     private String tituloOtroDescripcion;   // solo si aplica

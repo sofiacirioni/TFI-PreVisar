@@ -5,6 +5,7 @@ import ar.edu.utn.frc.previsar.entities.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -97,10 +98,20 @@ public class JwtService {
     }
 
     /**
-     * Decodifica el secret de Base64 a una SecretKey utilizable por jjwt.
+     * Decodifica el secret a una SecretKey utilizable por jjwt.
+     *
+     * Acepta tanto Base64 estándar como Base64URL (esta última usa '-' y '_'
+     * en lugar de '+' y '/'). Se intenta primero el alfabeto estándar y, si el
+     * secret contiene caracteres URL-safe, se reintenta con Base64URL.
      */
     private SecretKey obtenerClaveDeFirma() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
+        String secret = jwtProperties.getSecret();
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(secret);
+        } catch (DecodingException e) {
+            keyBytes = Decoders.BASE64URL.decode(secret);
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

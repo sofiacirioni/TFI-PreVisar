@@ -23,6 +23,7 @@ import { passwordMatchValidator } from '@shared/validators/password-match.valida
 import { PasswordMismatchMatcher } from '@shared/validators/password-mismatch.matcher';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { cuitDigitoVerificadorValidator, cuitPrefijoValidator, dniCuitCoherenciaValidator, dniValidator } from '../../../shared/validators/dni-cuit.validators';
+import { numeroOrdenValidator } from '../../../shared/validators/numero-orden-validator';
 
 @Component({
   selector: 'app-register',
@@ -83,6 +84,7 @@ export class Register implements OnInit {
 
       // Sección 3: datos profesionales
       matricula: ['', [Validators.required, Validators.maxLength(50)]],
+      numeroOrden: ['', [Validators.required, numeroOrdenValidator()]],
       tituloId: [null as number | null, [Validators.required]],
       tituloOtroDescripcion: ['', [Validators.maxLength(150)]],
       regionalId: [null as number | null, [Validators.required]],
@@ -193,6 +195,7 @@ export class Register implements OnInit {
     dni: raw.dni,
     cuit: raw.cuit,
     matricula: raw.matricula,
+    numeroOrden: raw.numeroOrden,
     tituloId: raw.tituloId!,
     tituloOtroDescripcion: this.tituloRequiereDescripcion()
       ? raw.tituloOtroDescripcion.trim()

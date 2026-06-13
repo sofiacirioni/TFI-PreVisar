@@ -67,13 +67,18 @@ export class Profile implements OnInit {
   // Derivados para mostrar nombres en modo lectura
   readonly regionalNombre = computed(() => this.perfil()?.regionalNombre ?? '—');
   readonly provinciaNombre = computed(() => this.perfil()?.provinciaNombre ?? '—');
-  readonly condicionIvaNombre = computed(
-    () => this.perfil()?.condicionIvaDescripcion ?? '—'
-  );
+  readonly condicionIvaNombre = computed(() => this.perfil()?.condicionIvaDescripcion ?? '—');
+
   readonly tituloMostrar = computed(() => {
     const p = this.perfil();
     if (!p) return '—';
     return p.tituloOtroDescripcion || p.tituloNombre;
+  });
+
+  readonly matriculaCompleta = computed(() => {
+    const p = this.perfil();
+    if (!p) return '';
+    return p.numeroOrden ? `${p.matricula}/${p.numeroOrden}` : p.matricula;
   });
 
   readonly form = this.fb.nonNullable.group({
@@ -123,14 +128,14 @@ export class Profile implements OnInit {
   }
 
   private readonly tituloIdSignal = toSignal(this.form.controls.tituloId.valueChanges, {
-  initialValue: this.form.controls.tituloId.value,
+    initialValue: this.form.controls.tituloId.value,
   });
 
-readonly tituloRequiereDescripcion = computed(() => {
-  const id = this.tituloIdSignal();
-  if (!id) return false;
-   const titulo = this.titulos().find((t) => t.id === id);
-   return titulo?.permiteTextoLibre ?? false;
+  readonly tituloRequiereDescripcion = computed(() => {
+    const id = this.tituloIdSignal();
+    if (!id) return false;
+    const titulo = this.titulos().find((t) => t.id === id);
+    return titulo?.permiteTextoLibre ?? false;
   });
 
   // Control y signal del buscador del select de títulos
@@ -181,10 +186,10 @@ readonly tituloRequiereDescripcion = computed(() => {
     }
 
     const raw = this.form.getRawValue();
-      if (this.tituloRequiereDescripcion() && !raw.tituloOtroDescripcion.trim()) {
-        this.form.controls.tituloOtroDescripcion.setErrors({ requeridoSiOtro: true });
-        this.form.controls.tituloOtroDescripcion.markAsTouched();
-        return;
+    if (this.tituloRequiereDescripcion() && !raw.tituloOtroDescripcion.trim()) {
+      this.form.controls.tituloOtroDescripcion.setErrors({ requeridoSiOtro: true });
+      this.form.controls.tituloOtroDescripcion.markAsTouched();
+      return;
     }
 
     this.guardando.set(true);
@@ -221,10 +226,10 @@ readonly tituloRequiereDescripcion = computed(() => {
   }
 
   async abrirCambiarPassword(): Promise<void> {
-    const ref = this.dialog.open<CambiarPasswordDialog, void, boolean>(
-      CambiarPasswordDialog,
-      { width: '460px', disableClose: false }
-    );
+    const ref = this.dialog.open<CambiarPasswordDialog, void, boolean>(CambiarPasswordDialog, {
+      width: '460px',
+      disableClose: false,
+    });
 
     const exito = await firstValueFrom(ref.afterClosed());
     if (exito) {
@@ -232,8 +237,8 @@ readonly tituloRequiereDescripcion = computed(() => {
         duration: 3000,
         panelClass: ['snackbar-success'],
       });
+    }
   }
-}
 
   private manejarErrorBackend(err: HttpErrorResponse): void {
     if (err.status === 0) {
@@ -266,5 +271,4 @@ readonly tituloRequiereDescripcion = computed(() => {
 
     this.errorGeneral.set('Ocurrió un error al guardar. Intentá de nuevo.');
   }
-
 }
