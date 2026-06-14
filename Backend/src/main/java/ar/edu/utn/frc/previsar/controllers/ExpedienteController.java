@@ -1,6 +1,8 @@
 package ar.edu.utn.frc.previsar.controllers;
 
+import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
+import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import jakarta.validation.Valid;
@@ -55,5 +57,10 @@ public class ExpedienteController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         expedienteService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/calcular-aportes")
+    public ResponseEntity<AportesResponseDto> calcularAportes(@RequestBody CalcularAportesRequestDto request) {
+        return ResponseEntity.ok(expedienteService.calcularAportes(request));
     }
 }

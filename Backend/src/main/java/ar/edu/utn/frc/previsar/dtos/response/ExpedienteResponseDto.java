@@ -24,33 +24,6 @@ public class ExpedienteResponseDto {
     private Long especialidadId;
     private String especialidadNombre;
     private BigDecimal honorariosReferenciales;
-    private BigDecimal aporteRod;
-    private BigDecimal aporteArancelAdmin;
-    private BigDecimal aporteCajaProfesional;
-    private BigDecimal aporteCajaComitente;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    // Totales derivados (no se persisten). Devuelven null si aun no se calcularon.
-    public BigDecimal getTotalCiec() {
-        return sumar(aporteRod, aporteArancelAdmin);
-    }
-
-    public BigDecimal getTotalCaja() {
-        return sumar(aporteCajaProfesional, aporteCajaComitente);
-    }
-
-    public BigDecimal getTotal() {
-        if (getTotalCiec() == null && getTotalCaja() == null) return null;
-        return nz(getTotalCiec()).add(nz(getTotalCaja()));
-    }
-
-    private static BigDecimal sumar(BigDecimal a, BigDecimal b) {
-        if (a == null && b == null) return null;
-        return nz(a).add(nz(b));
-    }
-
-    private static BigDecimal nz(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v;
-    }
 }

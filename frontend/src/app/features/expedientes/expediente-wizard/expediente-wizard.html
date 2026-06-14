@@ -409,7 +409,10 @@
 
   <mat-step [stepControl]="economicoForm" label="Datos económicos">
     <form [formGroup]="economicoForm">
-      <p>Ingresá los honorarios referenciales. Los aportes se calculan automáticamente.</p>
+      <p>
+        Ingresá los honorarios referenciales. La app calcula los aportes estimados para que los
+        compares con tus recibos y planillas.
+      </p>
 
       <mat-form-field appearance="outline" class="campo-full">
         <mat-label>Honorarios referenciales</mat-label>
@@ -440,49 +443,48 @@
         <mat-progress-bar mode="indeterminate" />
       }
 
-      @if (expediente(); as exp) {
-        @if (exp.aporteRod != null) {
-          <div class="aportes-desglose">
-            <h3>Aportes calculados</h3>
+      @if (aportes(); as ap) {
+        <div class="aportes-desglose">
+          <h3>Aportes estimados</h3>
+          <p class="nota">Valores estimativos para verificar contra tus recibos y planillas.</p>
 
-            <div class="grupo">
-              <span class="grupo-titulo">CIEC</span>
-              <div class="linea">
-                <span>Aporte por Registro de Obra (5%)</span
-                ><span>{{ exp.aporteRod | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-              </div>
-              <div class="linea">
-                <span>Arancel administrativo</span
-                ><span>{{ exp.aporteArancelAdmin | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-              </div>
-              <div class="linea subtotal">
-                <span>Subtotal CIEC</span
-                ><span>{{ exp.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-              </div>
-            </div>
-
-            <div class="grupo">
-              <span class="grupo-titulo">Caja Ley 8470</span>
-              <div class="linea">
-                <span>Aporte profesional (9%)</span
-                ><span>{{ exp.aporteCajaProfesional | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-              </div>
-              <div class="linea">
-                <span>Aporte comitente (9%)</span
-                ><span>{{ exp.aporteCajaComitente | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-              </div>
-              <div class="linea subtotal">
-                <span>Subtotal Caja</span
-                ><span>{{ exp.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-              </div>
-            </div>
-
-            <div class="linea total">
-              <span>Total de aportes</span
-              ><span>{{ exp.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+          <div class="grupo">
+            <span class="grupo-titulo">CIEC</span>
+            @for (linea of ap.lineas; track linea.conceptoCodigo) {
+              @if (linea.grupo === 'CIEC') {
+                <div class="linea">
+                  <span>{{ linea.conceptoNombre }}</span
+                  ><span>{{ linea.monto | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+                </div>
+              }
+            }
+            <div class="linea subtotal">
+              <span>Subtotal CIEC</span
+              ><span>{{ ap.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
             </div>
           </div>
-        }
+
+          <div class="grupo">
+            <span class="grupo-titulo">Caja Ley 8470</span>
+            @for (linea of ap.lineas; track linea.conceptoCodigo) {
+              @if (linea.grupo === 'CAJA') {
+                <div class="linea">
+                  <span>{{ linea.conceptoNombre }}</span
+                  ><span>{{ linea.monto | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+                </div>
+              }
+            }
+            <div class="linea subtotal">
+              <span>Subtotal Caja</span
+              ><span>{{ ap.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="linea total">
+            <span>Total de aportes</span
+            ><span>{{ ap.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+          </div>
+        </div>
       }
     </form>
 
@@ -535,23 +537,21 @@
         </span>
       </div>
 
-      @if (expediente(); as exp) {
-        @if (exp.aporteRod != null) {
-          <div class="resumen-aportes">
-            <div class="linea">
-              <span>Subtotal CIEC</span
-              ><span>{{ exp.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-            </div>
-            <div class="linea">
-              <span>Subtotal Caja Ley 8470</span
-              ><span>{{ exp.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-            </div>
-            <div class="linea total">
-              <span>Total de aportes</span
-              ><span>{{ exp.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
-            </div>
+      @if (aportes(); as ap) {
+        <div class="resumen-aportes">
+          <div class="linea">
+            <span>Subtotal CIEC</span
+            ><span>{{ ap.totalCiec | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
           </div>
-        }
+          <div class="linea">
+            <span>Subtotal Caja Ley 8470</span
+            ><span>{{ ap.totalCaja | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+          </div>
+          <div class="linea total">
+            <span>Total de aportes</span
+            ><span>{{ ap.total | currency: 'ARS' : 'symbol' : '1.2-2' }}</span>
+          </div>
+        </div>
       }
 
       @if (faltanDatos().length > 0) {

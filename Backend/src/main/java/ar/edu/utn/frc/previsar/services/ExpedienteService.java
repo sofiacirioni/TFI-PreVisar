@@ -1,6 +1,8 @@
 package ar.edu.utn.frc.previsar.services;
 
+import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
+import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 
 import java.util.List;
@@ -12,4 +14,5 @@ public interface ExpedienteService {
     ExpedienteResponseDto obtener(Long id);
     List<ExpedienteResponseDto > listarMisExpedientes();
     void eliminar(Long id);
+    AportesResponseDto calcularAportes(CalcularAportesRequestDto request);
 }

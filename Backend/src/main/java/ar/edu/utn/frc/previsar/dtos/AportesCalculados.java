@@ -1,22 +1,31 @@
 package ar.edu.utn.frc.previsar.dtos;
 
-import java.math.BigDecimal;
+import ar.edu.utn.frc.previsar.enums.GrupoAporte;
 
-public record AportesCalculados(
-        BigDecimal aporteRod,
-        BigDecimal aporteArancelAdmin,
-        BigDecimal aporteCajaProfesional,
-        BigDecimal aporteCajaComitente
-) {
+import java.math.BigDecimal;
+import java.util.List;
+
+public record AportesCalculados(List<LineaAporte> lineas) {
+
+    public record LineaAporte(String conceptoCodigo, String conceptoNombre,
+                              GrupoAporte grupo, BigDecimal monto) {}
+
     public BigDecimal totalCiec() {
-        return aporteRod.add(aporteArancelAdmin);
+        return totalPorGrupo(GrupoAporte.CIEC);
     }
 
     public BigDecimal totalCaja() {
-        return aporteCajaProfesional.add(aporteCajaComitente);
+        return totalPorGrupo(GrupoAporte.CAJA);
     }
 
     public BigDecimal total() {
         return totalCiec().add(totalCaja());
+    }
+
+    private BigDecimal totalPorGrupo(GrupoAporte grupo) {
+        return lineas.stream()
+                .filter(l -> l.grupo() == grupo)
+                .map(LineaAporte::monto)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

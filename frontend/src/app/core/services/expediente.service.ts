@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { ExpedienteRequest, ExpedienteResponse } from '../models/expediente.model';
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '../constants/api.constants';
+import { AportesResponse, CalcularAportesRequest } from '../models/aportes.model';
 
 @Injectable({
   providedIn: 'root',
@@ -32,5 +33,9 @@ export class ExpedienteService {
 
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(API.EXPEDIENTE_BY_ID(id));
+  }
+
+  calcularAportes(request: CalcularAportesRequest): Observable<AportesResponse> {
+    return this.http.post<AportesResponse>(API.EXPEDIENTES_CALCULAR_APORTES, request);
   }
 }

@@ -44,19 +44,6 @@ public class Expediente {
     @Column(name = "honorarios_referenciales", precision = 15, scale = 2)
     private BigDecimal honorariosReferenciales;
 
-    // Aportes calculados (snapshot). Null hasta que se cargan honorarios.
-    @Column(name = "aporte_rod", precision = 15, scale = 2)
-    private BigDecimal aporteRod;
-
-    @Column(name = "aporte_arancel_admin", precision = 15, scale = 2)
-    private BigDecimal aporteArancelAdmin;
-
-    @Column(name = "aporte_caja_profesional", precision = 15, scale = 2)
-    private BigDecimal aporteCajaProfesional;
-
-    @Column(name = "aporte_caja_comitente", precision = 15, scale = 2)
-    private BigDecimal aporteCajaComitente;
-
     @Column(name = "activo", nullable = false)
     private boolean activo = true;
 

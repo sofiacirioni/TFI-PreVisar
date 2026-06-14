@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ComitenteService } from '../../../core/services/comitente.service';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,7 +25,6 @@ import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink, //ver
     MatTableModule,
     MatButtonModule,
     MatIconModule,

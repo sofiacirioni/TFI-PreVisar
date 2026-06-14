@@ -1,11 +1,13 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
 import ar.edu.utn.frc.previsar.dtos.AportesCalculados;
+import ar.edu.utn.frc.previsar.entities.ConceptoAporte;
 import ar.edu.utn.frc.previsar.entities.ParametroAporte;
 import ar.edu.utn.frc.previsar.entities.TipoTarea;
+import ar.edu.utn.frc.previsar.entities.TipoTareaAporte;
 import ar.edu.utn.frc.previsar.enums.BaseCalculo;
-import ar.edu.utn.frc.previsar.enums.ConceptoAporte;
 import ar.edu.utn.frc.previsar.repositories.ParametroAporteRepository;
+import ar.edu.utn.frc.previsar.repositories.TipoTareaAporteRepository;
 import ar.edu.utn.frc.previsar.services.AporteCalculatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class AportesCalculatorServiceImpl implements AporteCalculatorService {
     private static final int ESCALA_MONTO = 2;
     private static final BigDecimal CIEN = BigDecimal.valueOf(100);
 
+    private final TipoTareaAporteRepository tipoTareaAporteRepo;
     private final ParametroAporteRepository parametroRepo;
 
     @Override
@@ -32,32 +36,29 @@ public class AportesCalculatorServiceImpl implements AporteCalculatorService {
         }
 
         LocalDate hoy = LocalDate.now();
+        List<TipoTareaAporte> aportes = tipoTareaAporteRepo.findByTipoTareaConConcepto(tipoTarea.getId());
 
-        BigDecimal rod = tipoTarea.isAplicaRod()
-                ? montoConcepto(ConceptoAporte.ROD, honorarios, hoy)
-                : cero();
-        BigDecimal arancel = tipoTarea.isAplicaArancelAdmin()
-                ? montoConcepto(ConceptoAporte.ARANCEL_ADMIN, honorarios, hoy)
-                : cero();
-        BigDecimal cajaProf = tipoTarea.isAplicaCaja()
-                ? montoConcepto(ConceptoAporte.CAJA_PROFESIONAL, honorarios, hoy)
-                : cero();
-        BigDecimal cajaComit = tipoTarea.isAplicaCaja()
-                ? montoConcepto(ConceptoAporte.CAJA_COMITENTE, honorarios, hoy)
-                : cero();
+        List<AportesCalculados.LineaAporte> lineas = aportes.stream()
+                .map(tta -> new AportesCalculados.LineaAporte(
+                        tta.getConcepto().getCodigo(),
+                        tta.getConcepto().getNombre(),
+                        tta.getConcepto().getGrupo(),
+                        montoDe(tta, honorarios, hoy)))
+                .toList();
 
-        return new AportesCalculados(rod, arancel, cajaProf, cajaComit);
+        return new AportesCalculados(lineas);
     }
 
-    private BigDecimal montoConcepto(ConceptoAporte concepto, BigDecimal honorarios, LocalDate fecha) {
-        ParametroAporte p = parametroRepo.findVigente(concepto, fecha)
+    private BigDecimal montoDe(TipoTareaAporte tta, BigDecimal honorarios, LocalDate fecha) {
+        ConceptoAporte concepto = tta.getConcepto();
+        ParametroAporte p = parametroRepo.findVigente(concepto.getId(), fecha)
                 .orElseThrow(() -> new IllegalStateException(
-                        "No hay parametro de aporte vigente para " + concepto + " al " + fecha));
+                        "No hay parametro de aporte vigente para " + concepto.getCodigo() + " al " + fecha));
 
         return switch (p.getTipoValor()) {
             case FIJO -> p.getValor().setScale(ESCALA_MONTO, RoundingMode.HALF_UP);
             case PORCENTAJE -> {
-                BigDecimal base = resolverBase(p.getBaseCalculo(), honorarios);
+                BigDecimal base = resolverBase(tta.getBaseCalculo(), honorarios);
                 yield base.multiply(p.getValor())
                         .divide(CIEN, ESCALA_MONTO, RoundingMode.HALF_UP);
             }
@@ -70,9 +71,5 @@ public class AportesCalculatorServiceImpl implements AporteCalculatorService {
             case MONTO_OBRA -> throw new UnsupportedOperationException(
                     "Base MONTO_OBRA no soportada en el MVP");
         };
-    }
-
-    private BigDecimal cero() {
-        return BigDecimal.ZERO.setScale(ESCALA_MONTO, RoundingMode.HALF_UP);
     }
 }

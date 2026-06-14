@@ -25,6 +25,7 @@ import { MatInputModule } from '@angular/material/input';
 import { HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { CurrencyPipe } from '@angular/common';
+import { AportesResponse } from '../../../core/models/aportes.model';
 
 @Component({
   selector: 'app-expediente-wizard',
@@ -62,6 +63,7 @@ export class ExpedienteWizard implements OnInit {
 
   readonly nombreControl = this.fb.control<string>('');
 
+  readonly aportes = signal<AportesResponse | null>(null);
   readonly calculandoAportes = signal(false);
 
   // ===== Estado del paso "Comitente" =====
@@ -195,6 +197,10 @@ export class ExpedienteWizard implements OnInit {
             this.tareaForm.patchValue({ tipoTareaId: exp.tipoTareaId });
           });
         }
+        if (exp.tipoTareaId != null && exp.honorariosReferenciales != null) {
+          this.calcularAportes();
+        }
+
         this.obraForm.patchValue({ obraId: exp.obraId });
         this.economicoForm.patchValue({ honorariosReferenciales: exp.honorariosReferenciales });
         this.comitenteForm.patchValue({ comitenteId: exp.comitenteId });
@@ -218,17 +224,26 @@ export class ExpedienteWizard implements OnInit {
   }
 
   private calcularAportes(): void {
-    // El back sólo calcula si hay tarea + honorarios. Si falta la tarea, no tiene sentido pegar.
-    if (this.tareaForm.controls.tipoTareaId.value == null) return;
-
+    const tipoTareaId = this.tareaForm.controls.tipoTareaId.value;
+    const honorarios = this.economicoForm.controls.honorariosReferenciales.value;
+    if (tipoTareaId == null || honorarios == null || honorarios < 0) {
+      this.aportes.set(null);
+      return;
+    }
     this.calculandoAportes.set(true);
-    this.guardarParcial().subscribe({
-      next: () => this.calculandoAportes.set(false), // expediente() ya tiene los aportes frescos
-      error: () => {
-        this.calculandoAportes.set(false);
-        this.snackBar.open('No se pudieron calcular los aportes', 'Cerrar', { duration: 4000 });
-      },
-    });
+    this.expedienteService
+      .calcularAportes({ tipoTareaId, honorariosReferenciales: honorarios })
+      .subscribe({
+        next: (resp) => {
+          this.aportes.set(resp);
+          this.calculandoAportes.set(false);
+        },
+        error: () => {
+          this.calculandoAportes.set(false);
+          this.aportes.set(null);
+          this.snackBar.open('No se pudieron calcular los aportes', 'Cerrar', { duration: 4000 });
+        },
+      });
   }
 
   /** Recarga los tipos de tarea filtrados por especialidad. */
@@ -551,10 +566,9 @@ export class ExpedienteWizard implements OnInit {
     this.tareaForm.controls.especialidadId.valueChanges,
     { initialValue: this.tareaForm.controls.especialidadId.value },
   );
-  private readonly tipoTareaIdValue = toSignal(
-    this.tareaForm.controls.tipoTareaId.valueChanges,
-    { initialValue: this.tareaForm.controls.tipoTareaId.value },
-  );
+  private readonly tipoTareaIdValue = toSignal(this.tareaForm.controls.tipoTareaId.valueChanges, {
+    initialValue: this.tareaForm.controls.tipoTareaId.value,
+  });
   private readonly obraIdValue = toSignal(this.obraForm.controls.obraId.valueChanges, {
     initialValue: this.obraForm.controls.obraId.value,
   });

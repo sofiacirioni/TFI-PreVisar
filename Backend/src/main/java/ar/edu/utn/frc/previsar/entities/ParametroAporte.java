@@ -1,7 +1,6 @@
 package ar.edu.utn.frc.previsar.entities;
 
 import ar.edu.utn.frc.previsar.enums.BaseCalculo;
-import ar.edu.utn.frc.previsar.enums.ConceptoAporte;
 import ar.edu.utn.frc.previsar.enums.TipoValor;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,9 +20,9 @@ public class ParametroAporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "concepto", nullable = false, length = 30)
-    private ConceptoAporte concepto;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "concepto_id", nullable = false)
+    private ConceptoAporte concepto;   // ahora ENTITY
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_valor", nullable = false, length = 15)

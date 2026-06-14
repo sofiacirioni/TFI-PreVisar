@@ -34,5 +34,6 @@ export const API = {
   EXPEDIENTES: `${environment.apiBaseUrl}/expedientes`,
   EXPEDIENTE_BY_ID: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}`,
   EXPEDIENTE_COMPLETAR: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/completar`,
+  EXPEDIENTES_CALCULAR_APORTES: `${environment.apiBaseUrl}/expedientes/calcular-aportes`,
   
 } as const;

@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ObraService } from '../../../core/services/obra.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -24,7 +24,6 @@ import { HttpErrorResponse } from '@angular/common/http';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     MatTableModule,
     MatButtonModule,
     MatIconModule,

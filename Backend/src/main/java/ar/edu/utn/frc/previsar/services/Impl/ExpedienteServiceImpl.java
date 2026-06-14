@@ -1,7 +1,9 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
 import ar.edu.utn.frc.previsar.dtos.AportesCalculados;
+import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
+import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.entities.Expediente;
 import ar.edu.utn.frc.previsar.entities.Obra;
@@ -93,6 +95,25 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         expedienteRepository.save(e);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AportesResponseDto calcularAportes(CalcularAportesRequestDto request) {
+        if (request.getTipoTareaId() == null || request.getHonorariosReferenciales() == null) {
+            throw new BusinessException("Tipo de tarea y honorarios son obligatorios para calcular aportes");
+        }
+        TipoTarea tipoTarea = tipoTareaRepository.findById(request.getTipoTareaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Tipo de tarea no encontrado"));
+
+        AportesCalculados calc = aporteCalculator.calcular(tipoTarea, request.getHonorariosReferenciales());
+
+        List<AportesResponseDto.LineaAporteResponse> lineas = calc.lineas().stream()
+                .map(l -> new AportesResponseDto.LineaAporteResponse(
+                        l.conceptoCodigo(), l.conceptoNombre(), l.grupo().name(), l.monto()))
+                .toList();
+
+        return new AportesResponseDto(lineas, calc.totalCiec(), calc.totalCaja(), calc.total());
+    }
+
     // --- helpers ---
 
     /** Aplica solo los campos presentes (PATCH parcial) y recalcula aportes. */
@@ -108,22 +129,6 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         }
         if (req.getHonorariosReferenciales() != null) {
             e.setHonorariosReferenciales(req.getHonorariosReferenciales());
-        }
-        recalcularAportes(e);
-    }
-
-    private void recalcularAportes(Expediente e) {
-        if (e.getTipoTarea() != null && e.getHonorariosReferenciales() != null) {
-            AportesCalculados a = aporteCalculator.calcular(e.getTipoTarea(), e.getHonorariosReferenciales());
-            e.setAporteRod(a.aporteRod());
-            e.setAporteArancelAdmin(a.aporteArancelAdmin());
-            e.setAporteCajaProfesional(a.aporteCajaProfesional());
-            e.setAporteCajaComitente(a.aporteCajaComitente());
-        } else {
-            e.setAporteRod(null);
-            e.setAporteArancelAdmin(null);
-            e.setAporteCajaProfesional(null);
-            e.setAporteCajaComitente(null);
         }
     }
 

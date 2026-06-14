@@ -23,14 +23,6 @@ export interface ExpedienteResponse {
   especialidadId: number | null;
   especialidadNombre: string | null;
   honorariosReferenciales: number | null;
-  aporteRod: number | null;
-  aporteArancelAdmin: number | null;
-  aporteCajaProfesional: number | null;
-  aporteCajaComitente: number | null;
-  // Totales derivados que expone el getter del back (Jackson los serializa)
-  totalCiec: number | null;
-  totalCaja: number | null;
-  total: number | null;
   createdAt: string;
   updatedAt: string;
 }
