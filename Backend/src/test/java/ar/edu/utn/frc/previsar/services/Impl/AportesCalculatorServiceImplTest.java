@@ -101,7 +101,6 @@ class AportesCalculatorServiceImplTest {
     private TipoTareaAporte tta(ConceptoAporte concepto) {
         TipoTareaAporte tta = new TipoTareaAporte();
         tta.setConcepto(concepto);
-        tta.setBaseCalculo(BaseCalculo.HONORARIOS);
         return tta;
     }
 

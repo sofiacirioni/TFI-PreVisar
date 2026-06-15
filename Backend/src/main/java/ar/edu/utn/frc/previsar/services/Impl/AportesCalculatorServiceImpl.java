@@ -58,7 +58,7 @@ public class AportesCalculatorServiceImpl implements AporteCalculatorService {
         return switch (p.getTipoValor()) {
             case FIJO -> p.getValor().setScale(ESCALA_MONTO, RoundingMode.HALF_UP);
             case PORCENTAJE -> {
-                BigDecimal base = resolverBase(tta.getBaseCalculo(), honorarios);
+                BigDecimal base = resolverBase(p.getBaseCalculo(), honorarios);
                 yield base.multiply(p.getValor())
                         .divide(CIEN, ESCALA_MONTO, RoundingMode.HALF_UP);
             }
