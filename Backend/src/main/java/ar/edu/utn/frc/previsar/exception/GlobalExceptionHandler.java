@@ -59,6 +59,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Acceso denegado por reglas de negocio (usuario autenticado sin permiso).
+     * Devuelve HTTP 403.
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponseDto> manejarForbidden(
+            ForbiddenException ex,
+            HttpServletRequest request) {
+        return construirRespuesta(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    /**
      * Recurso no encontrado. Devuelve HTTP 404.
      */
     @ExceptionHandler(ResourceNotFoundException.class)

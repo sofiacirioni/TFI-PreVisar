@@ -16,3 +16,13 @@ export interface AportesResponse {
   totalCaja: number;
   total: number;
 }
+
+/** Valor vigente del arancel administrativo. */
+export interface ArancelVigente {
+  valor: number | null;
+  vigenciaDesde: string | null;
+}
+
+export interface ActualizarArancelRequest {
+  valor: number;
+}

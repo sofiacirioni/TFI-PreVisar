@@ -1,0 +1,73 @@
+<div class="form-page">
+  <header class="page-header">
+    <div>
+      <h1>Gestión de parámetros</h1>
+      <p class="subtitle">Actualizá el arancel administrativo vigente.</p>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="loader-wrap">
+      <mat-spinner diameter="40" />
+      <span>Cargando arancel...</span>
+    </div>
+  } @else if (errorCarga()) {
+    <div class="error-banner">
+      <mat-icon svgIcon="error_outline"></mat-icon>
+      <span>{{ errorCarga() }}</span>
+    </div>
+  } @else {
+    <mat-card appearance="outlined" class="form-card">
+      <mat-card-content>
+        <!-- Valor vigente -->
+        <section class="vigente">
+          <span class="vigente-label">Arancel vigente</span>
+          @if (arancelVigente()?.valor != null) {
+            <span class="vigente-valor">
+              $ {{ arancelVigente()!.valor | number: '1.2-2' }}
+            </span>
+            @if (arancelVigente()?.vigenciaDesde; as desde) {
+              <span class="vigente-desde">vigente desde {{ desde | date: 'dd/MM/yyyy' }}</span>
+            }
+          } @else {
+            <span class="vigente-valor sin-valor">Sin valor cargado</span>
+          }
+        </section>
+
+        <!-- Nuevo valor -->
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="arancel-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nuevo valor del arancel</mat-label>
+            <span matTextPrefix>$&nbsp;</span>
+            <input
+              matInput
+              type="number"
+              formControlName="valor"
+              step="0.01"
+              min="0"
+              placeholder="0,00"
+            />
+            <mat-hint>Se registra como nuevo valor vigente desde hoy.</mat-hint>
+            @if (form.controls.valor.touched && form.controls.valor.errors; as e) {
+              @if (e['required']) {
+                <mat-error>Ingresá un valor</mat-error>
+              } @else if (e['min']) {
+                <mat-error>El valor debe ser mayor a cero</mat-error>
+              }
+            }
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-flat-button type="submit" class="submit-button" [disabled]="guardando()">
+              @if (guardando()) {
+                <mat-spinner diameter="20" />
+              } @else {
+                <span>Guardar</span>
+              }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

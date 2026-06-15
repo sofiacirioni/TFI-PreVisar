@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@core/guards/auth.guard';
 import { guestGuard } from '@core/guards/guest.guard';
+import { revisorGuard } from '@core/guards/revisor.guard';
 
 export const routes: Routes = [
   // Raíz → dashboard
@@ -51,6 +52,12 @@ export const routes: Routes = [
         path: 'expedientes',
         loadChildren: () =>
           import('@features/expedientes/expedientes.routes').then((m) => m.EXPEDIENTES_ROUTES),
+      },
+      {
+        path: 'admin',
+        canActivate: [revisorGuard],
+        loadChildren: () =>
+          import('@features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
       },
     ],
   },

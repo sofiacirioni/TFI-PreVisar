@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.previsar.repositories;
 
+import ar.edu.utn.frc.previsar.entities.ConceptoAporte;
 import ar.edu.utn.frc.previsar.entities.ParametroAporte;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,5 @@ public interface ParametroAporteRepository extends JpaRepository<ParametroAporte
         """)
     Optional<ParametroAporte> findVigente(@Param("conceptoId") Long conceptoId,
                                           @Param("fecha") LocalDate fecha);
+
 }
