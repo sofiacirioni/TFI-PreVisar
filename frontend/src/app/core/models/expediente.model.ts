@@ -15,6 +15,8 @@ export interface ExpedienteResponse {
   estado: EstadoExpediente;
   obraId: number | null;
   obraDesignacion: string | null;
+  provinciaId: number | null;
+  provinciaNombre: string | null;
   comitenteId: number | null;
   comitenteNombre: string | null;
   tipoTareaId: number | null;

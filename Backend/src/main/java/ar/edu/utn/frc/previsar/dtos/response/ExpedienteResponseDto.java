@@ -16,6 +16,8 @@ public class ExpedienteResponseDto {
     private String estado;
     private Long obraId;
     private String obraDesignacion;
+    private Long provinciaId;     // derivado de obra -> provincia (define la estructura documental)
+    private String provinciaNombre;
     private Long comitenteId;   // derivado de obra -> comitente (para el wizard)
     private String comitenteNombre;
     private Long tipoTareaId;

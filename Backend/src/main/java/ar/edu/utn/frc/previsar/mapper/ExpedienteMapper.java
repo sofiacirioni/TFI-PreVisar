@@ -15,6 +15,8 @@ import org.mapstruct.Mapping;
 public interface ExpedienteMapper {
     @Mapping(target = "obraId", source = "obra.id")
     @Mapping(target = "obraDesignacion", source = "obra.designacion")
+    @Mapping(target = "provinciaId", source = "obra.provincia.id")
+    @Mapping(target = "provinciaNombre", source = "obra.provincia.nombre")
     @Mapping(target = "comitenteId", source = "obra.comitente.id")
     @Mapping(target = "comitenteNombre", source = "obra.comitente.nombreRazonSocial")
     @Mapping(target = "tipoTareaId", source = "tipoTarea.id")

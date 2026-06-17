@@ -501,10 +501,11 @@ export class ExpedienteWizard implements OnInit {
         }),
       )
       .subscribe({
-        next: () => {
+        next: (exp) => {
           this.guardando.set(false);
           this.snackBar.open('Expediente generado', 'Cerrar', { duration: 3000 });
-          this.router.navigate(['/expedientes']);
+          // Lleva al armado documental del expediente recién generado.
+          this.router.navigate(['/expedientes', exp.id, 'armado']);
         },
         error: (err) => {
           this.guardando.set(false);

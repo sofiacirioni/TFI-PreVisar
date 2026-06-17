@@ -39,4 +39,7 @@ export const API = {
   // --- Parámetros de aporte (gestión, solo revisor) ---
   APORTE_ARANCEL: `${environment.apiBaseUrl}/aportes/arancel`,
 
+  // --- Estructura de expediente (seccion, documentos requeridos) ---
+  ESTRUCTURA: `${environment.apiBaseUrl}/estructura`,
+
 } as const;

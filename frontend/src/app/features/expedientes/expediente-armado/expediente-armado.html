@@ -1,0 +1,86 @@
+@let v = vm();
+
+@if (v.status === 'loading') {
+  <mat-progress-bar mode="indeterminate" />
+} @else if (v.status === 'error') {
+  <div class="estado-vacio">
+    <!-- SCRUM-119: ilustración plana acá -->
+    <p>No pudimos cargar la estructura del expediente.</p>
+  </div>
+} @else {
+  <header class="armado-header">
+    <div class="armado-header__info">
+      <a mat-button routerLink="/expedientes">
+        <mat-icon>arrow_back</mat-icon>
+        Expedientes
+      </a>
+      <h1>{{ v.nombre }}</h1>
+      <mat-chip-set><mat-chip>{{ v.estado }}</mat-chip></mat-chip-set>
+    </div>
+    <button mat-flat-button color="primary" [disabled]="!puedeGenerar()" (click)="generar()">
+      Generar
+    </button>
+  </header>
+
+  <mat-progress-bar mode="determinate" [value]="progreso()" />
+  <p class="progreso-label">
+    {{ obligatoriosCargados() }} de {{ obligatorios().length }} documentos obligatorios cargados
+  </p>
+
+  @if (!secciones().length) {
+    <div class="estado-vacio">
+      <p>Todavía no hay una estructura definida para este tipo de tarea en tu provincia.</p>
+    </div>
+  } @else {
+    <div class="armado-layout">
+      <!-- IZQUIERDA: índice navegable (secciones → documentos) -->
+      <nav class="indice" aria-label="Índice del expediente">
+        @for (s of secciones(); track s.id) {
+          <div class="indice-seccion" [class.activa]="s.id === seccionActivaId()">
+            <p class="indice-seccion__titulo">{{ s.nombre }}</p>
+            @for (doc of s.documentos; track doc.id) {
+              <button
+                class="indice-doc"
+                [class.activo]="doc.id === docActivo()?.id"
+                (click)="seleccionarDoc(doc.id)"
+              >
+                <mat-icon class="indice-doc__estado" [class.cargado]="cargados().has(doc.id)">
+                  {{ cargados().has(doc.id) ? 'check_circle' : 'radio_button_unchecked' }}
+                </mat-icon>
+                <span class="indice-doc__nombre">{{ doc.nombre }}</span>
+                @if (!doc.obligatorio) {
+                  <small class="indice-doc__opcional">opcional</small>
+                }
+              </button>
+            }
+          </div>
+        }
+      </nav>
+
+      <!-- CENTRO: hoja (placeholder de la vista del documento) -->
+      <section class="hoja" aria-label="Vista del documento">
+        @if (docActivo(); as doc) {
+          <article class="hoja__papel">
+            <div class="hoja__placeholder">
+              <mat-icon>description</mat-icon>
+              <h2>{{ doc.nombre }}</h2>
+              <p class="hoja__codigo">{{ doc.codigo }}</p>
+              <p class="hoja__hint">La vista previa del documento estará disponible próximamente.</p>
+            </div>
+          </article>
+        } @else {
+          <div class="estado-vacio"><p>Seleccioná un documento del índice.</p></div>
+        }
+      </section>
+
+      <!-- DERECHA: observaciones de validación (placeholder) -->
+      <aside class="observaciones" aria-label="Observaciones de validación">
+        <h3 class="observaciones__titulo">Observaciones</h3>
+        <p class="observaciones__vacio">
+          Las validaciones automáticas aparecerán acá como observaciones sobre el documento
+          seleccionado.
+        </p>
+      </aside>
+    </div>
+  }
+}

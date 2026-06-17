@@ -5,8 +5,7 @@ export const EXPEDIENTES_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    loadComponent: () =>
-      import('./expediente-list/expediente-list').then((m) => m.ExpedienteList),
+    loadComponent: () => import('./expediente-list/expediente-list').then((m) => m.ExpedienteList),
   },
   {
     path: 'nuevo',
@@ -17,5 +16,10 @@ export const EXPEDIENTES_ROUTES: Routes = [
     path: ':id',
     loadComponent: () =>
       import('./expediente-wizard/expediente-wizard').then((m) => m.ExpedienteWizard),
+  },
+  {
+    path: ':id/armado',
+    loadComponent: () =>
+      import('./expediente-armado/expediente-armado').then((m) => m.ExpedienteArmado),
   },
 ];
