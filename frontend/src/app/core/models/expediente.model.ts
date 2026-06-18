@@ -1,4 +1,4 @@
-export type EstadoExpediente = 'BORRADOR' | 'COMPLETO';
+export type EstadoExpediente = 'BORRADOR' | 'EN_PROCESO';
 
 // Lo que MANDAMOS al backend. Todo opcional = guardado parcial.
 export interface ExpedienteRequest {

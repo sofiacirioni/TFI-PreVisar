@@ -125,10 +125,48 @@
   font-size: 0.85rem;
 }
 
-/* DERECHA: observaciones */
-.observaciones {
+/* DERECHA: datos del expediente + observaciones */
+.panel-derecho {
   position: sticky;
   top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.resumen-expediente {
+  background: var(--mat-sys-surface-container);
+  border-radius: 12px;
+  padding: 1rem;
+  .resumen-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+  }
+  dl {
+    margin: 0.75rem 0 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  dt {
+    color: var(--mat-sys-on-surface-variant);
+  }
+  dd {
+    margin: 0;
+    text-align: right;
+    font-weight: 500;
+  }
+}
+.observaciones {
   padding: 1rem;
   border-radius: 12px;
   background: var(--mat-sys-surface-container-low);
@@ -153,7 +191,7 @@
     grid-template-columns: 1fr;
   }
   .indice,
-  .observaciones {
+  .panel-derecho {
     position: static;
   }
   .hoja__papel {

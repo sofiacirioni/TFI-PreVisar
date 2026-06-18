@@ -14,8 +14,10 @@
         <mat-icon>arrow_back</mat-icon>
         Expedientes
       </a>
-      <h1>{{ v.nombre }}</h1>
-      <mat-chip-set><mat-chip>{{ v.estado }}</mat-chip></mat-chip-set>
+      <h1>{{ v.expediente.nombre ?? 'Expediente' }}</h1>
+      <mat-chip-set>
+        <mat-chip>{{ v.expediente.estado === 'EN_PROCESO' ? 'En proceso' : 'Borrador' }}</mat-chip>
+      </mat-chip-set>
     </div>
     <button mat-flat-button color="primary" [disabled]="!puedeGenerar()" (click)="generar()">
       Generar
@@ -73,14 +75,44 @@
         }
       </section>
 
-      <!-- DERECHA: observaciones de validación (placeholder) -->
-      <aside class="observaciones" aria-label="Observaciones de validación">
-        <h3 class="observaciones__titulo">Observaciones</h3>
-        <p class="observaciones__vacio">
-          Las validaciones automáticas aparecerán acá como observaciones sobre el documento
-          seleccionado.
-        </p>
-      </aside>
+      <!-- DERECHA: datos del expediente + observaciones de validación -->
+      <div class="panel-derecho">
+        @if (expediente(); as exp) {
+          <aside class="resumen-expediente" aria-label="Datos del expediente">
+            <div class="resumen-header">
+              <h3>Datos del expediente</h3>
+              <button mat-stroked-button (click)="editarDatos(exp.id)">
+                <mat-icon>edit</mat-icon>
+                Editar datos
+              </button>
+            </div>
+            <dl>
+              <div><dt>Comitente</dt><dd>{{ exp.comitenteNombre ?? '—' }}</dd></div>
+              <div><dt>Obra</dt><dd>{{ exp.obraDesignacion ?? '—' }}</dd></div>
+              <div><dt>Tarea</dt><dd>{{ exp.tipoTareaNombre ?? '—' }}</dd></div>
+              <div><dt>Provincia</dt><dd>{{ exp.provinciaNombre ?? '—' }}</dd></div>
+              <div>
+                <dt>Honorarios ref.</dt>
+                <dd>
+                  {{
+                    exp.honorariosReferenciales != null
+                      ? (exp.honorariosReferenciales | currency: 'ARS' : 'symbol' : '1.2-2')
+                      : '—'
+                  }}
+                </dd>
+              </div>
+            </dl>
+          </aside>
+        }
+
+        <aside class="observaciones" aria-label="Observaciones de validación">
+          <h3 class="observaciones__titulo">Observaciones</h3>
+          <p class="observaciones__vacio">
+            Las validaciones automáticas aparecerán acá como observaciones sobre el documento
+            seleccionado.
+          </p>
+        </aside>
+      </div>
     </div>
   }
 }

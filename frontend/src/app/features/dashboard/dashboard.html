@@ -53,8 +53,8 @@
               <mat-icon class="card-icon" svgIcon="description"></mat-icon>
               <span class="card-label">{{ exp.tipoTareaCodigo || 'Borrador' }}</span>
               <span class="card-meta">{{ exp.updatedAt | date: 'dd/MM/yyyy' }}</span>
-              <span class="card-estado" [class.estado-completo]="exp.estado === 'COMPLETO'">
-                {{ exp.estado === 'COMPLETO' ? 'Completo' : 'Borrador' }}
+              <span class="card-estado" [class.estado-proceso]="exp.estado === 'EN_PROCESO'">
+                {{ exp.estado === 'EN_PROCESO' ? 'En proceso' : 'Borrador' }}
               </span>
             </div>
             <span class="card-filename">{{ exp.nombre || 'Sin nombre' }}</span>

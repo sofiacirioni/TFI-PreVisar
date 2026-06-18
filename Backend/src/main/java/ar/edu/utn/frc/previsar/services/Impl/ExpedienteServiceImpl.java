@@ -63,10 +63,12 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         if (e.getTipoTarea() == null) faltan.add("tipo de tarea");
         if (e.getHonorariosReferenciales() == null) faltan.add("honorarios referenciales");
         if (!faltan.isEmpty()) {
-            throw new BusinessException("No se puede completar el expediente. Faltan: " + String.join(", ", faltan));
+            throw new BusinessException("No se puede generar el expediente. Faltan: " + String.join(", ", faltan));
         }
 
-        e.setEstado(EstadoExpediente.COMPLETO);
+        // Generar = transición BORRADOR -> EN_PROCESO (pasa al armado documental).
+        // No hay estado posterior: la entrega/visado formal vive en otro sistema.
+        e.setEstado(EstadoExpediente.EN_PROCESO);
         return mapper.toResponse(expedienteRepository.save(e));
     }
 

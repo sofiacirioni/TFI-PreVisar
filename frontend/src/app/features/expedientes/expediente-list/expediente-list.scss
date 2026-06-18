@@ -138,9 +138,10 @@
   height: 22px !important;
   font-weight: 500 !important;
 
-  &.chip-completo {
-    background-color: #e8f5e9 !important;
-    color: #2e7d32 !important;
+  // En proceso: generado y en armado documental (azul)
+  &.chip-proceso {
+    background-color: #e3f2fd !important;
+    color: #1565c0 !important;
   }
 }
 

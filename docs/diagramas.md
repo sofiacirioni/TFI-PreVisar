@@ -174,7 +174,7 @@ classDiagram
     class EstadoExpediente {
         <<enumeration>>
         BORRADOR
-        COMPLETO
+        EN_PROCESO
     }
     class ConceptoAporte {
         <<enumeration>>

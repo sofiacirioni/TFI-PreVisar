@@ -1,5 +1,6 @@
+import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -12,22 +13,31 @@ import {
   EstructuraExpediente,
   SeccionEstructura,
 } from '../../../core/models/estructura.model';
+import { ExpedienteResponse } from '../../../core/models/expediente.model';
 import { ExpedienteService } from '../../../core/services/expediente.service';
 import { EstructuraService } from '../../../core/services/estructura.service';
 
 type Vm =
   | { status: 'loading' }
   | { status: 'error'; error: unknown }
-  | { status: 'ok'; nombre: string; estado: string; secciones: SeccionEstructura[] };
+  | { status: 'ok'; expediente: ExpedienteResponse; secciones: SeccionEstructura[] };
 
 @Component({
   selector: 'app-expediente-armado',
-  imports: [RouterLink, MatProgressBarModule, MatIconModule, MatChipsModule, MatButtonModule],
+  imports: [
+    CurrencyPipe,
+    RouterLink,
+    MatProgressBarModule,
+    MatIconModule,
+    MatChipsModule,
+    MatButtonModule,
+  ],
   templateUrl: './expediente-armado.html',
   styleUrl: './expediente-armado.scss',
 })
 export class ExpedienteArmado {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly expedienteService = inject(ExpedienteService);
   private readonly estructuraService = inject(EstructuraService);
 
@@ -40,14 +50,13 @@ export class ExpedienteArmado {
       switchMap((id) =>
         this.expedienteService.obtener(id).pipe(
           switchMap((exp) => {
-            const nombre = exp.nombre ?? 'Expediente';
             // Sin tipo de tarea o sin provincia no hay estructura que pedir.
             const estructura$: Observable<EstructuraExpediente> =
               exp.tipoTareaId == null || exp.provinciaId == null
                 ? of({ tipoTareaId: 0, tipoTareaCodigo: '', secciones: [] })
                 : this.estructuraService.getEstructura(exp.tipoTareaId, exp.provinciaId);
             return estructura$.pipe(
-              map((est): Vm => ({ status: 'ok', nombre, estado: exp.estado, secciones: est.secciones })),
+              map((est): Vm => ({ status: 'ok', expediente: exp, secciones: est.secciones })),
             );
           }),
           startWith({ status: 'loading' } as Vm),
@@ -60,6 +69,12 @@ export class ExpedienteArmado {
 
   // Documentos ya cargados al expediente. Hoy vacío; SCRUM-140 lo va a poblar.
   readonly cargados = signal<ReadonlySet<number>>(new Set());
+
+  // Expediente cargado (para el panel de datos); null mientras carga o si falla.
+  readonly expediente = computed<ExpedienteResponse | null>(() => {
+    const v = this.vm();
+    return v.status === 'ok' ? v.expediente : null;
+  });
 
   readonly secciones = computed(() =>
     this.vm().status === 'ok' ? (this.vm() as Extract<Vm, { status: 'ok' }>).secciones : [],
@@ -100,6 +115,11 @@ export class ExpedienteArmado {
 
   seleccionarDoc(id: number): void {
     this.docSeleccionadoId.set(id);
+  }
+
+  // Reabre el wizard en modo edición (la ruta ':id' lo carga como "retomar").
+  editarDatos(id: number): void {
+    this.router.navigate(['/expedientes', id]);
   }
 
   generar(): void {

@@ -572,13 +572,13 @@
         mat-flat-button
         type="button"
         class="cta-button"
-        (click)="finalizar()"
+        (click)="accionPrincipal()"
         [disabled]="guardando() || faltanDatos().length > 0"
       >
         @if (guardando()) {
-          Generando...
+          Guardando...
         } @else {
-          Generar expediente
+          {{ botonLabel() }}
         }
       </button>
     </div>

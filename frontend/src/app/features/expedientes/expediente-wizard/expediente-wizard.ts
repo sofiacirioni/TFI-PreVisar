@@ -8,8 +8,8 @@ import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { switchMap, tap } from 'rxjs/operators';
-import { firstValueFrom, Observable, of, throwError } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import { ExpedienteRequest, ExpedienteResponse } from '../../../core/models/expediente.model';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -489,37 +489,37 @@ export class ExpedienteWizard implements OnInit {
     });
   }
 
-  finalizar(): void {
+  // En modo edición (expediente ya generado / EN_PROCESO) el wizard NO regenera:
+  // solo guarda los cambios con un PATCH. completar() se llama una sola vez,
+  // al generar desde BORRADOR.
+  readonly esEdicion = computed(() => this.expediente()?.estado === 'EN_PROCESO');
+  readonly botonLabel = computed(() =>
+    this.esEdicion() ? 'Guardar cambios' : 'Generar expediente',
+  );
+
+  async accionPrincipal(): Promise<void> {
     this.guardando.set(true);
-    // Garantizo que lo ultimo este guardado ANTES de completar
-    this.guardarParcial()
-      .pipe(
-        switchMap((resp) => {
-          const id = resp?.id ?? this.expedienteId();
-          if (id === null) return throwError(() => new Error('SIN_DATOS'));
-          return this.expedienteService.completar(id);
-        }),
-      )
-      .subscribe({
-        next: (exp) => {
-          this.guardando.set(false);
-          this.snackBar.open('Expediente generado', 'Cerrar', { duration: 3000 });
-          // Lleva al armado documental del expediente recién generado.
-          this.router.navigate(['/expedientes', exp.id, 'armado']);
-        },
-        error: (err) => {
-          this.guardando.set(false);
-          if (err?.message === 'SIN_DATOS') {
-            this.snackBar.open('Cargá al menos un dato antes de finalizar', 'Cerrar', {
-              duration: 4000,
-            });
-            return;
-          }
-          // El back devuelve 400 con el detalle de que falta
-          const msg = err?.error?.message ?? 'No se pudo finalizar el expediente';
-          this.snackBar.open(msg, 'Cerrar', { duration: 6000 });
-        },
-      });
+    try {
+      // Garantizo que lo último cargado quede guardado (crea el borrador si hace falta).
+      const guardado = await firstValueFrom(this.guardarParcial());
+      const id = guardado?.id ?? this.expedienteId();
+      if (id == null) {
+        this.snackBar.open('Cargá al menos un dato antes de generar', 'Cerrar', { duration: 4000 });
+        return;
+      }
+
+      if (!this.esEdicion()) {
+        // BORRADOR -> EN_PROCESO: generar (transición única).
+        await firstValueFrom(this.expedienteService.completar(id));
+      }
+      // Editar post-generación es solo PATCH: no vuelve a BORRADOR ni re-genera.
+      this.router.navigate(['/expedientes', id, 'armado']);
+    } catch (err) {
+      const msg = (err as HttpErrorResponse)?.error?.message ?? 'No se pudo generar el expediente';
+      this.snackBar.open(msg, 'Cerrar', { duration: 6000 });
+    } finally {
+      this.guardando.set(false);
+    }
   }
 
   /** Crea el borrador (primera vez) o lo actualiza parcial. Devuelve el expediente persistido. */
