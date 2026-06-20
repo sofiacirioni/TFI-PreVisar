@@ -11,11 +11,12 @@
 -- "Generar" (POST /expedientes/{id}/completar) deja el expediente en EN_PROCESO.
 -- =============================================================================
 
--- Los COMPLETO existentes fueron generados con la semántica vieja (no hubo nunca
--- un cierre real), así que en el modelo nuevo son EN_PROCESO.
+-- 1. Soltar el CHECK viejo (permitía BORRADOR/COMPLETO) para poder migrar los datos.
+ALTER TABLE expediente DROP CONSTRAINT IF EXISTS chk_expediente_estado;
+
+-- 2. Migrar los expedientes existentes: COMPLETO deja de existir como estado.
 UPDATE expediente SET estado = 'EN_PROCESO' WHERE estado = 'COMPLETO';
 
--- Reemplazar el CHECK por el conjunto final de estados.
-ALTER TABLE expediente DROP CONSTRAINT chk_expediente_estado;
+-- 3. Re-crear el CHECK con el modelo binario.
 ALTER TABLE expediente ADD CONSTRAINT chk_expediente_estado
     CHECK (estado IN ('BORRADOR', 'EN_PROCESO'));

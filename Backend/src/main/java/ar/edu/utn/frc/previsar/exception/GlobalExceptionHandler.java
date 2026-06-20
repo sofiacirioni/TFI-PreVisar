@@ -120,6 +120,21 @@ public class GlobalExceptionHandler {
                 request);
     }
 
+    /**
+     * Excepciones relacionadas con la generacion de documentos pdf
+     *
+     */
+    @ExceptionHandler(PdfGenerationException.class)
+    public ResponseEntity<ErrorResponseDto> handlePdfGeneration(
+            PdfGenerationException ex,
+            HttpServletRequest request) {
+        log.error("Error generando PDF", ex);
+        return construirRespuesta(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "No se pudo generar el documento PDF",
+                request);
+    }
+
     // -------------------------- Helpers --------------------------
 
     private ResponseEntity<ErrorResponseDto> construirRespuesta(
