@@ -7,21 +7,26 @@ import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.entities.Expediente;
 import ar.edu.utn.frc.previsar.entities.Obra;
+import ar.edu.utn.frc.previsar.entities.Profesional;
 import ar.edu.utn.frc.previsar.entities.TipoTarea;
 import ar.edu.utn.frc.previsar.enums.EstadoExpediente;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ExpedienteMapper;
+import ar.edu.utn.frc.previsar.pdf.ContratoData;
+import ar.edu.utn.frc.previsar.pdf.ContratoTemplate;
 import ar.edu.utn.frc.previsar.repositories.ExpedienteRepository;
 import ar.edu.utn.frc.previsar.repositories.ObraRepository;
 import ar.edu.utn.frc.previsar.repositories.TipoTareaRepository;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import ar.edu.utn.frc.previsar.services.AporteCalculatorService;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
+import ar.edu.utn.frc.previsar.services.PdfGenerationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +39,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     private final AporteCalculatorService aporteCalculator;
     private final ExpedienteMapper mapper;
     private final SecurityUtils securityUtils;
+    private final PdfGenerationService pdfGenerationService;
 
     @Override
     @Transactional
@@ -114,6 +120,62 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                 .toList();
 
         return new AportesResponseDto(lineas, calc.totalCiec(), calc.totalCaja(), calc.total());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] generarContrato(Long id, BigDecimal honorariosPactados) {
+        // Mismo patrón de aislamiento 404 que el resto del service.
+        Expediente exp = buscarPropio(id);
+
+        BigDecimal referenciales = exp.getHonorariosReferenciales();
+        // Si no mandan pactado, se usa el referencial como default.
+        BigDecimal pactados = honorariosPactados != null ? honorariosPactados : referenciales;
+
+        Obra obra = exp.getObra();
+        ContratoData data = new ContratoData(
+                nombreCompleto(exp.getProfesional()),
+                formatMatriculaOrden(exp.getProfesional()),
+                exp.getTipoTarea().getEspecialidad().getNombre(),
+                exp.getProfesional().getDomicilio(),
+                obra.getComitente().getNombreRazonSocial(),
+                obra.getComitente().getDniCuit(),
+                obra.getComitente().getDomicilio(),
+                exp.getTipoTarea().getNombre(),
+                domicilioObra(obra),
+                localidadConCp(obra),
+                obra.getProvincia().getNombre(),
+                pactados,
+                referenciales,
+                obra.getLocalidad()   // ciudad = localidad de la obra
+        );
+
+        return pdfGenerationService.generar(new ContratoTemplate(data));
+    }
+
+    /** "Nombre Apellido" del profesional para el encabezado del contrato. */
+    private String nombreCompleto(Profesional p) {
+        return p.getNombre() + " " + p.getApellido();
+    }
+
+    /** "17.373.068 / 4315" — matrícula y, si tiene, número de orden. */
+    private String formatMatriculaOrden(Profesional p) {
+        return p.getNumeroOrden() != null && !p.getNumeroOrden().isBlank()
+                ? p.getMatricula() + " / " + p.getNumeroOrden()
+                : p.getMatricula();
+    }
+
+    /** "Calle 123 - Barrio" (omite el barrio si no está cargado). */
+    private String domicilioObra(Obra obra) {
+        String base = obra.getCalle() + " " + obra.getNumero();
+        return obra.getBarrio() != null && !obra.getBarrio().isBlank()
+                ? base + " - " + obra.getBarrio()
+                : base;
+    }
+
+    /** "Localidad (CP)" para el renglón de ubicación de la obra. */
+    private String localidadConCp(Obra obra) {
+        return obra.getLocalidad() + " (" + obra.getCodigoPostal() + ")";
     }
 
     // --- helpers ---

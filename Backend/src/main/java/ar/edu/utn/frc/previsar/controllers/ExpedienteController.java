@@ -4,8 +4,11 @@ import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
+import ar.edu.utn.frc.previsar.pdf.GenerarContratoRequest;
+import ar.edu.utn.frc.previsar.pdf.PdfResponseFactory;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import jakarta.validation.Valid;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -62,5 +65,12 @@ public class ExpedienteController {
     @PostMapping("/calcular-aportes")
     public ResponseEntity<AportesResponseDto> calcularAportes(@RequestBody CalcularAportesRequestDto request) {
         return ResponseEntity.ok(expedienteService.calcularAportes(request));
+    }
+
+    @PostMapping("/{id}/contrato")
+    public ResponseEntity<ByteArrayResource> generarContrato(
+            @PathVariable Long id, @RequestBody(required = false) GenerarContratoRequest req) {
+        byte[] pdf = expedienteService.generarContrato(id, req != null ? req.honorariosPactados() : null);
+        return PdfResponseFactory.attachment(pdf, "contrato-locacion-" + id);
     }
 }
