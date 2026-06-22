@@ -5,7 +5,7 @@ import ar.edu.utn.frc.previsar.enums.GrupoAporte;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record AportesCalculados(List<LineaAporte> lineas) {
+public record AportesCalculadosDto(List<LineaAporte> lineas) {
 
     public record LineaAporte(String conceptoCodigo, String conceptoNombre,
                               GrupoAporte grupo, BigDecimal monto) {}

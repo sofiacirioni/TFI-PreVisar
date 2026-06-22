@@ -1,6 +1,6 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
-import ar.edu.utn.frc.previsar.dtos.AportesCalculados;
+import ar.edu.utn.frc.previsar.dtos.AportesCalculadosDto;
 import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
@@ -112,7 +112,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         TipoTarea tipoTarea = tipoTareaRepository.findById(request.getTipoTareaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de tarea no encontrado"));
 
-        AportesCalculados calc = aporteCalculator.calcular(tipoTarea, request.getHonorariosReferenciales());
+        AportesCalculadosDto calc = aporteCalculator.calcular(tipoTarea, request.getHonorariosReferenciales());
 
         List<AportesResponseDto.LineaAporteResponse> lineas = calc.lineas().stream()
                 .map(l -> new AportesResponseDto.LineaAporteResponse(

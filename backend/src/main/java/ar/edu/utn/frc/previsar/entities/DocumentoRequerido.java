@@ -32,6 +32,9 @@ public class DocumentoRequerido {
     @Column(nullable = false)
     private Integer orden;
 
+    @Column(name="permite_multiples")
+    private boolean permiteMultiples;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean activo = true;

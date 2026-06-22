@@ -1,6 +1,6 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
-import ar.edu.utn.frc.previsar.dtos.AportesCalculados;
+import ar.edu.utn.frc.previsar.dtos.AportesCalculadosDto;
 import ar.edu.utn.frc.previsar.entities.ConceptoAporte;
 import ar.edu.utn.frc.previsar.entities.ParametroAporte;
 import ar.edu.utn.frc.previsar.entities.TipoTarea;
@@ -69,7 +69,7 @@ class AportesCalculatorServiceImplTest {
     void calcula_aportes_PR_DT_RT() {
         BigDecimal honorarios = new BigDecimal("5623389.04");
 
-        AportesCalculados r = service.calcular(prdtrt, honorarios);
+        AportesCalculadosDto r = service.calcular(prdtrt, honorarios);
 
         assertThat(r.lineas()).hasSize(4);
         assertThat(montoDe(r, "REGISTRO_OBRA")).isEqualByComparingTo("281169.45");
@@ -81,10 +81,10 @@ class AportesCalculatorServiceImplTest {
         assertThat(r.total()).isEqualByComparingTo("1312379.47");
     }
 
-    private BigDecimal montoDe(AportesCalculados r, String codigo) {
+    private BigDecimal montoDe(AportesCalculadosDto r, String codigo) {
         return r.lineas().stream()
                 .filter(l -> l.conceptoCodigo().equals(codigo))
-                .map(AportesCalculados.LineaAporte::monto)
+                .map(AportesCalculadosDto.LineaAporte::monto)
                 .findFirst()
                 .orElseThrow();
     }

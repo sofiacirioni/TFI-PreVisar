@@ -135,6 +135,20 @@ public class GlobalExceptionHandler {
                 request);
     }
 
+    /**
+     * Fallas de almacenamiento de archivos (guardar/leer/eliminar). Devuelve HTTP 500.
+     */
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorResponseDto> handleStorage(
+            StorageException ex,
+            HttpServletRequest request) {
+        log.error("Error de almacenamiento de archivos", ex);
+        return construirRespuesta(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "No se pudo procesar el archivo",
+                request);
+    }
+
     // -------------------------- Helpers --------------------------
 
     private ResponseEntity<ErrorResponseDto> construirRespuesta(

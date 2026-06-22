@@ -1,6 +1,6 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
-import ar.edu.utn.frc.previsar.dtos.AportesCalculados;
+import ar.edu.utn.frc.previsar.dtos.AportesCalculadosDto;
 import ar.edu.utn.frc.previsar.entities.ConceptoAporte;
 import ar.edu.utn.frc.previsar.entities.ParametroAporte;
 import ar.edu.utn.frc.previsar.entities.TipoTarea;
@@ -27,7 +27,7 @@ public class AportesCalculatorServiceImpl implements AporteCalculatorService {
     private final ParametroAporteRepository parametroRepo;
 
     @Override
-    public AportesCalculados calcular(TipoTarea tipoTarea, BigDecimal honorarios) {
+    public AportesCalculadosDto calcular(TipoTarea tipoTarea, BigDecimal honorarios) {
         if (tipoTarea == null) {
             throw new IllegalArgumentException("El tipo de tarea es obligatorio para calcular aportes");
         }
@@ -38,15 +38,15 @@ public class AportesCalculatorServiceImpl implements AporteCalculatorService {
         LocalDate hoy = LocalDate.now();
         List<TipoTareaAporte> aportes = tipoTareaAporteRepo.findByTipoTareaConConcepto(tipoTarea.getId());
 
-        List<AportesCalculados.LineaAporte> lineas = aportes.stream()
-                .map(tta -> new AportesCalculados.LineaAporte(
+        List<AportesCalculadosDto.LineaAporte> lineas = aportes.stream()
+                .map(tta -> new AportesCalculadosDto.LineaAporte(
                         tta.getConcepto().getCodigo(),
                         tta.getConcepto().getNombre(),
                         tta.getConcepto().getGrupo(),
                         montoDe(tta, honorarios, hoy)))
                 .toList();
 
-        return new AportesCalculados(lineas);
+        return new AportesCalculadosDto(lineas);
     }
 
     private BigDecimal montoDe(TipoTareaAporte tta, BigDecimal honorarios, LocalDate fecha) {
