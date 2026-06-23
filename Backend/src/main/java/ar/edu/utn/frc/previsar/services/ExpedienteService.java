@@ -4,8 +4,8 @@ import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
+import ar.edu.utn.frc.previsar.pdf.GenerarContratoRequest;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface ExpedienteService {
@@ -16,5 +16,5 @@ public interface ExpedienteService {
     List<ExpedienteResponseDto > listarMisExpedientes();
     void eliminar(Long id);
     AportesResponseDto calcularAportes(CalcularAportesRequestDto request);
-    byte[] generarContrato(Long id, BigDecimal honorariosPactados);
+    byte[] generarContrato(Long id, GenerarContratoRequest req);
 }

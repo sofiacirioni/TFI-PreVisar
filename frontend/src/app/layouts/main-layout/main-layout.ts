@@ -1,5 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map, startWith } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -38,9 +40,21 @@ interface NavItem {
 export class MainLayout implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly profesionalService = inject(ProfesionalService);
+  private readonly router = inject(Router);
 
   // Estado del sidebar: expandido (texto + íconos) o colapsado (solo íconos)
   readonly sidebarExpandido = signal(true);
+
+  // El armado de expediente es la vista compleja: usa todo el ancho (sin el cap
+  // de --content-max), el resto de las vistas quedan centradas y legibles.
+  readonly anchoCompleto = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      map(() => this.router.url.includes('/armado')),
+      startWith(this.router.url.includes('/armado')),
+    ),
+    { initialValue: this.router.url.includes('/armado') },
+  );
 
   // Sesión actual (signal del AuthService)
   readonly sesion = this.authService.sesion;

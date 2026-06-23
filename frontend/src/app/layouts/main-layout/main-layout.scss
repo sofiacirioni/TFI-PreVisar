@@ -102,4 +102,9 @@
   max-width: var(--content-max);
   margin: 0 auto;
   min-height: calc(100vh - var(--topbar-h));
+
+  // Vistas complejas (armado): usan todo el ancho disponible.
+  &--full {
+    max-width: none;
+  }
 }

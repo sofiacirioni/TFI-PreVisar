@@ -19,8 +19,14 @@
         <mat-chip>{{ v.expediente.estado === 'EN_PROCESO' ? 'En proceso' : 'Borrador' }}</mat-chip>
       </mat-chip-set>
     </div>
-    <button mat-flat-button color="primary" [disabled]="!puedeGenerar()" (click)="generar()">
-      Generar
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="!hayDocumentos()"
+      (click)="descargarExpediente()"
+    >
+      <mat-icon>download</mat-icon>
+      Descargar expediente
     </button>
   </header>
 
@@ -59,51 +65,228 @@
         }
       </nav>
 
-      <!-- CENTRO: hoja (placeholder de la vista del documento) -->
-      <section class="hoja" aria-label="Vista del documento">
-        @if (docActivo(); as doc) {
-          <article class="hoja__papel">
-            <div class="hoja__placeholder">
-              <mat-icon>description</mat-icon>
-              <h2>{{ doc.nombre }}</h2>
-              <p class="hoja__codigo">{{ doc.codigo }}</p>
-              <p class="hoja__hint">La vista previa del documento estará disponible próximamente.</p>
+      <!-- CENTRO: hoja con la previsualización del documento activo -->
+      @if (docActivo(); as doc) {
+        <section class="hoja">
+          <div class="hoja__toolbar">
+            <div class="hoja__titulo">
+              <mat-icon class="hoja__estado" [class.cargado]="cargados().has(doc.id)">
+                {{ cargados().has(doc.id) ? 'check_circle' : 'radio_button_unchecked' }}
+              </mat-icon>
+              <span class="hoja__nombre">{{ doc.nombre }}</span>
+              <mat-chip-set>
+                <mat-chip>{{ doc.obligatorio ? 'Obligatorio' : 'Opcional' }}</mat-chip>
+              </mat-chip-set>
             </div>
-          </article>
-        } @else {
-          <div class="estado-vacio"><p>Seleccioná un documento del índice.</p></div>
-        }
-      </section>
 
-      <!-- DERECHA: datos del expediente + observaciones de validación -->
+            <div class="hoja__acciones">
+              <button
+                mat-stroked-button
+                (click)="fileInput.click()"
+                [disabled]="subiendo() === doc.id"
+              >
+                <mat-icon>upload</mat-icon>
+                {{
+                  archivosDe(doc.id).length
+                    ? (doc.permiteMultiples ? 'Agregar otro' : 'Reemplazar')
+                    : 'Subir'
+                }}
+              </button>
+              <input
+                #fileInput
+                type="file"
+                hidden
+                accept="application/pdf,image/jpeg,image/png"
+                (change)="onArchivoSeleccionado(doc.id, $event)"
+              />
+
+              @if (archivoActivo(); as a) {
+                <button mat-icon-button (click)="descargar(a)" matTooltip="Descargar">
+                  <mat-icon>download</mat-icon>
+                </button>
+                <button mat-icon-button (click)="eliminar(a)" matTooltip="Eliminar">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+
+              @if (doc.codigo === 'CONTRATO_LOCACION') {
+                <button
+                  mat-stroked-button
+                  (click)="descargarContrato()"
+                  [disabled]="generandoContrato()"
+                >
+                  <mat-icon>picture_as_pdf</mat-icon> Descargar contrato
+                </button>
+                @if (generandoContrato()) {
+                  <mat-spinner diameter="20" />
+                }
+              }
+
+              @if (subiendo() === doc.id) {
+                <mat-spinner diameter="20" />
+              }
+            </div>
+          </div>
+
+          <!-- Selector de archivo cuando el slot admite varios -->
+          @if (archivosDe(doc.id).length > 1) {
+            <div class="hoja__archivos">
+              @for (a of archivosDe(doc.id); track a.id) {
+                <button
+                  class="hoja__archivo"
+                  [class.activo]="a.id === archivoActivo()?.id"
+                  (click)="seleccionarArchivo(a)"
+                >
+                  <mat-icon>description</mat-icon>
+                  <span class="hoja__archivo-nombre">{{ a.nombreOriginal }}</span>
+                  <small>{{ a.tamanoBytes / 1024 | number: '1.0-0' }} KB</small>
+                </button>
+              }
+            </div>
+          }
+
+          <!-- Visor del documento (PDF.js: zoom, multipágina, descarga) -->
+          <div class="hoja__visor">
+            @if (viewerSrc(); as src) {
+              <ngx-extended-pdf-viewer [src]="src" height="100%" [showBorders]="false" />
+            } @else if (generandoContrato()) {
+              <div class="hoja__placeholder">
+                <mat-spinner diameter="32" />
+                <p>Generando contrato…</p>
+              </div>
+            } @else if (archivoActivo()) {
+              <div class="hoja__placeholder">
+                <mat-spinner diameter="32" />
+                <p>Cargando previsualización…</p>
+              </div>
+            } @else if (esContrato()) {
+              <div class="hoja__placeholder">
+                <mat-icon>picture_as_pdf</mat-icon>
+                <h2>{{ doc.nombre }}</h2>
+                <p class="hoja__hint">
+                  Completá los campos del contrato y generá la previsualización.
+                </p>
+              </div>
+            } @else {
+              <div class="hoja__placeholder">
+                <mat-icon>upload_file</mat-icon>
+                <h2>{{ doc.nombre }}</h2>
+                <p class="hoja__hint">Subí el documento para previsualizarlo acá.</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- DERECHA: paneles colapsables (datos / contrato) + observaciones -->
       <div class="panel-derecho">
-        @if (expediente(); as exp) {
-          <aside class="resumen-expediente" aria-label="Datos del expediente">
-            <div class="resumen-header">
-              <h3>Datos del expediente</h3>
-              <button mat-stroked-button (click)="editarDatos(exp.id)">
+        <mat-accordion class="panel-derecho__colapsables" multi>
+          @if (expediente(); as exp) {
+            <mat-expansion-panel [expanded]="false">
+              <mat-expansion-panel-header>
+                <mat-panel-title>Datos del expediente</mat-panel-title>
+              </mat-expansion-panel-header>
+              <button mat-stroked-button class="datos-editar" (click)="editarDatos(exp.id)">
                 <mat-icon>edit</mat-icon>
                 Editar datos
               </button>
-            </div>
-            <dl>
-              <div><dt>Comitente</dt><dd>{{ exp.comitenteNombre ?? '—' }}</dd></div>
-              <div><dt>Obra</dt><dd>{{ exp.obraDesignacion ?? '—' }}</dd></div>
-              <div><dt>Tarea</dt><dd>{{ exp.tipoTareaNombre ?? '—' }}</dd></div>
-              <div><dt>Provincia</dt><dd>{{ exp.provinciaNombre ?? '—' }}</dd></div>
-              <div>
-                <dt>Honorarios ref.</dt>
-                <dd>
-                  {{
-                    exp.honorariosReferenciales != null
-                      ? (exp.honorariosReferenciales | currency: 'ARS' : 'symbol' : '1.2-2')
-                      : '—'
-                  }}
-                </dd>
+              <dl class="datos-lista">
+                <div>
+                  <dt>Comitente</dt>
+                  <dd>{{ exp.comitenteNombre ?? '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Obra</dt>
+                  <dd>{{ exp.obraDesignacion ?? '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Tarea</dt>
+                  <dd>{{ exp.tipoTareaNombre ?? '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Provincia</dt>
+                  <dd>{{ exp.provinciaNombre ?? '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Honorarios ref.</dt>
+                  <dd>
+                    {{
+                      exp.honorariosReferenciales != null
+                        ? (exp.honorariosReferenciales | currency: 'ARS' : 'symbol' : '1.2-2')
+                        : '—'
+                    }}
+                  </dd>
+                </div>
+              </dl>
+            </mat-expansion-panel>
+          }
+
+          @if (esContrato()) {
+            <mat-expansion-panel [expanded]="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>Campos del contrato</mat-panel-title>
+              </mat-expansion-panel-header>
+              <div class="campos-contrato">
+                <mat-form-field appearance="outline">
+                  <mat-label>Honorarios pactados</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    [ngModel]="honorariosPactados()"
+                    (ngModelChange)="honorariosPactados.set($event)"
+                  />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Documentación a confeccionar</mat-label>
+                  <textarea
+                    matInput
+                    rows="2"
+                    [ngModel]="documentacionConfeccion()"
+                    (ngModelChange)="documentacionConfeccion.set($event)"
+                  ></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Tareas especiales</mat-label>
+                  <textarea
+                    matInput
+                    rows="2"
+                    [ngModel]="tareasEspeciales()"
+                    (ngModelChange)="tareasEspeciales.set($event)"
+                  ></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Forma de pago</mat-label>
+                  <input matInput [ngModel]="formaPago()" (ngModelChange)="formaPago.set($event)" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Plazo de entrega</mat-label>
+                  <input
+                    matInput
+                    [ngModel]="plazoEntrega()"
+                    (ngModelChange)="plazoEntrega.set($event)"
+                  />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Gastos especiales</mat-label>
+                  <input
+                    matInput
+                    [ngModel]="gastosEspeciales()"
+                    (ngModelChange)="gastosEspeciales.set($event)"
+                  />
+                </mat-form-field>
+                <button
+                  mat-flat-button
+                  color="primary"
+                  (click)="actualizarPreviewContrato()"
+                  [disabled]="generandoContrato()"
+                >
+                  <mat-icon>autorenew</mat-icon>
+                  Actualizar previsualización
+                </button>
               </div>
-            </dl>
-          </aside>
-        }
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
 
         <aside class="observaciones" aria-label="Observaciones de validación">
           <h3 class="observaciones__titulo">Observaciones</h3>

@@ -8,5 +8,7 @@ public record ContratoData(
         String obraDomicilio, String obraLocalidad, String obraProvincia,
         java.math.BigDecimal honorariosPactados,
         java.math.BigDecimal honorariosReferenciales,
-        String ciudad
+        String ciudad,
+        String documentacionConfeccion, String tareasEspeciales,
+        String formaPago, String plazoEntrega, String gastosEspeciales
 ) {}

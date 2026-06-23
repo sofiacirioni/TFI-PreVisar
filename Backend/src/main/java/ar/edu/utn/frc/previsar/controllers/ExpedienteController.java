@@ -70,7 +70,7 @@ public class ExpedienteController {
     @PostMapping("/{id}/contrato")
     public ResponseEntity<ByteArrayResource> generarContrato(
             @PathVariable Long id, @RequestBody(required = false) GenerarContratoRequest req) {
-        byte[] pdf = expedienteService.generarContrato(id, req != null ? req.honorariosPactados() : null);
+        byte[] pdf = expedienteService.generarContrato(id, req);
         return PdfResponseFactory.attachment(pdf, "contrato-locacion-" + id);
     }
 }

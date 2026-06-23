@@ -5,5 +5,6 @@ public record DocumentoRequeridoDto(
         String codigo,
         String nombre,
         boolean obligatorio,
-        int orden
+        int orden,
+        boolean permiteMultiples
 ) {}

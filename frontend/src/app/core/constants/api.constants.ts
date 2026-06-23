@@ -20,7 +20,7 @@ export const API = {
   // --- Comitentes ---
   COMITENTES: `${environment.apiBaseUrl}/comitentes`,
   COMITENTE_BY_ID: (id: number) => `${environment.apiBaseUrl}/comitentes/${id}`,
-  COMITENTE_BUSCAR: `${environment.apiBaseUrl}/comitentes/buscar`,  // ?dniCuit=XXX
+  COMITENTE_BUSCAR: `${environment.apiBaseUrl}/comitentes/buscar`, // ?dniCuit=XXX
 
   // --- Obras anidadas bajo comitente ---
   COMITENTE_OBRAS: (comitenteId: number) =>
@@ -36,10 +36,13 @@ export const API = {
   EXPEDIENTE_COMPLETAR: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/completar`,
   EXPEDIENTES_CALCULAR_APORTES: `${environment.apiBaseUrl}/expedientes/calcular-aportes`,
 
+  EXPEDIENTE_DOCUMENTOS: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/documentos`,
+  EXPEDIENTE_DOCUMENTO: (id: number, docId: number) => `${environment.apiBaseUrl}/expedientes/${id}/documentos/${docId}`,
+  EXPEDIENTE_CONTRATO: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/contrato`,
+
   // --- Parámetros de aporte (gestión, solo revisor) ---
   APORTE_ARANCEL: `${environment.apiBaseUrl}/aportes/arancel`,
 
   // --- Estructura de expediente (seccion, documentos requeridos) ---
   ESTRUCTURA: `${environment.apiBaseUrl}/estructura`,
-
 } as const;

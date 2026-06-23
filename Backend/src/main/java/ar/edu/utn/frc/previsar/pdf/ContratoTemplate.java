@@ -28,8 +28,8 @@ public class ContratoTemplate implements PdfTemplate {
         doc.add(campo("Domicilio/s", d.comitenteDomicilio()));
 
         doc.add(rotulo("DEL OBJETO: la ejecución de la/s siguiente/s tarea/s profesional/es:", d.tareaProfesional()));
-        doc.add(campoVacio("que corresponde a la confección de la siguiente documentación")); // lo completa el profesional
-        doc.add(campoVacio("y ejecución de la/s siguiente/s tarea/s especial/es"));
+        doc.add(campo("que corresponde a la confección de la siguiente documentación", d.documentacionConfeccion()));
+        doc.add(campo("y ejecución de la/s siguiente/s tarea/s especial/es", d.tareasEspeciales()));
 
         doc.add(p("DE LA UBICACIÓN DE LA TAREA: la obra (instalación) a ejecutarse en:", PdfStyles.etiquetaSerif()));
         doc.add(campo("Domicilio - Paraje - Barrio", d.obraDomicilio()));
@@ -40,9 +40,9 @@ public class ContratoTemplate implements PdfTemplate {
                 + "Previsión, calculado según la Resolución Nº 12.14/12.", PdfStyles.cuerpoSerif())); // texto fijo: copiá el exacto del .doc
         doc.add(monto("DEL MONTO DE LOS HONORARIOS REFERENCIALES:", d.honorariosReferenciales()));
 
-        doc.add(campoVacio("FORMA DE PAGO CONVENIDA"));
-        doc.add(campoVacio("PLAZO DE ENTREGA CONVENIDO"));
-        doc.add(campoVacio("GASTOS ESPECIALES CONVENIDOS"));
+        doc.add(campo("FORMA DE PAGO CONVENIDA", d.formaPago()));
+        doc.add(campo("PLAZO DE ENTREGA CONVENIDO", d.plazoEntrega()));
+        doc.add(campo("GASTOS ESPECIALES CONVENIDOS", d.gastosEspeciales()));
 
         Paragraph fecha = p("En la Ciudad de " + nz(d.ciudad()) + " a los ......... días del mes de ............... del año .........");
         fecha.setSpacingBefore(18);
@@ -86,15 +86,6 @@ public class ContratoTemplate implements PdfTemplate {
         par.add(new Chunk(rellenar(v1) + "   ", PdfStyles.cuerpoSerif()));
         par.add(new Chunk(l2 + ": ", PdfStyles.etiquetaSerif()));
         par.add(new Chunk(rellenar(v2), PdfStyles.cuerpoSerif()));
-        par.setSpacingAfter(ESPACIO);
-        return par;
-    }
-
-    /** Campo que siempre queda en blanco (lo completa el profesional a mano). */
-    private Paragraph campoVacio(String label) {
-        Paragraph par = new Paragraph();
-        par.add(new Chunk(label + ": ", PdfStyles.etiquetaSerif()));
-        par.add(new Chunk(puntos(60), PdfStyles.cuerpoSerif()));
         par.setSpacingAfter(ESPACIO);
         return par;
     }

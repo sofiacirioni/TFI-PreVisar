@@ -15,6 +15,7 @@ import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ExpedienteMapper;
 import ar.edu.utn.frc.previsar.pdf.ContratoData;
 import ar.edu.utn.frc.previsar.pdf.ContratoTemplate;
+import ar.edu.utn.frc.previsar.pdf.GenerarContratoRequest;
 import ar.edu.utn.frc.previsar.repositories.ExpedienteRepository;
 import ar.edu.utn.frc.previsar.repositories.ObraRepository;
 import ar.edu.utn.frc.previsar.repositories.TipoTareaRepository;
@@ -124,12 +125,13 @@ public class ExpedienteServiceImpl implements ExpedienteService {
 
     @Override
     @Transactional(readOnly = true)
-    public byte[] generarContrato(Long id, BigDecimal honorariosPactados) {
+    public byte[] generarContrato(Long id, GenerarContratoRequest req) {
         // Mismo patrón de aislamiento 404 que el resto del service.
         Expediente exp = buscarPropio(id);
 
         BigDecimal referenciales = exp.getHonorariosReferenciales();
         // Si no mandan pactado, se usa el referencial como default.
+        BigDecimal honorariosPactados = req != null ? req.honorariosPactados() : null;
         BigDecimal pactados = honorariosPactados != null ? honorariosPactados : referenciales;
 
         Obra obra = exp.getObra();
@@ -147,7 +149,13 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                 obra.getProvincia().getNombre(),
                 pactados,
                 referenciales,
-                obra.getLocalidad()   // ciudad = localidad de la obra
+                obra.getLocalidad(),   // ciudad = localidad de la obra
+                // Campos que el profesional completa desde el panel lateral (fallback a puntos si vienen vacíos).
+                req != null ? req.documentacionConfeccion() : null,
+                req != null ? req.tareasEspeciales() : null,
+                req != null ? req.formaPago() : null,
+                req != null ? req.plazoEntrega() : null,
+                req != null ? req.gastosEspeciales() : null
         );
 
         return pdfGenerationService.generar(new ContratoTemplate(data));

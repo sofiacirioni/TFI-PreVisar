@@ -4,6 +4,7 @@ export interface DocumentoRequerido {
   nombre: string;
   obligatorio: boolean;
   orden: number;
+  permiteMultiples: boolean;
 }
 
 export interface SeccionEstructura {

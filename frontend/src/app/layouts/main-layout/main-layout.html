@@ -1,4 +1,4 @@
-<mat-sidenav-container class="layout-container">
+<mat-sidenav-container class="layout-container" autosize>
 
   <!-- ===== Sidebar ===== -->
   <mat-sidenav
@@ -71,7 +71,7 @@
       }
     </mat-toolbar>
 
-    <main class="page-content">
+    <main class="page-content" [class.page-content--full]="anchoCompleto()">
       <router-outlet />
     </main>
 

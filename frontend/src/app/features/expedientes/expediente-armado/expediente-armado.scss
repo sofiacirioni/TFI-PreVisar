@@ -19,10 +19,10 @@
   font-size: 0.85rem;
 }
 
-/* Shell de 3 paneles: índice | hoja | observaciones */
+/* Shell de 3 paneles: índice | hoja (protagonista) | datos+observaciones */
 .armado-layout {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) 1fr minmax(220px, 300px);
+  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr) minmax(300px, 340px);
   gap: 1.5rem;
   margin-top: 1rem;
   align-items: start;
@@ -85,26 +85,94 @@
   font-size: 0.7rem;
 }
 
-/* CENTRO: hoja tipo A4 */
+/* CENTRO: hoja con toolbar de acciones + visor del documento */
 .hoja {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
 }
-.hoja__papel {
-  width: 100%;
-  max-width: 640px;
-  aspect-ratio: 1 / 1.414;
+.hoja__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.hoja__titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.hoja__estado {
+  color: var(--mat-sys-outline);
+  &.cargado {
+    color: var(--mat-sys-primary);
+  }
+}
+.hoja__nombre {
+  font-weight: 600;
+}
+.hoja__acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Selector de archivo (slots con varios) */
+.hoja__archivos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.hoja__archivo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  &:hover {
+    background: var(--mat-sys-surface-container);
+  }
+  &.activo {
+    border-color: var(--mat-sys-primary);
+    background: var(--mat-sys-secondary-container);
+  }
+}
+.hoja__archivo-nombre {
+  font-size: 0.85rem;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Visor del documento (iframe con el PDF/imagen) */
+.hoja__visor {
   background: var(--mat-sys-surface);
-  border-radius: 4px;
+  border-radius: 8px;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  height: 75vh;
+}
+.hoja__visor ngx-extended-pdf-viewer {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .hoja__placeholder {
   text-align: center;
   color: var(--mat-sys-on-surface-variant);
+  padding: 2rem;
   mat-icon {
     font-size: 3rem;
     width: 3rem;
@@ -116,12 +184,8 @@
     color: var(--mat-sys-on-surface);
   }
 }
-.hoja__codigo {
-  font-family: monospace;
-  font-size: 0.8rem;
-}
 .hoja__hint {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   font-size: 0.85rem;
 }
 
@@ -132,27 +196,24 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  // Acota la columna al alto visible: los paneles toman su alto natural y las
+  // Observaciones (función principal) llenan el resto con scroll propio.
+  max-height: calc(100vh - var(--topbar-h, 64px) - 2rem);
 }
-.resumen-expediente {
-  background: var(--mat-sys-surface-container);
-  border-radius: 12px;
-  padding: 1rem;
-  .resumen-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-    h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
-  }
-  dl {
-    margin: 0.75rem 0 0;
-    display: grid;
-    gap: 0.5rem;
-  }
-  dl div {
+.panel-derecho__colapsables {
+  flex: 0 0 auto;
+}
+
+/* Datos del expediente (dentro del panel colapsable) */
+.datos-editar {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+.datos-lista {
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+  div {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
@@ -166,7 +227,17 @@
     font-weight: 500;
   }
 }
+
+/* Campos editables del contrato (dentro del panel colapsable) */
+.campos-contrato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .observaciones {
+  flex: 1 1 auto;
+  overflow-y: auto;
   padding: 1rem;
   border-radius: 12px;
   background: var(--mat-sys-surface-container-low);
@@ -194,7 +265,13 @@
   .panel-derecho {
     position: static;
   }
-  .hoja__papel {
-    max-width: 100%;
+  .panel-derecho {
+    max-height: none; // en una sola columna el scroll lo maneja la página
+  }
+  .observaciones {
+    overflow-y: visible;
+  }
+  .hoja__visor {
+    height: 60vh;
   }
 }
