@@ -17,4 +17,5 @@ public interface ExpedienteService {
     void eliminar(Long id);
     AportesResponseDto calcularAportes(CalcularAportesRequestDto request);
     byte[] generarContrato(Long id, GenerarContratoRequest req);
+    byte[] generarCaratula(Long id);
 }

@@ -109,15 +109,22 @@
                 </button>
               }
 
-              @if (doc.codigo === 'CONTRATO_LOCACION') {
+              @if (doc.generable) {
                 <button
                   mat-stroked-button
-                  (click)="descargarContrato()"
-                  [disabled]="generandoContrato()"
+                  (click)="actualizarPreview()"
+                  [disabled]="generandoPreview()"
                 >
-                  <mat-icon>picture_as_pdf</mat-icon> Descargar contrato
+                  <mat-icon>autorenew</mat-icon> Previsualizar
                 </button>
-                @if (generandoContrato()) {
+                <button
+                  mat-stroked-button
+                  (click)="descargarGenerada()"
+                  [disabled]="generandoPreview()"
+                >
+                  <mat-icon>picture_as_pdf</mat-icon> Descargar
+                </button>
+                @if (generandoPreview()) {
                   <mat-spinner diameter="20" />
                 }
               }
@@ -149,22 +156,26 @@
           <div class="hoja__visor">
             @if (viewerSrc(); as src) {
               <ngx-extended-pdf-viewer [src]="src" height="100%" [showBorders]="false" />
-            } @else if (generandoContrato()) {
+            } @else if (generandoPreview()) {
               <div class="hoja__placeholder">
                 <mat-spinner diameter="32" />
-                <p>Generando contrato…</p>
+                <p>Generando previsualización…</p>
               </div>
             } @else if (archivoActivo()) {
               <div class="hoja__placeholder">
                 <mat-spinner diameter="32" />
                 <p>Cargando previsualización…</p>
               </div>
-            } @else if (esContrato()) {
+            } @else if (esGenerable()) {
               <div class="hoja__placeholder">
                 <mat-icon>picture_as_pdf</mat-icon>
                 <h2>{{ doc.nombre }}</h2>
                 <p class="hoja__hint">
-                  Completá los campos del contrato y generá la previsualización.
+                  @if (esContrato()) {
+                    Completá los campos y generá la previsualización.
+                  } @else {
+                    Generá la previsualización para verla acá.
+                  }
                 </p>
               </div>
             } @else {
@@ -277,8 +288,8 @@
                 <button
                   mat-flat-button
                   color="primary"
-                  (click)="actualizarPreviewContrato()"
-                  [disabled]="generandoContrato()"
+                  (click)="actualizarPreview()"
+                  [disabled]="generandoPreview()"
                 >
                   <mat-icon>autorenew</mat-icon>
                   Actualizar previsualización

@@ -73,4 +73,9 @@ public class ExpedienteController {
         byte[] pdf = expedienteService.generarContrato(id, req);
         return PdfResponseFactory.attachment(pdf, "contrato-locacion-" + id);
     }
+
+    @GetMapping("/{id}/caratula")
+    public ResponseEntity<ByteArrayResource> generarCaratula(@PathVariable Long id) {
+        return PdfResponseFactory.attachment(expedienteService.generarCaratula(id), "caratula-" + id);
+    }
 }

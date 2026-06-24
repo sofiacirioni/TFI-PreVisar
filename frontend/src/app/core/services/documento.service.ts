@@ -36,4 +36,11 @@ export class DocumentoService {
       observe: 'response',
     });
   }
+
+  descargarCaratula(expId: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(API.EXPEDIENTE_CARATULA(expId), {
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
 }

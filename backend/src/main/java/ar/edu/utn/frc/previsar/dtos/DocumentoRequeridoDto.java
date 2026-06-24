@@ -6,5 +6,6 @@ public record DocumentoRequeridoDto(
         String nombre,
         boolean obligatorio,
         int orden,
-        boolean permiteMultiples
+        boolean permiteMultiples,
+        boolean generable
 ) {}

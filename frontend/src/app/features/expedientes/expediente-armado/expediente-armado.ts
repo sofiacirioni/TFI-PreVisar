@@ -123,16 +123,20 @@ export class ExpedienteArmado {
     { initialValue: null as Blob | null },
   );
 
-  // Contrato generado para previsualizar (Opción A: se regenera en el backend
-  // con los campos del panel lateral). Es efímero: se limpia al cambiar de doc.
-  private readonly contratoPreviewBlob = signal<Blob | null>(null);
-  readonly generandoContrato = signal(false);
+  // PDF generado por el sistema para previsualizar (contrato o carátula). Es
+  // efímero: se regenera bajo demanda y se limpia al cambiar de documento.
+  private readonly previewGeneradaBlob = signal<Blob | null>(null);
+  readonly generandoPreview = signal(false);
+
+  // El slot admite generación de PDF por el sistema (dato: documento_requerido.generable).
+  readonly esGenerable = computed(() => this.docActivo()?.generable ?? false);
+  // El contrato es el único generable con campos editables (panel lateral).
   readonly esContrato = computed(() => this.docActivo()?.codigo === 'CONTRATO_LOCACION');
 
-  // Fuente del visor central: el contrato generado tiene prioridad cuando el
-  // documento activo es el contrato; si no, el archivo subido del slot.
+  // Fuente del visor central: el PDF generado tiene prioridad cuando el slot es
+  // generable; si no, el archivo subido del slot.
   readonly viewerSrc = computed<Blob | null>(() => {
-    if (this.esContrato() && this.contratoPreviewBlob()) return this.contratoPreviewBlob();
+    if (this.esGenerable() && this.previewGeneradaBlob()) return this.previewGeneradaBlob();
     return this.previewBlob();
   });
 
@@ -222,7 +226,7 @@ export class ExpedienteArmado {
   seleccionarDoc(id: number): void {
     this.docSeleccionadoId.set(id);
     this.archivoSeleccionadoId.set(null);
-    this.contratoPreviewBlob.set(null); // preview de contrato es por-documento
+    this.previewGeneradaBlob.set(null); // la preview generada es por-documento
   }
 
   // Reabre el wizard en modo edición (la ruta ':id' lo carga como "retomar").
@@ -279,29 +283,47 @@ export class ExpedienteArmado {
     };
   }
 
-  // Regenera el contrato con los campos actuales y lo muestra en el visor central.
-  actualizarPreviewContrato(): void {
-    this.generandoContrato.set(true);
-    this.documentoService.descargarContrato(this.expedienteId(), this.contratoReq()).subscribe({
+  // Despacha al generador según el código del slot (registro cliente: el flag
+  // `generable` decide si se muestra el botón, el código elige el endpoint).
+  private generarPdf(): Observable<HttpResponse<Blob>> | null {
+    switch (this.docActivo()?.codigo) {
+      case 'CONTRATO_LOCACION':
+        return this.documentoService.descargarContrato(this.expedienteId(), this.contratoReq());
+      case 'CARATULA':
+        return this.documentoService.descargarCaratula(this.expedienteId());
+      default:
+        return null;
+    }
+  }
+
+  private nombreGenerado(): string {
+    return this.docActivo()?.codigo === 'CARATULA' ? 'caratula.pdf' : 'contrato-locacion.pdf';
+  }
+
+  // Genera el PDF del slot y lo muestra en el visor central.
+  actualizarPreview(): void {
+    const pdf$ = this.generarPdf();
+    if (!pdf$) return;
+    this.generandoPreview.set(true);
+    pdf$.subscribe({
       next: (resp) => {
-        this.contratoPreviewBlob.set(resp.body);
-        this.generandoContrato.set(false);
+        this.previewGeneradaBlob.set(resp.body);
+        this.generandoPreview.set(false);
       },
-      error: () => this.generandoContrato.set(false),
+      error: () => this.generandoPreview.set(false),
     });
   }
 
-  // Descarga el contrato. Si ya hay una preview generada, baja ese mismo PDF;
-  // si no, lo genera con los campos actuales.
-  descargarContrato(): void {
-    const blob = this.contratoPreviewBlob();
+  // Descarga el PDF generado. Si ya hay una preview, baja ese mismo; si no, lo genera.
+  descargarGenerada(): void {
+    const blob = this.previewGeneradaBlob();
     if (blob) {
-      this.descargarBlob(blob, 'contrato-locacion.pdf');
+      this.descargarBlob(blob, this.nombreGenerado());
       return;
     }
-    this.documentoService
-      .descargarContrato(this.expedienteId(), this.contratoReq())
-      .subscribe((resp) => this.guardarBlob(resp, 'contrato-locacion.pdf'));
+    const pdf$ = this.generarPdf();
+    if (!pdf$) return;
+    pdf$.subscribe((resp) => this.guardarBlob(resp, this.nombreGenerado()));
   }
 
   private guardarBlob(resp: HttpResponse<Blob>, fallback: string): void {

@@ -39,6 +39,7 @@ export const API = {
   EXPEDIENTE_DOCUMENTOS: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/documentos`,
   EXPEDIENTE_DOCUMENTO: (id: number, docId: number) => `${environment.apiBaseUrl}/expedientes/${id}/documentos/${docId}`,
   EXPEDIENTE_CONTRATO: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/contrato`,
+  EXPEDIENTE_CARATULA: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/caratula`,
 
   // --- Parámetros de aporte (gestión, solo revisor) ---
   APORTE_ARANCEL: `${environment.apiBaseUrl}/aportes/arancel`,

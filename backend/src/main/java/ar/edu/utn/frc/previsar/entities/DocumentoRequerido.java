@@ -37,5 +37,9 @@ public class DocumentoRequerido {
 
     @Column(nullable = false)
     @Builder.Default
+    private boolean generable = false;
+
+    @Column(nullable = false)
+    @Builder.Default
     private boolean activo = true;
 }

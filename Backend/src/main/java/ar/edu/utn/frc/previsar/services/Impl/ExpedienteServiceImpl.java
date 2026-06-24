@@ -13,9 +13,7 @@ import ar.edu.utn.frc.previsar.enums.EstadoExpediente;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ExpedienteMapper;
-import ar.edu.utn.frc.previsar.pdf.ContratoData;
-import ar.edu.utn.frc.previsar.pdf.ContratoTemplate;
-import ar.edu.utn.frc.previsar.pdf.GenerarContratoRequest;
+import ar.edu.utn.frc.previsar.pdf.*;
 import ar.edu.utn.frc.previsar.repositories.ExpedienteRepository;
 import ar.edu.utn.frc.previsar.repositories.ObraRepository;
 import ar.edu.utn.frc.previsar.repositories.TipoTareaRepository;
@@ -161,9 +159,32 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         return pdfGenerationService.generar(new ContratoTemplate(data));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] generarCaratula(Long id) {
+        Expediente exp = buscarPropio(id);
+        CaratulaData data = new CaratulaData(
+                exp.getProfesional().getTitulo().getNombre(),
+                apellidoNombre(exp.getProfesional()),              // "APELLIDO Nombre"
+                formatMatriculaOrden(exp.getProfesional()),        // el helper del contrato
+                exp.getObra().getComitente().getNombreRazonSocial(),
+                exp.getObra().getComitente().getDniCuit(),
+                null,                                              // distribuidora: en blanco
+                exp.getObra().getDesignacion(),
+                ubicacionObra(exp.getObra()),                      // domicilio - localidad (CP) - provincia
+                exp.getTipoTarea().getNombre()
+        );
+        return pdfGenerationService.generar(new CaratulaTemplate(data));
+    }
+
     /** "Nombre Apellido" del profesional para el encabezado del contrato. */
     private String nombreCompleto(Profesional p) {
         return p.getNombre() + " " + p.getApellido();
+    }
+
+    /** "APELLIDO Nombre" — formato de la carátula. */
+    private String apellidoNombre(Profesional p) {
+        return p.getApellido() + " " + p.getNombre();
     }
 
     /** "17.373.068 / 4315" — matrícula y, si tiene, número de orden. */
@@ -184,6 +205,11 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     /** "Localidad (CP)" para el renglón de ubicación de la obra. */
     private String localidadConCp(Obra obra) {
         return obra.getLocalidad() + " (" + obra.getCodigoPostal() + ")";
+    }
+
+    /** "Calle 123 - Barrio - Localidad (CP) - Provincia" para la carátula. */
+    private String ubicacionObra(Obra obra) {
+        return domicilioObra(obra) + " - " + localidadConCp(obra) + " - " + obra.getProvincia().getNombre();
     }
 
     // --- helpers ---
