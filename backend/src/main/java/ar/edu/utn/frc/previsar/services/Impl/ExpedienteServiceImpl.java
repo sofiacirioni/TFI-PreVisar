@@ -230,6 +230,12 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void verificarPropio(Long id) {
+        buscarPropio(id);
+    }
+
     private Expediente buscarPropio(Long id) {
         Long profesionalId = securityUtils.getProfesionalActual().getId();
         return expedienteRepository

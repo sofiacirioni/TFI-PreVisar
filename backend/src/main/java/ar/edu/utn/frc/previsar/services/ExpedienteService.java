@@ -18,4 +18,6 @@ public interface ExpedienteService {
     AportesResponseDto calcularAportes(CalcularAportesRequestDto request);
     byte[] generarContrato(Long id, GenerarContratoRequest req);
     byte[] generarCaratula(Long id);
+    /** Verifica que el expediente exista y pertenezca al profesional actual (404 ante ajenos). */
+    void verificarPropio(Long id);
 }

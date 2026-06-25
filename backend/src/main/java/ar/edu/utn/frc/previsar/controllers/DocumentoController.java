@@ -1,8 +1,10 @@
 package ar.edu.utn.frc.previsar.controllers;
 
 import ar.edu.utn.frc.previsar.dtos.DescargaDocumentoDto;
+import ar.edu.utn.frc.previsar.dtos.ValidacionResultadoDto;
 import ar.edu.utn.frc.previsar.dtos.response.DocumentoCargadoResponseDto;
 import ar.edu.utn.frc.previsar.services.DocumentoCargadoService;
+import ar.edu.utn.frc.previsar.services.ValidacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DocumentoController {
     private final DocumentoCargadoService service;
+    private final ValidacionService validacionService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentoCargadoResponseDto> subir(
@@ -39,6 +42,11 @@ public class DocumentoController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment().filename(d.nombre()).build().toString())
                 .body(d.recurso());
+    }
+
+    @GetMapping("/validacion")
+    public ValidacionResultadoDto validar(@PathVariable Long expedienteId) {
+        return validacionService.validarTodo(expedienteId);   // on-demand, nada se persiste
     }
 
     @DeleteMapping("/{documentoId}")

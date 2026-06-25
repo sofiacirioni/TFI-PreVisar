@@ -32,12 +32,16 @@ public class DocumentoRequerido {
     @Column(nullable = false)
     private Integer orden;
 
-    @Column(name="permite_multiples")
+    @Column(name = "permite_multiples")
     private boolean permiteMultiples;
 
     @Column(nullable = false)
     @Builder.Default
     private boolean generable = false;
+
+    @Column(name = "valida_a4", nullable = false)
+    @Builder.Default
+    private boolean validaA4 = true;
 
     @Column(nullable = false)
     @Builder.Default
