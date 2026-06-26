@@ -235,20 +235,51 @@
   gap: 0.25rem;
 }
 
-.observaciones {
+/* Observaciones: función principal del panel derecho. Llena el alto restante
+   con scroll propio (min-height:0 para que el overflow funcione dentro del flex). */
+.panel-observaciones {
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 1rem;
   border-radius: 12px;
   background: var(--mat-sys-surface-container-low);
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  h4 {
+    margin: 0.5rem 0 0.15rem;
+  }
 }
-.observaciones__titulo {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
+.obs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.observaciones__vacio {
-  color: var(--mat-sys-on-surface-variant);
-  font-size: 0.85rem;
+.obs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.9rem;
+  padding: 0.35rem 0;
+  mat-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+  &.adv mat-icon {
+    color: #b26a00; /* ámbar advertencia */
+  }
+  &.ok mat-icon {
+    color: var(--mat-sys-primary);
+  }
+}
+.con-obs {
+  color: #b26a00 !important; /* ícono del índice cuando el slot tiene observaciones */
 }
 
 .estado-vacio {
@@ -268,7 +299,7 @@
   .panel-derecho {
     max-height: none; // en una sola columna el scroll lo maneja la página
   }
-  .observaciones {
+  .panel-observaciones {
     overflow-y: visible;
   }
   .hoja__visor {

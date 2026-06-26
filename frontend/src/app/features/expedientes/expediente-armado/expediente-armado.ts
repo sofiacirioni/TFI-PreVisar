@@ -27,6 +27,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
+import { Observacion, ValidacionResultado } from '../../../core/models/validacion.model';
 
 type Vm =
   | { status: 'loading' }
@@ -72,11 +73,52 @@ export class ExpedienteArmado {
     this.refresh.update((n) => n + 1);
   }
 
-  readonly documentosCargados = toSignal(
-    combineLatest([this.route.paramMap, toObservable(this.refresh)]).pipe(
-      switchMap(([pm]) =>
-        this.documentoService.listar(Number(pm.get('id'))).pipe(catchError(() => of([]))),
+  // Id del expediente que reemite ante cada recarga, para refrescar documentos
+  // cargados y validación a la vez (subida/baja/revalidación).
+  private readonly expedienteId$ = combineLatest([
+    this.route.paramMap,
+    toObservable(this.refresh),
+  ]).pipe(map(([pm]) => Number(pm.get('id'))));
+
+  readonly validacion = toSignal(
+    this.expedienteId$.pipe(
+      switchMap((id) =>
+        this.documentoService
+          .validar(id)
+          .pipe(catchError(() => of({ documentos: [], generales: [] } as ValidacionResultado))),
       ),
+    ),
+    { initialValue: { documentos: [], generales: [] } as ValidacionResultado },
+  );
+
+  // Observaciones agrupadas por ranura (un slot multi-archivo junta las de todos sus archivos)
+  private readonly obsPorSlot = computed(() => {
+    const map = new Map<number, Observacion[]>();
+    for (const d of this.validacion().documentos) {
+      if (!d.observaciones.length) continue;
+      const arr = map.get(d.documentoRequeridoId) ?? [];
+      arr.push(...d.observaciones);
+      map.set(d.documentoRequeridoId, arr);
+    }
+    return map;
+  });
+  conObservacion(docReqId: number): boolean {
+    return (this.obsPorSlot().get(docReqId)?.length ?? 0) > 0;
+  }
+
+  readonly generales = computed(() => this.validacion().generales);
+  readonly documentosConObs = computed(() =>
+    this.validacion().documentos.filter((d) => d.observaciones.length > 0),
+  );
+  readonly totalObservaciones = computed(
+    () =>
+      this.generales().length +
+      this.documentosConObs().reduce((n, d) => n + d.observaciones.length, 0),
+  );
+
+  readonly documentosCargados = toSignal(
+    this.expedienteId$.pipe(
+      switchMap((id) => this.documentoService.listar(id).pipe(catchError(() => of([])))),
     ),
     { initialValue: [] as DocumentoCargado[] },
   );

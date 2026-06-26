@@ -52,8 +52,14 @@
                 [class.activo]="doc.id === docActivo()?.id"
                 (click)="seleccionarDoc(doc.id)"
               >
-                <mat-icon class="indice-doc__estado" [class.cargado]="cargados().has(doc.id)">
-                  {{ cargados().has(doc.id) ? 'check_circle' : 'radio_button_unchecked' }}
+                <mat-icon [class.con-obs]="conObservacion(doc.id)">
+                  {{
+                    conObservacion(doc.id)
+                      ? 'warning'
+                      : cargados().has(doc.id)
+                        ? 'check_circle'
+                        : 'radio_button_unchecked'
+                  }}
                 </mat-icon>
                 <span class="indice-doc__nombre">{{ doc.nombre }}</span>
                 @if (!doc.obligatorio) {
@@ -88,7 +94,9 @@
                 <mat-icon>upload</mat-icon>
                 {{
                   archivosDe(doc.id).length
-                    ? (doc.permiteMultiples ? 'Agregar otro' : 'Reemplazar')
+                    ? doc.permiteMultiples
+                      ? 'Agregar otro'
+                      : 'Reemplazar'
                     : 'Subir'
                 }}
               </button>
@@ -299,13 +307,39 @@
           }
         </mat-accordion>
 
-        <aside class="observaciones" aria-label="Observaciones de validación">
-          <h3 class="observaciones__titulo">Observaciones</h3>
-          <p class="observaciones__vacio">
-            Las validaciones automáticas aparecerán acá como observaciones sobre el documento
-            seleccionado.
-          </p>
-        </aside>
+        <section class="panel-observaciones">
+          <div class="obs-header">
+            <h3>Observaciones</h3>
+            <button mat-icon-button (click)="recargar()" matTooltip="Revalidar">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
+
+          @if (totalObservaciones() === 0) {
+            <div class="obs ok">
+              <mat-icon>check_circle</mat-icon><span>Sin observaciones.</span>
+            </div>
+          } @else {
+            @if (generales().length) {
+              <h4>Generales</h4>
+              @for (o of generales(); track o.codigo + o.mensaje) {
+                <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
+                  <mat-icon>{{ o.nivel === 'ADVERTENCIA' ? 'warning' : 'info' }}</mat-icon>
+                  <span>{{ o.mensaje }}</span>
+                </div>
+              }
+            }
+            @for (d of documentosConObs(); track d.documentoCargadoId) {
+              <h4>{{ d.nombreOriginal }}</h4>
+              @for (o of d.observaciones; track o.codigo + o.mensaje) {
+                <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
+                  <mat-icon>{{ o.nivel === 'ADVERTENCIA' ? 'warning' : 'info' }}</mat-icon>
+                  <span>{{ o.mensaje }}</span>
+                </div>
+              }
+            }
+          }
+        </section>
       </div>
     </div>
   }

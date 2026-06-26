@@ -4,6 +4,7 @@ import { DocumentoCargado } from '../models/documento-cargado.model';
 import { GenerarContratoRequest } from '../models/generar-contrato-request.model';
 import { Observable } from 'rxjs';
 import { API } from '../constants/api.constants';
+import { ValidacionResultado } from '../models/validacion.model';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +28,10 @@ export class DocumentoService {
   }
 
   descargar(expId: number, docId: number): Observable<HttpResponse<Blob>> {
-    return this.http.get(API.EXPEDIENTE_DOCUMENTO(expId, docId), { responseType: 'blob', observe: 'response' });
+    return this.http.get(API.EXPEDIENTE_DOCUMENTO(expId, docId), {
+      responseType: 'blob',
+      observe: 'response',
+    });
   }
 
   descargarContrato(expId: number, req: GenerarContratoRequest): Observable<HttpResponse<Blob>> {
@@ -42,5 +46,9 @@ export class DocumentoService {
       responseType: 'blob',
       observe: 'response',
     });
+  }
+
+  validar(expId: number): Observable<ValidacionResultado> {
+    return this.http.get<ValidacionResultado>(API.EXPEDIENTE_VALIDACION(expId));
   }
 }

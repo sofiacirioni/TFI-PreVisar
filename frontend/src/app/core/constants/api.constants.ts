@@ -37,9 +37,13 @@ export const API = {
   EXPEDIENTES_CALCULAR_APORTES: `${environment.apiBaseUrl}/expedientes/calcular-aportes`,
 
   EXPEDIENTE_DOCUMENTOS: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/documentos`,
-  EXPEDIENTE_DOCUMENTO: (id: number, docId: number) => `${environment.apiBaseUrl}/expedientes/${id}/documentos/${docId}`,
+  EXPEDIENTE_DOCUMENTO: (id: number, docId: number) =>
+    `${environment.apiBaseUrl}/expedientes/${id}/documentos/${docId}`,
   EXPEDIENTE_CONTRATO: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/contrato`,
   EXPEDIENTE_CARATULA: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/caratula`,
+  // Validación nivel 1 (on-demand). Vive en DocumentoController: GET /documentos/validacion.
+  EXPEDIENTE_VALIDACION: (id: number) =>
+    `${environment.apiBaseUrl}/expedientes/${id}/documentos/validacion`,
 
   // --- Parámetros de aporte (gestión, solo revisor) ---
   APORTE_ARANCEL: `${environment.apiBaseUrl}/aportes/arancel`,
