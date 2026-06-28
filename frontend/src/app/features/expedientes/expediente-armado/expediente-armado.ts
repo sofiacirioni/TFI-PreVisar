@@ -64,6 +64,8 @@ export class ExpedienteArmado {
   //signals de documentos para descarga y subida.
   private readonly documentoService = inject(DocumentoService);
 
+  readonly generando = signal(false);
+
   readonly expedienteId = toSignal(this.route.paramMap.pipe(map((pm) => Number(pm.get('id')))), {
     initialValue: 0,
   });
@@ -276,15 +278,6 @@ export class ExpedienteArmado {
     this.router.navigate(['/expedientes', id]);
   }
 
-  // El expediente ya existe en esta vista; el botón del header descarga todos
-  // los documentos cargados (uno por archivo). TODO: endpoint backend que
-  // devuelva un único ZIP en vez de N descargas.
-  descargarExpediente(): void {
-    for (const doc of this.documentosCargados()) {
-      this.descargar(doc);
-    }
-  }
-
   // Descarga y subida de archivos para slot de documento.
   onArchivoSeleccionado(docReqId: number, event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -382,4 +375,20 @@ export class ExpedienteArmado {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  // Descarga un PDF compilado con todos los documentos cargados.
+  compilar(): void {
+    if (this.generando()) return;
+    this.generando.set(true);
+    this.documentoService.descargarCompilado(this.expedienteId()).subscribe({
+      next: (resp) => {
+        this.guardarBlob(resp, `expediente-${this.expedienteId()}.pdf`);
+        this.generando.set(false);
+      },
+      error: () => {
+        this.generando.set(false); /* snackbar de error */
+      },
+    });
+  }
+  
 }

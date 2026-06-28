@@ -56,6 +56,15 @@ public class FileStorageService {
         }
     }
 
+    /** Carga el contenido completo del archivo en memoria. */
+    public byte[] leerBytes(String rutaRelativa) {
+        try {
+            return cargar(rutaRelativa).getInputStream().readAllBytes();
+        } catch (IOException e) {
+            throw new StorageException("No se pudo leer el archivo", e);
+        }
+    }
+
     public void eliminar(String rutaRelativa) {
         try {
             Files.deleteIfExists(base.resolve(rutaRelativa).normalize());

@@ -3,9 +3,12 @@ package ar.edu.utn.frc.previsar.controllers;
 import ar.edu.utn.frc.previsar.dtos.DescargaDocumentoDto;
 import ar.edu.utn.frc.previsar.dtos.ValidacionResultadoDto;
 import ar.edu.utn.frc.previsar.dtos.response.DocumentoCargadoResponseDto;
+import ar.edu.utn.frc.previsar.pdf.PdfResponseFactory;
+import ar.edu.utn.frc.previsar.services.CompilacionService;
 import ar.edu.utn.frc.previsar.services.DocumentoCargadoService;
 import ar.edu.utn.frc.previsar.services.ValidacionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,7 @@ import java.util.List;
 public class DocumentoController {
     private final DocumentoCargadoService service;
     private final ValidacionService validacionService;
+    private final CompilacionService compilacionService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentoCargadoResponseDto> subir(
@@ -42,6 +46,12 @@ public class DocumentoController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment().filename(d.nombre()).build().toString())
                 .body(d.recurso());
+    }
+
+    @GetMapping("/compilado")
+    public ResponseEntity<ByteArrayResource> compilar(@PathVariable Long expedienteId) {
+        byte[] pdf = compilacionService.compilar(expedienteId);
+        return PdfResponseFactory.attachment(pdf, "expediente-" + expedienteId);
     }
 
     @GetMapping("/validacion")

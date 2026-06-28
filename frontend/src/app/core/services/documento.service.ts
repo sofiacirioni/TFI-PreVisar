@@ -34,6 +34,13 @@ export class DocumentoService {
     });
   }
 
+  descargarCompilado(expId: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(API.EXPEDIENTE_COMPILADO(expId), {
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
+
   descargarContrato(expId: number, req: GenerarContratoRequest): Observable<HttpResponse<Blob>> {
     return this.http.post(API.EXPEDIENTE_CONTRATO(expId), req, {
       responseType: 'blob',

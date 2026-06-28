@@ -5,7 +5,6 @@ import ar.edu.utn.frc.previsar.dtos.ObservacionDto;
 import ar.edu.utn.frc.previsar.dtos.ValidacionResultadoDto;
 import ar.edu.utn.frc.previsar.entities.DocumentoCargado;
 import ar.edu.utn.frc.previsar.enums.NivelObservacion;
-import ar.edu.utn.frc.previsar.exception.StorageException;
 import ar.edu.utn.frc.previsar.repositories.DocumentoCargadoRepository;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import ar.edu.utn.frc.previsar.services.ValidadorExpediente;
@@ -46,7 +45,7 @@ public class ValidacionNivel1Service implements ValidadorExpediente {
         long total = 0;
 
         for (DocumentoCargado doc : docs) {
-            byte[] bytes = leer(doc.getRutaRelativa());
+            byte[] bytes = storage.leerBytes(doc.getRutaRelativa());
             total += bytes.length;
             List<ObservacionDto> obs = new ArrayList<>();
 
@@ -99,11 +98,6 @@ public class ValidacionNivel1Service implements ValidadorExpediente {
     }
 
     private boolean cerca(float a, float b) { return Math.abs(a - b) <= TOL; }
-
-    private byte[] leer(String ruta) {
-        try { return storage.cargar(ruta).getInputStream().readAllBytes(); }
-        catch (IOException e) { throw new StorageException("No se pudo leer el archivo", e); }
-    }
 
     private String sha256(byte[] b) {
         try {

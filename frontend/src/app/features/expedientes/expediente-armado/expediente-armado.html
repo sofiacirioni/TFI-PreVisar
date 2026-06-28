@@ -22,11 +22,15 @@
     <button
       mat-flat-button
       color="primary"
-      [disabled]="!hayDocumentos()"
-      (click)="descargarExpediente()"
+      [disabled]="!hayDocumentos() || generando()"
+      (click)="compilar()"
     >
-      <mat-icon>download</mat-icon>
-      Descargar expediente
+      @if (generando()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        <mat-icon>download</mat-icon>
+      }
+      {{ generando() ? 'Compilando…' : 'Descargar expediente' }}
     </button>
   </header>
 
