@@ -9,9 +9,7 @@ import ar.edu.utn.frc.previsar.services.ValidadorExpediente;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,14 +26,23 @@ public class ValidacionServiceImpl implements ValidacionService {
 
     @Override
     public ValidacionResultadoDto validarTodo(Long expedienteId) {
-        List<DocumentoValidadoDto> docs = new ArrayList<>();
         List<ObservacionDto> generales = new ArrayList<>();
+        Map<Long, DocumentoValidadoDto> porDoc = new LinkedHashMap<>();
+
         validadores.stream().sorted(Comparator.comparingInt(ValidadorExpediente::nivel))
                 .forEach(v -> {
                     ValidacionResultadoDto r = v.validar(expedienteId);
-                    docs.addAll(r.documentos());
                     generales.addAll(r.generales());
+                    for (DocumentoValidadoDto dv : r.documentos()) {
+                        porDoc.merge(dv.documentoCargadoId(), dv, (a, b) -> {
+                            List<ObservacionDto> union = new ArrayList<>(a.observaciones());
+                            union.addAll(b.observaciones());
+                            return new DocumentoValidadoDto(a.documentoCargadoId(),
+                                    a.documentoRequeridoId(), a.nombreOriginal(), union);
+                        });
+                    }
                 });
-        return new ValidacionResultadoDto(docs, generales);
+
+        return new ValidacionResultadoDto(new ArrayList<>(porDoc.values()), generales);
     }
 }

@@ -19,6 +19,7 @@ public interface ExpedienteMapper {
     @Mapping(target = "provinciaNombre", source = "obra.provincia.nombre")
     @Mapping(target = "comitenteId", source = "obra.comitente.id")
     @Mapping(target = "comitenteNombre", source = "obra.comitente.nombreRazonSocial")
+    @Mapping(target = "comitenteDniCuit", source = "obra.comitente.dniCuit")
     @Mapping(target = "tipoTareaId", source = "tipoTarea.id")
     @Mapping(target = "tipoTareaCodigo", source = "tipoTarea.codigo")
     @Mapping(target = "tipoTareaNombre", source = "tipoTarea.nombre")
