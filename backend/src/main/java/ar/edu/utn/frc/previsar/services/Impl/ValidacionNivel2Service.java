@@ -79,15 +79,17 @@ public class ValidacionNivel2Service implements ValidadorExpediente {
         return 2;
     }
 
+    // Reglas puras (package-private para poder testearlas sin cargar PDFs reales).
+
     /** El CUIT/DNI del comitente debe aparecer en el contrato. */
-    private List<ObservacionDto> verificarCuit(String texto, String cuit) {
+    List<ObservacionDto> verificarCuit(String texto, String cuit) {
         if (cuit.isBlank() || digitos(texto).contains(cuit)) return List.of();
         return List.of(new ObservacionDto("CUIT_NO_COINCIDE", NivelObservacion.ADVERTENCIA,
                 "El CUIT del comitente del expediente no aparece en el contrato subido."));
     }
 
     /** El honorario referencial debe aproximarse (±5%) a algún monto del documento. */
-    private List<ObservacionDto> verificarHonorarios(String texto, BigDecimal referencial) {
+    List<ObservacionDto> verificarHonorarios(String texto, BigDecimal referencial) {
         if (referencial == null || referencial.signum() <= 0) return List.of();
 
         List<BigDecimal> montos = extraerMontos(texto);
@@ -117,7 +119,7 @@ public class ValidacionNivel2Service implements ValidadorExpediente {
         }
     }
 
-    private static List<BigDecimal> extraerMontos(String texto) {
+    static List<BigDecimal> extraerMontos(String texto) {
         List<BigDecimal> montos = new ArrayList<>();
         Matcher m = MONTO.matcher(texto);
         while (m.find()) {

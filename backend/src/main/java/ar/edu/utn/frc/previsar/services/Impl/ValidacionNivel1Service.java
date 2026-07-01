@@ -93,7 +93,8 @@ public class ValidacionNivel1Service implements ValidadorExpediente {
         return doc.getDocumentoRequerido().isValidaA4();
     }
 
-    private boolean esA4(float w, float h) {
+    // package-private para testear la geometría (tolerancia + orientación) sin cargar PDFs.
+    boolean esA4(float w, float h) {
         return (cerca(w, A4_W) && cerca(h, A4_H)) || (cerca(w, A4_H) && cerca(h, A4_W));
     }
 
