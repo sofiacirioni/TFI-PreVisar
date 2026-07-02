@@ -149,6 +149,21 @@ public class GlobalExceptionHandler {
                 request);
     }
 
+    /**
+     * Fallas al consultar la API de Gemini o al rasterizar el PDF para la
+     * validacion visual (nivel 3). Es un servicio externo: HTTP 502.
+     */
+    @ExceptionHandler(GeminiException.class)
+    public ResponseEntity<ErrorResponseDto> handleGemini(
+            GeminiException ex,
+            HttpServletRequest request) {
+        log.error("Error en la validacion visual (Gemini)", ex);
+        return construirRespuesta(
+                HttpStatus.BAD_GATEWAY,
+                "No se pudo completar la validación visual del expediente",
+                request);
+    }
+
     // -------------------------- Helpers --------------------------
 
     private ResponseEntity<ErrorResponseDto> construirRespuesta(
