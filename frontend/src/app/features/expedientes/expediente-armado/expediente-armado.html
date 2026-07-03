@@ -314,10 +314,41 @@
         <section class="panel-observaciones">
           <div class="obs-header">
             <h3>Observaciones</h3>
-            <button mat-icon-button (click)="recargar()" matTooltip="Revalidar">
-              <mat-icon>refresh</mat-icon>
-            </button>
+            <div class="obs-actions">
+              <button mat-icon-button (click)="recargar()" matTooltip="Revalidar">
+                <mat-icon>refresh</mat-icon>
+              </button>
+              <button
+                mat-stroked-button
+                (click)="analizarConIa()"
+                [disabled]="iaEstado() === 'EN_PROGRESO'"
+              >
+                @if (iaEstado() === 'EN_PROGRESO') {
+                  <mat-spinner diameter="16" /> Analizando…
+                } @else {
+                  <mat-icon>auto_awesome</mat-icon> Analizar con IA
+                }
+              </button>
+            </div>
           </div>
+
+          @if (iaEstado() === 'EN_PROGRESO') {
+            <p class="ia-nota">
+              El análisis con IA puede tardar hasta un minuto. Podés seguir trabajando; el panel se
+              actualiza al terminar.
+            </p>
+          }
+          @if (iaEstado() === 'ERROR') {
+            <p class="ia-error">
+              No se pudo completar el análisis con IA. Probá de nuevo en un rato.
+            </p>
+          }
+          @if (iaEstado() === 'TIMEOUT') {
+            <p class="ia-error">
+              El análisis está tardando más de lo esperado. Recargá en un rato para ver los
+              resultados.
+            </p>
+          }
 
           @if (totalObservaciones() === 0) {
             <div class="obs ok">

@@ -1,9 +1,9 @@
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, startWith, switchMap } from 'rxjs/operators';
-import { combineLatest, Observable, of } from 'rxjs';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, startWith, switchMap, take } from 'rxjs/operators';
+import { combineLatest, Observable, of, Subscription, timer } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -19,7 +19,7 @@ import { EstructuraService } from '../../../core/services/estructura.service';
 import { DocumentoService } from '../../../core/services/documento.service';
 import { DocumentoCargado } from '../../../core/models/documento-cargado.model';
 import { GenerarContratoRequest } from '../../../core/models/generar-contrato-request.model';
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -63,6 +63,7 @@ export class ExpedienteArmado {
 
   //signals de documentos para descarga y subida.
   private readonly documentoService = inject(DocumentoService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly generando = signal(false);
 
@@ -390,5 +391,51 @@ export class ExpedienteArmado {
       },
     });
   }
-  
+
+  // ── Validación visual con IA (nivel 3) ──────────────────────────────────
+  // Disparo on-demand del análisis y polling del estado efímero (en memoria del
+  // backend). Al completar, se recarga el panel para que aparezcan las observaciones.
+  private static readonly IA_POLL_MS = 3000;
+  private static readonly IA_POLL_MAX = 40; // ~2 min; cota para el estado efímero en memoria
+
+  readonly iaEstado = signal<'IDLE' | 'EN_PROGRESO' | 'COMPLETADO' | 'ERROR' | 'TIMEOUT'>('IDLE');
+  private iaPoll?: Subscription;
+
+  analizarConIa(): void {
+    if (this.iaEstado() === 'EN_PROGRESO') return; // guarda de doble disparo (par del #9 del back)
+    this.iaEstado.set('EN_PROGRESO');
+    this.documentoService.analizarIa(this.expedienteId()).subscribe({
+      next: () => this.pollEstadoIa(),
+      // 409 = el backend ya tiene un análisis en curso: nos enganchamos al polling igual.
+      error: (e: HttpErrorResponse) =>
+        e.status === 409 ? this.pollEstadoIa() : this.iaEstado.set('ERROR'),
+    });
+  }
+
+  private pollEstadoIa(): void {
+    this.iaPoll?.unsubscribe();
+    this.iaPoll = timer(ExpedienteArmado.IA_POLL_MS, ExpedienteArmado.IA_POLL_MS)
+      .pipe(
+        switchMap(() => this.documentoService.estadoIa(this.expedienteId())),
+        map((r) => r.estado),
+        take(ExpedienteArmado.IA_POLL_MAX),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (estado) => {
+          if (estado === 'COMPLETADO') this.finIa('COMPLETADO');
+          else if (estado === 'ERROR') this.finIa('ERROR');
+          // EN_PROGRESO / SIN_INICIAR → seguir esperando
+        },
+        complete: () => {
+          if (this.iaEstado() === 'EN_PROGRESO') this.finIa('TIMEOUT');
+        },
+      });
+  }
+
+  private finIa(estado: 'COMPLETADO' | 'ERROR' | 'TIMEOUT'): void {
+    this.iaPoll?.unsubscribe();
+    this.iaEstado.set(estado);
+    if (estado === 'COMPLETADO') this.recargar(); // refresca el panel → aparecen las observaciones de IA
+  }
 }

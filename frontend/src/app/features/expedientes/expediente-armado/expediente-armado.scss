@@ -278,9 +278,14 @@
     color: var(--mat-sys-primary);
   }
 }
+
 .con-obs {
   color: #b26a00 !important; /* ícono del índice cuando el slot tiene observaciones */
 }
+
+.obs-actions { display: flex; align-items: center; gap: .25rem; }
+.ia-nota  { font-size: .85rem; color: var(--mat-sys-on-surface-variant); padding: .25rem 0; }
+.ia-error { font-size: .85rem; color: #b26a00; padding: .25rem 0; }
 
 .estado-vacio {
   padding: 2rem;
