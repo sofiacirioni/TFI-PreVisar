@@ -6,6 +6,7 @@ import ar.edu.utn.frc.previsar.dtos.ValidacionResultadoDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.entities.DocumentoCargado;
 import ar.edu.utn.frc.previsar.enums.NivelObservacion;
+import ar.edu.utn.frc.previsar.enums.OrigenObservacion;
 import ar.edu.utn.frc.previsar.repositories.DocumentoCargadoRepository;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import ar.edu.utn.frc.previsar.services.ValidadorExpediente;
@@ -59,9 +60,11 @@ public class ValidacionNivel2Service implements ValidadorExpediente {
             String texto = leerTexto(d);
             if (texto == null) {
                 obs.add(new ObservacionDto("NO_LEGIBLE", NivelObservacion.INFO,
+                        OrigenObservacion.COHERENCIA,
                         "No se pudo leer el documento para verificar coherencia."));
             } else if (texto.isBlank()) {
                 obs.add(new ObservacionDto("SIN_TEXTO", NivelObservacion.INFO,
+                        OrigenObservacion.COHERENCIA,
                         "No se pudo verificar el contenido automáticamente (el documento parece escaneado)."));
             } else {
                 if (esContrato) obs.addAll(verificarCuit(texto, cuit));
@@ -85,6 +88,7 @@ public class ValidacionNivel2Service implements ValidadorExpediente {
     List<ObservacionDto> verificarCuit(String texto, String cuit) {
         if (cuit.isBlank() || digitos(texto).contains(cuit)) return List.of();
         return List.of(new ObservacionDto("CUIT_NO_COINCIDE", NivelObservacion.ADVERTENCIA,
+                OrigenObservacion.COHERENCIA,
                 "El CUIT del comitente del expediente no aparece en el contrato subido."));
     }
 
@@ -95,11 +99,13 @@ public class ValidacionNivel2Service implements ValidadorExpediente {
         List<BigDecimal> montos = extraerMontos(texto);
         if (montos.isEmpty())
             return List.of(new ObservacionDto("SIN_MONTOS", NivelObservacion.INFO,
+                    OrigenObservacion.COHERENCIA,
                     "No se encontraron montos en el documento para comparar con el honorario referencial."));
 
         boolean coincide = montos.stream().anyMatch(m -> dentroDeTolerancia(m, referencial));
         if (!coincide)
             return List.of(new ObservacionDto("HONORARIOS_NO_COINCIDEN", NivelObservacion.ADVERTENCIA,
+                    OrigenObservacion.COHERENCIA,
                     "El honorario referencial registrado difiere en más del 5% de los montos del documento."));
         return List.of();
     }

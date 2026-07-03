@@ -5,9 +5,11 @@ import ar.edu.utn.frc.previsar.dtos.ObservacionDto;
 import ar.edu.utn.frc.previsar.dtos.ValidacionResultadoDto;
 import ar.edu.utn.frc.previsar.entities.DocumentoCargado;
 import ar.edu.utn.frc.previsar.enums.NivelObservacion;
+import ar.edu.utn.frc.previsar.enums.OrigenObservacion;
 import ar.edu.utn.frc.previsar.repositories.DocumentoCargadoRepository;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import ar.edu.utn.frc.previsar.services.ValidadorExpediente;
+import ar.edu.utn.frc.previsar.utils.HashUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -16,8 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,9 +53,10 @@ public class ValidacionNivel1Service implements ValidadorExpediente {
                 validarPdf(bytes, doc, obs);
             } else {
                 obs.add(new ObservacionDto("ES_IMAGEN", NivelObservacion.INFO,
+                        OrigenObservacion.DETERMINISTICO,
                         "Es una imagen; se ajustará a A4 al compilar el expediente."));
             }
-            porHash.computeIfAbsent(sha256(bytes), k -> new ArrayList<>()).add(doc.getNombreOriginal());
+            porHash.computeIfAbsent(HashUtil.sha256(bytes), k -> new ArrayList<>()).add(doc.getNombreOriginal());
             resultados.add(new DocumentoValidadoDto(doc.getId(),
                     doc.getDocumentoRequerido().getId(), doc.getNombreOriginal(), obs));
         }
@@ -63,9 +64,11 @@ public class ValidacionNivel1Service implements ValidadorExpediente {
         List<ObservacionDto> generales = new ArrayList<>();
         if (total > LIMITE_TOTAL)
             generales.add(new ObservacionDto("EXCEDE_32MB", NivelObservacion.ADVERTENCIA,
+                    OrigenObservacion.DETERMINISTICO,
                     "El expediente pesa " + (total / 1_048_576) + " MB y supera el límite de 32 MB de miCIEC."));
         porHash.values().stream().filter(l -> l.size() > 1).forEach(l ->
                 generales.add(new ObservacionDto("DUPLICADO", NivelObservacion.ADVERTENCIA,
+                        OrigenObservacion.DETERMINISTICO,
                         "Hay archivos repetidos: " + String.join(", ", l))));
 
         return new ValidacionResultadoDto(resultados, generales);
@@ -79,12 +82,14 @@ public class ValidacionNivel1Service implements ValidadorExpediente {
                 PDRectangle box = pdf.getPage(i).getMediaBox();
                 if (!esA4(box.getWidth(), box.getHeight())) {
                     obs.add(new ObservacionDto("NO_A4", NivelObservacion.ADVERTENCIA,
+                            OrigenObservacion.DETERMINISTICO,
                             "La página " + (i + 1) + " no es A4."));
                     break;
                 }
             }
         } catch (IOException e) {
             obs.add(new ObservacionDto("NO_ES_PDF", NivelObservacion.ADVERTENCIA,
+                    OrigenObservacion.DETERMINISTICO,
                     "El archivo no se pudo leer como un PDF válido."));
         }
     }
@@ -99,15 +104,6 @@ public class ValidacionNivel1Service implements ValidadorExpediente {
     }
 
     private boolean cerca(float a, float b) { return Math.abs(a - b) <= TOL; }
-
-    private String sha256(byte[] b) {
-        try {
-            byte[] h = MessageDigest.getInstance("SHA-256").digest(b);
-            StringBuilder sb = new StringBuilder();
-            for (byte x : h) sb.append(String.format("%02x", x));
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
-    }
 
     @Override
     public int nivel() {

@@ -9,4 +9,7 @@ import java.util.Optional;
 @Repository
 public interface ValidacionVisualRepository extends JpaRepository<ValidacionVisual, Long> {
     Optional<ValidacionVisual> findByDocumentoCargadoIdAndHashDocumento(Long documentoCargadoId, String hashDocumento);
+
+    /** Último resultado persistido para un documento (el más reciente por contenido analizado). */
+    Optional<ValidacionVisual> findFirstByDocumentoCargadoIdOrderByCreatedAtDesc(Long documentoCargadoId);
 }
