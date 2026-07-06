@@ -164,6 +164,21 @@ public class GlobalExceptionHandler {
                 request);
     }
 
+    /**
+     * Fallas al crear la preferencia de pago en Mercado Pago (rechazo, red o
+     * timeout). Es un servicio externo: HTTP 502.
+     */
+    @ExceptionHandler(PagoException.class)
+    public ResponseEntity<ErrorResponseDto> handlePago(
+            PagoException ex,
+            HttpServletRequest request) {
+        log.error("Error al generar el pago (Mercado Pago)", ex);
+        return construirRespuesta(
+                HttpStatus.BAD_GATEWAY,
+                "No se pudo generar el pago del arancel",
+                request);
+    }
+
     // -------------------------- Helpers --------------------------
 
     private ResponseEntity<ErrorResponseDto> construirRespuesta(

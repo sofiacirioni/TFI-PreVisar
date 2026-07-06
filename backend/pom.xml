@@ -157,12 +157,21 @@
 		</dependency>
 
 		<!-- ============================================== -->
-		<!-- Gemini API                                        -->
+		<!-- Gemini API                                     -->
 		<!-- ============================================== -->
 		<dependency>
 			<groupId>com.google.genai</groupId>
 			<artifactId>google-genai</artifactId>
 			<version>1.60.0</version>
+		</dependency>
+
+		<!-- ============================================== -->
+		<!-- Mercado Pago API                               -->
+		<!-- ============================================== -->
+		<dependency>
+			<groupId>com.mercadopago</groupId>
+			<artifactId>sdk-java</artifactId>
+			<version>2.9.2</version>   <!-- verificá la última 2.x en Maven Central -->
 		</dependency>
 	</dependencies>
 
