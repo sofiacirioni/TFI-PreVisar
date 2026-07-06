@@ -287,6 +287,24 @@
 .ia-nota  { font-size: .85rem; color: var(--mat-sys-on-surface-variant); padding: .25rem 0; }
 .ia-error { font-size: .85rem; color: #b26a00; padding: .25rem 0; }
 
+.obs-filtros { display: flex; gap: .4rem; flex-wrap: wrap; padding: .25rem 0 .5rem; }
+.chip-origen {
+  display: inline-flex; align-items: center; gap: .25rem; cursor: pointer;
+  border: 1px solid var(--mat-sys-outline-variant); border-radius: 999px;
+  padding: .15rem .6rem; font-size: .8rem; background: none;
+  color: var(--mat-sys-on-surface-variant);
+}
+.chip-origen mat-icon { font-size: 16px; width: 16px; height: 16px; }
+.chip-origen.activo {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container); border-color: transparent;
+}
+.chip-origen.mini { margin-left: auto; padding: .05rem .4rem; font-size: .72rem; cursor: default; }
+
+.obs .sev { color: var(--mat-sys-on-surface-variant); font-size: 20px; }
+.obs.adv .sev { color: #b26a00; }   /* ADVERTENCIA en ámbar; INFO queda neutro */
+.obs .obs-msg { flex: 1; }
+
 .estado-vacio {
   padding: 2rem;
   text-align: center;

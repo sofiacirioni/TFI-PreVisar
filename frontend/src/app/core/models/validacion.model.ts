@@ -1,6 +1,14 @@
 export type NivelObservacion = 'INFO' | 'ADVERTENCIA';
 
-export interface Observacion { codigo: string; nivel: NivelObservacion; mensaje: string; }
+// Espeja ar.edu.utn.frc.previsar.enums.OrigenObservacion del backend.
+export type OrigenObservacion = 'DETERMINISTICO' | 'COHERENCIA' | 'IA_VISUAL';
+
+export interface Observacion {
+  codigo: string;
+  nivel: NivelObservacion;
+  origen: OrigenObservacion;
+  mensaje: string;
+}
 
 export interface DocumentoValidado {
   documentoCargadoId: number;

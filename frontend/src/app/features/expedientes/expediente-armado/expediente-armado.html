@@ -332,6 +332,55 @@
             </div>
           </div>
 
+          <div class="obs-filtros">
+            @for (o of ORIGENES; track o.id) {
+              <button
+                class="chip-origen"
+                [class.activo]="filtroOrigen().has(o.id)"
+                (click)="toggleOrigen(o.id)"
+              >
+                <mat-icon>{{ o.icon }}</mat-icon> {{ o.label }}
+              </button>
+            }
+          </div>
+
+          @if (generalesFiltradas().length === 0 && documentosConObsFiltrados().length === 0) {
+            <div class="obs ok">
+              <mat-icon>check_circle</mat-icon><span>Sin observaciones.</span>
+            </div>
+          } @else {
+            @if (generalesFiltradas().length) {
+              <h4>Generales</h4>
+              @for (o of generalesFiltradas(); track o.codigo + o.mensaje) {
+                <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
+                  <mat-icon class="sev">{{
+                    o.nivel === 'ADVERTENCIA' ? 'warning' : 'info'
+                  }}</mat-icon>
+                  <span class="obs-msg">{{ o.mensaje }}</span>
+                  <span class="chip-origen mini"
+                    ><mat-icon>{{ origenInfo(o.origen).icon }}</mat-icon
+                    >{{ origenInfo(o.origen).label }}</span
+                  >
+                </div>
+              }
+            }
+            @for (d of documentosConObsFiltrados(); track d.documentoCargadoId) {
+              <h4>{{ d.nombreOriginal }}</h4>
+              @for (o of d.observaciones; track o.codigo + o.mensaje) {
+                <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
+                  <mat-icon class="sev">{{
+                    o.nivel === 'ADVERTENCIA' ? 'warning' : 'info'
+                  }}</mat-icon>
+                  <span class="obs-msg">{{ o.mensaje }}</span>
+                  <span class="chip-origen mini"
+                    ><mat-icon>{{ origenInfo(o.origen).icon }}</mat-icon
+                    >{{ origenInfo(o.origen).label }}</span
+                  >
+                </div>
+              }
+            }
+          }
+
           @if (iaEstado() === 'EN_PROGRESO') {
             <p class="ia-nota">
               El análisis con IA puede tardar hasta un minuto. Podés seguir trabajando; el panel se
@@ -348,31 +397,6 @@
               El análisis está tardando más de lo esperado. Recargá en un rato para ver los
               resultados.
             </p>
-          }
-
-          @if (totalObservaciones() === 0) {
-            <div class="obs ok">
-              <mat-icon>check_circle</mat-icon><span>Sin observaciones.</span>
-            </div>
-          } @else {
-            @if (generales().length) {
-              <h4>Generales</h4>
-              @for (o of generales(); track o.codigo + o.mensaje) {
-                <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
-                  <mat-icon>{{ o.nivel === 'ADVERTENCIA' ? 'warning' : 'info' }}</mat-icon>
-                  <span>{{ o.mensaje }}</span>
-                </div>
-              }
-            }
-            @for (d of documentosConObs(); track d.documentoCargadoId) {
-              <h4>{{ d.nombreOriginal }}</h4>
-              @for (o of d.observaciones; track o.codigo + o.mensaje) {
-                <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
-                  <mat-icon>{{ o.nivel === 'ADVERTENCIA' ? 'warning' : 'info' }}</mat-icon>
-                  <span>{{ o.mensaje }}</span>
-                </div>
-              }
-            }
           }
         </section>
       </div>

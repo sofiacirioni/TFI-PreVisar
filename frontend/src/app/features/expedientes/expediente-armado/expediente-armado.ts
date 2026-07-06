@@ -27,7 +27,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
-import { Observacion, ValidacionResultado } from '../../../core/models/validacion.model';
+import { Observacion, OrigenObservacion, ValidacionResultado } from '../../../core/models/validacion.model';
 
 type Vm =
   | { status: 'loading' }
@@ -110,14 +110,6 @@ export class ExpedienteArmado {
   }
 
   readonly generales = computed(() => this.validacion().generales);
-  readonly documentosConObs = computed(() =>
-    this.validacion().documentos.filter((d) => d.observaciones.length > 0),
-  );
-  readonly totalObservaciones = computed(
-    () =>
-      this.generales().length +
-      this.documentosConObs().reduce((n, d) => n + d.observaciones.length, 0),
-  );
 
   readonly documentosCargados = toSignal(
     this.expedienteId$.pipe(
@@ -438,4 +430,32 @@ export class ExpedienteArmado {
     this.iaEstado.set(estado);
     if (estado === 'COMPLETADO') this.recargar(); // refresca el panel → aparecen las observaciones de IA
   }
+
+  readonly ORIGENES: { id: OrigenObservacion; label: string; icon: string }[] = [
+    { id: 'DETERMINISTICO', label: 'Automática', icon: 'rule' },
+    { id: 'COHERENCIA', label: 'Coherencia', icon: 'fact_check' },
+    { id: 'IA_VISUAL', label: 'IA visual', icon: 'auto_awesome' },
+  ];
+
+  readonly filtroOrigen = signal<Set<OrigenObservacion>>(
+    new Set(['DETERMINISTICO', 'COHERENCIA', 'IA_VISUAL']),
+  );
+
+  toggleOrigen(o: OrigenObservacion): void {
+    const s = new Set(this.filtroOrigen());
+    s.has(o) ? s.delete(o) : s.add(o);
+    this.filtroOrigen.set(s);
+  }
+  origenInfo(o: OrigenObservacion) {
+    return this.ORIGENES.find((x) => x.id === o) ?? this.ORIGENES[0];
+  }
+
+  private readonly pasaFiltro = (obs: Observacion) => this.filtroOrigen().has(obs.origen);
+
+  readonly generalesFiltradas = computed(() => this.generales().filter(this.pasaFiltro));
+  readonly documentosConObsFiltrados = computed(() =>
+    this.validacion()
+      .documentos.map((d) => ({ ...d, observaciones: d.observaciones.filter(this.pasaFiltro) }))
+      .filter((d) => d.observaciones.length > 0),
+  );
 }
