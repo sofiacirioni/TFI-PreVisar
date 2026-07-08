@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.previsar.controllers;
 
+import ar.edu.utn.frc.previsar.dtos.PreferenciaPagoDto;
 import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
@@ -7,7 +8,9 @@ import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.pdf.GenerarContratoRequest;
 import ar.edu.utn.frc.previsar.pdf.PdfResponseFactory;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
+import ar.edu.utn.frc.previsar.services.Impl.PagoMpService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +21,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/expedientes")
+@RequiredArgsConstructor
 public class ExpedienteController {
     private final ExpedienteService expedienteService;
-
-    public ExpedienteController(ExpedienteService expedienteService) {
-        this.expedienteService = expedienteService;
-    }
+    private final PagoMpService pagoMpService;
 
     @PostMapping
     public ResponseEntity<ExpedienteResponseDto> crear(@Valid @RequestBody ExpedienteRequestDto request,
@@ -77,5 +78,11 @@ public class ExpedienteController {
     @GetMapping("/{id}/caratula")
     public ResponseEntity<ByteArrayResource> generarCaratula(@PathVariable Long id) {
         return PdfResponseFactory.attachment(expedienteService.generarCaratula(id), "caratula-" + id);
+    }
+
+    @PostMapping("/{id}/pago")
+    public PreferenciaPagoDto iniciarPago(@PathVariable("id") Long expedienteId) {
+        // La pertenencia (404 ante ajenos) ya la valida crearPreferenciaArancel vía obtener().
+        return pagoMpService.crearPreferenciaArancel(expedienteId);
     }
 }

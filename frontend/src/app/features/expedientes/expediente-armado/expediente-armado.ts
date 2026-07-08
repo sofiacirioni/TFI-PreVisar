@@ -384,6 +384,24 @@ export class ExpedienteArmado {
     });
   }
 
+  // ── Pago del arancel (SCRUM-182) ─────────────────────────────────────────
+  // Pide la preferencia y NAVEGA fuera de la app hacia el checkout de MP (no es
+  // una descarga). En éxito no reseteamos `pagando` porque abandonamos la página.
+  readonly pagando = signal(false);
+
+  pagarArancel(): void {
+    if (this.pagando()) return;
+    this.pagando.set(true);
+    this.expedienteService.iniciarPago(this.expedienteId()).subscribe({
+      next: (pref) => {
+        window.location.href = pref.initPoint; // sale de la app hacia MP
+      },
+      error: () => {
+        this.pagando.set(false); /* snackbar de error */
+      },
+    });
+  }
+
   // ── Validación visual con IA (nivel 3) ──────────────────────────────────
   // Disparo on-demand del análisis y polling del estado efímero (en memoria del
   // backend). Al completar, se recarga el panel para que aparezcan las observaciones.

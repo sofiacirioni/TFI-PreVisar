@@ -19,19 +19,29 @@
         <mat-chip>{{ v.expediente.estado === 'EN_PROCESO' ? 'En proceso' : 'Borrador' }}</mat-chip>
       </mat-chip-set>
     </div>
-    <button
-      mat-flat-button
-      color="primary"
-      [disabled]="!hayDocumentos() || generando()"
-      (click)="compilar()"
-    >
-      @if (generando()) {
-        <mat-spinner diameter="20" />
-      } @else {
-        <mat-icon>download</mat-icon>
-      }
-      {{ generando() ? 'Compilando…' : 'Descargar expediente' }}
-    </button>
+    <div class="armado-header__acciones">
+      <button mat-stroked-button color="primary" [disabled]="pagando()" (click)="pagarArancel()">
+        @if (pagando()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          <mat-icon>payments</mat-icon>
+        }
+        {{ pagando() ? 'Redirigiendo…' : 'Pagar arancel' }}
+      </button>
+      <button
+        mat-flat-button
+        color="primary"
+        [disabled]="!hayDocumentos() || generando()"
+        (click)="compilar()"
+      >
+        @if (generando()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          <mat-icon>download</mat-icon>
+        }
+        {{ generando() ? 'Compilando…' : 'Descargar expediente' }}
+      </button>
+    </div>
   </header>
 
   <mat-progress-bar mode="determinate" [value]="progreso()" />

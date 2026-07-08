@@ -1,0 +1,25 @@
+@let i = info();
+
+<section class="pago-retorno">
+  <div class="pago-card" [class]="i.clase">
+    <mat-icon class="pago-card__icono">{{ i.icono }}</mat-icon>
+    <h1 class="pago-card__titulo">{{ i.titulo }}</h1>
+    <p class="pago-card__mensaje">{{ i.mensaje }}</p>
+
+    @if (paymentId || status) {
+      <dl class="pago-card__detalle">
+        @if (status) {
+          <div><dt>Estado MP</dt><dd>{{ status }}</dd></div>
+        }
+        @if (paymentId) {
+          <div><dt>N.º de pago</dt><dd>{{ paymentId }}</dd></div>
+        }
+      </dl>
+    }
+
+    <a mat-flat-button color="primary" [routerLink]="volverLink()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver al expediente
+    </a>
+  </div>
+</section>

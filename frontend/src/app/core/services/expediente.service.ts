@@ -4,6 +4,7 @@ import { ExpedienteRequest, ExpedienteResponse } from '../models/expediente.mode
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '../constants/api.constants';
 import { AportesResponse, CalcularAportesRequest } from '../models/aportes.model';
+import { PreferenciaPago } from '../models/pago.model';
 
 @Injectable({
   providedIn: 'root',
@@ -37,5 +38,10 @@ export class ExpedienteService {
 
   calcularAportes(request: CalcularAportesRequest): Observable<AportesResponse> {
     return this.http.post<AportesResponse>(API.EXPEDIENTES_CALCULAR_APORTES, request);
+  }
+
+  /** Crea la preferencia de pago del arancel en MP y devuelve el initPoint para redirigir al checkout. */
+  iniciarPago(id: number): Observable<PreferenciaPago> {
+    return this.http.post<PreferenciaPago>(API.EXPEDIENTE_PAGO(id), {});
   }
 }

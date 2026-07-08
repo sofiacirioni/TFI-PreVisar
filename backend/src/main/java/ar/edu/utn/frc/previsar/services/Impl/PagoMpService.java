@@ -44,12 +44,18 @@ public class PagoMpService {
                 .failure(props.backUrlBase() + "/pago/error")
                 .build();
 
-        PreferenceRequest request = PreferenceRequest.builder()
+        PreferenceRequest.PreferenceRequestBuilder builder = PreferenceRequest.builder()
                 .items(List.of(item))
                 .backUrls(backUrls)
-                .autoReturn("approved")                                // si MP lo rechaza en localhost, sacar esta linea
-                .externalReference(String.valueOf(expedienteId))       // CLAVE: el webhook (SCRUM-187) resuelve el expediente por aca
-                .build();
+                .externalReference(String.valueOf(expedienteId));       // CLAVE: el webhook (SCRUM-187) resuelve el expediente por aca
+
+        // auto_return exige el back_url success en HTTPS publico (ej. tunel ngrok).
+        // En http://localhost MP rechaza la preferencia, asi que solo se activa con HTTPS.
+        if (props.backUrlBase().startsWith("https://")) {
+            builder.autoReturn("approved");
+        }
+
+        PreferenceRequest request = builder.build();
 
         try {
             Preference pref = new PreferenceClient().create(request);
@@ -62,9 +68,11 @@ public class PagoMpService {
     }
 
     /**
-     * Monto a cobrar por el arancel CIEC del expediente. Reutiliza el calculo de
-     * aportes existente (grupo CIEC) en vez de acoplarse al repositorio.
-     * TODO(SCRUM): sumar el recargo ROD 5% cuando se defina su base de calculo.
+     * Monto a cobrar por el arancel CIEC del expediente. Es el total del grupo CIEC,
+     * que YA INCLUYE el Registro de Obra (ROD, 5% s/honorarios) + el arancel
+     * administrativo (fijo) — ver conceptos grupo CIEC en V014/V017.
+     * NO sumar el 5% aparte: se estaria cobrando el ROD dos veces. El grupo CAJA
+     * (aportes profesional/comitente) NO va en este cobro.
      */
     private BigDecimal calcularArancelCiec(ExpedienteResponseDto exp) {
         CalcularAportesRequestDto req = new CalcularAportesRequestDto();

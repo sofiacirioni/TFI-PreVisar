@@ -53,6 +53,12 @@ export const routes: Routes = [
         loadChildren: () =>
           import('@features/expedientes/expedientes.routes').then((m) => m.EXPEDIENTES_ROUTES),
       },
+      // Retorno del checkout de MP (SCRUM-182). :estado = exito | pendiente | error.
+      {
+        path: 'pago/:estado',
+        loadComponent: () =>
+          import('@features/pago/pago-retorno/pago-retorno').then((m) => m.PagoRetorno),
+      },
       {
         path: 'admin',
         canActivate: [revisorGuard],
