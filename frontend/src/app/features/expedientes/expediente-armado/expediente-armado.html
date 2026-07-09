@@ -20,6 +20,14 @@
       </mat-chip-set>
     </div>
     <div class="armado-header__acciones">
+      <button mat-stroked-button [disabled]="compartiendo()" (click)="compartirLink()">
+        @if (compartiendo()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          <mat-icon>share</mat-icon>
+        }
+        {{ compartiendo() ? 'Generando…' : 'Compartir link' }}
+      </button>
       <button mat-stroked-button color="primary" [disabled]="pagando()" (click)="pagarArancel()">
         @if (pagando()) {
           <mat-spinner diameter="20" />

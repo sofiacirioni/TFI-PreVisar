@@ -21,6 +21,14 @@ export const routes: Routes = [
       import('@features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
 
+  // Retorno del checkout de MP (SCRUM-182). Público y sin layout: lo ve el comitente,
+  // que paga desde MP y NO tiene acceso a la app. :estado = exito | pendiente | error.
+  {
+    path: 'pago/:estado',
+    loadComponent: () =>
+      import('@features/pago/pago-retorno/pago-retorno').then((m) => m.PagoRetorno),
+  },
+
   // ===== Zona privada (con MainLayout) =====
   {
     path: '',
@@ -52,12 +60,6 @@ export const routes: Routes = [
         path: 'expedientes',
         loadChildren: () =>
           import('@features/expedientes/expedientes.routes').then((m) => m.EXPEDIENTES_ROUTES),
-      },
-      // Retorno del checkout de MP (SCRUM-182). :estado = exito | pendiente | error.
-      {
-        path: 'pago/:estado',
-        loadComponent: () =>
-          import('@features/pago/pago-retorno/pago-retorno').then((m) => m.PagoRetorno),
       },
       {
         path: 'admin',

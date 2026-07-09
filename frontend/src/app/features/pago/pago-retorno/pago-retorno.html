@@ -17,9 +17,13 @@
       </dl>
     }
 
-    <a mat-flat-button color="primary" [routerLink]="volverLink()">
-      <mat-icon>arrow_back</mat-icon>
-      Volver al expediente
-    </a>
+    @if (tieneSesion) {
+      <a mat-flat-button color="primary" [routerLink]="volverLink()">
+        <mat-icon>arrow_back</mat-icon>
+        Volver al expediente
+      </a>
+    } @else {
+      <p class="pago-card__cerrar">Ya podés cerrar esta ventana.</p>
+    }
   </div>
 </section>

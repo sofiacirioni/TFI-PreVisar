@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EstadoPagoRetorno } from '../../../core/models/pago.model';
+import { TokenService } from '../../../core/services/token.service';
 
 /**
  * Vista de retorno del checkout de Mercado Pago (SCRUM-182).
@@ -32,6 +33,10 @@ export class PagoRetorno {
   readonly expedienteId = this.qp.get('external_reference');
 
   readonly info = computed(() => VISTA[this.estado] ?? VISTA['error']);
+
+  // El comitente paga por el link compartido y NO tiene sesión: para él no hay a
+  // dónde "volver" dentro de la app, así que solo se le muestra el estado.
+  readonly tieneSesion = inject(TokenService).hasValidToken();
 
   // Volver al armado del expediente si sabemos cuál es; si no, al listado.
   readonly volverLink = computed(() =>
