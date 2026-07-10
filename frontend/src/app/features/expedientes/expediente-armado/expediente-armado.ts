@@ -21,7 +21,7 @@ import { DocumentoCargado } from '../../../core/models/documento-cargado.model';
 import { GenerarContratoRequest } from '../../../core/models/generar-contrato-request.model';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-import { CompartirPagoDialog } from '../../../shared/components/compartir-pago-dialog/compartir-pago-dialog';
+import { PagarArancelDialog } from '../../../shared/components/pagar-arancel-dialog/pagar-arancel-dialog';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -388,44 +388,14 @@ export class ExpedienteArmado {
   }
 
   // ── Pago del arancel (SCRUM-182) ─────────────────────────────────────────
-  // Pide la preferencia y NAVEGA fuera de la app hacia el checkout de MP (no es
-  // una descarga). En éxito no reseteamos `pagando` porque abandonamos la página.
-  readonly pagando = signal(false);
-
-  pagarArancel(): void {
-    if (this.pagando()) return;
-    this.pagando.set(true);
-    this.expedienteService.iniciarPago(this.expedienteId()).subscribe({
-      next: (pref) => {
-        window.location.href = pref.initPoint; // sale de la app hacia MP
-      },
-      error: () => {
-        this.pagando.set(false); /* snackbar de error */
-      },
-    });
-  }
-
-  // Genera la preferencia y abre el diálogo con el link para compartir al comitente
-  // (que paga desde MP sin entrar a la app). No redirige: solo muestra el initPoint.
-  readonly compartiendo = signal(false);
-
-  compartirLink(): void {
-    if (this.compartiendo()) return;
-    this.compartiendo.set(true);
-    this.expedienteService.iniciarPago(this.expedienteId()).subscribe({
-      next: (pref) => {
-        this.compartiendo.set(false);
-        const vm = this.vm();
-        this.dialog.open(CompartirPagoDialog, {
-          width: '480px',
-          data: {
-            initPoint: pref.initPoint,
-            expedienteNombre: vm.status === 'ok' ? vm.expediente.nombre : undefined,
-          },
-        });
-      },
-      error: () => {
-        this.compartiendo.set(false); /* snackbar de error */
+  // Un solo botón abre el diálogo, que resuelve "pagar ahora" vs "compartir link".
+  abrirPago(): void {
+    const vm = this.vm();
+    this.dialog.open(PagarArancelDialog, {
+      width: '480px',
+      data: {
+        expedienteId: this.expedienteId(),
+        expedienteNombre: vm.status === 'ok' ? vm.expediente.nombre : undefined,
       },
     });
   }

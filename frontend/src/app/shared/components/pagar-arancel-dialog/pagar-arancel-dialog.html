@@ -1,0 +1,66 @@
+@if (modo() === 'elegir') {
+  <h2 mat-dialog-title>Pagar arancel</h2>
+  <mat-dialog-content>
+    <p class="pagar__ayuda">
+      ¿Cómo querés pagar el arancel del CIEC? Podés pagarlo vos ahora o enviarle el link al
+      comitente para que lo pague desde Mercado Pago.
+    </p>
+
+    <div class="pagar__opciones">
+      <button mat-stroked-button color="primary" [disabled]="cargando()" (click)="pagarAhora()">
+        <mat-icon>payments</mat-icon>
+        Pagar ahora
+      </button>
+      <button mat-stroked-button [disabled]="cargando()" (click)="compartir()">
+        <mat-icon>share</mat-icon>
+        Compartir link
+      </button>
+    </div>
+
+    @if (cargando()) {
+      <div class="pagar__cargando">
+        <mat-spinner diameter="20" />
+        <span>Generando el pago…</span>
+      </div>
+    }
+    @if (error()) {
+      <p class="pagar__error">No se pudo generar el pago. Intentá de nuevo.</p>
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancelar</button>
+  </mat-dialog-actions>
+} @else {
+  <h2 mat-dialog-title>Compartir link de pago</h2>
+  <mat-dialog-content>
+    <p class="pagar__ayuda">
+      Enviá este link al comitente para que pague el arancel desde Mercado Pago. No necesita
+      acceso a la aplicación.
+    </p>
+
+    <mat-form-field appearance="outline" class="pagar__campo">
+      <mat-label>Link de pago</mat-label>
+      <input matInput readonly [value]="initPoint()" (focus)="$any($event.target).select()" />
+      <button
+        matSuffix
+        mat-icon-button
+        type="button"
+        (click)="copiar()"
+        aria-label="Copiar link de pago"
+      >
+        <mat-icon>{{ copiado() ? 'check' : 'content_copy' }}</mat-icon>
+      </button>
+    </mat-form-field>
+
+    @if (copiado()) {
+      <p class="pagar__copiado">¡Link copiado!</p>
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cerrar</button>
+    <a mat-flat-button color="primary" [href]="whatsappUrl" target="_blank" rel="noopener">
+      <mat-icon>share</mat-icon>
+      Compartir por WhatsApp
+    </a>
+  </mat-dialog-actions>
+}

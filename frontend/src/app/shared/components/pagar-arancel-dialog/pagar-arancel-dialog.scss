@@ -1,0 +1,38 @@
+.pagar__ayuda {
+  margin: 0 0 1.25rem;
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
+}
+
+.pagar__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  button {
+    justify-content: flex-start;
+    height: 48px;
+  }
+}
+
+.pagar__cargando {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
+}
+
+.pagar__error {
+  margin: 1rem 0 0;
+  color: var(--mat-sys-error, #c62828);
+}
+
+.pagar__campo {
+  width: 100%;
+}
+
+.pagar__copiado {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--mat-sys-primary, #2e7d32);
+}
