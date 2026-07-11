@@ -389,13 +389,19 @@
 
           @if (iaEstado() === 'EN_PROGRESO') {
             <p class="ia-nota">
-              El análisis con IA puede tardar hasta un minuto. Podés seguir trabajando; el panel se
+              El análisis con IA puede tardar un par de minutos. Podés seguir trabajando; el panel se
               actualiza al terminar.
+            </p>
+          }
+          @if (iaEstado() === 'COMPLETADO_CON_ERRORES') {
+            <p class="ia-error">
+              {{ iaDetalle() || 'Algunos documentos no se pudieron analizar.' }} Podés reintentar el
+              análisis.
             </p>
           }
           @if (iaEstado() === 'ERROR') {
             <p class="ia-error">
-              No se pudo completar el análisis con IA. Probá de nuevo en un rato.
+              {{ iaDetalle() || 'No se pudo completar el análisis con IA.' }} Probá de nuevo en un rato.
             </p>
           }
           @if (iaEstado() === 'TIMEOUT') {

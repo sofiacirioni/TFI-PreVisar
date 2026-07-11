@@ -78,8 +78,10 @@ public class DocumentoController {
     @GetMapping("/validacion/ia/estado")
     public Map<String, String> estadoIa(@PathVariable Long expedienteId) {
         expedienteService.verificarPropio(expedienteId);
-        var estado = analisisEstadoTracker.estado(expedienteId);
-        return Map.of("estado", estado != null ? estado.name() : "SIN_INICIAR");
+        var r = analisisEstadoTracker.resultado(expedienteId);
+        return Map.of(
+                "estado", r != null ? r.estado().name() : "SIN_INICIAR",
+                "detalle", r != null && r.detalle() != null ? r.detalle() : "");
     }
 
     @DeleteMapping("/{documentoId}")

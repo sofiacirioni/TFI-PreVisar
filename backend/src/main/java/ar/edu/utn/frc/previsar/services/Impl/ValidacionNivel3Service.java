@@ -66,17 +66,25 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
     @Async
     public void analizarAsync(Long expedienteId) {
         // El estado ya quedó EN_PROGRESO en el gate del controller (iniciarSiLibre).
+        List<String> fallidos = new ArrayList<>();
         try {
             for (DocumentoCargado d : documentoCargadoRepository.findByExpedienteIdAndActivoTrue(expedienteId)) {
                 try {
                     analizarDocumento(d);
-                } catch (Exception e) {   // un documento que falla (Gemini, storage, rasterizado) no aborta el resto
+                } catch (Exception e) {   // un documento que falla (Gemini, timeout, storage, rasterizado) no aborta el resto
+                    // Antes esto se perdía en un warn y el análisis "completaba" vacío sin explicación.
                     log.warn("Nivel 3: falló el análisis del documento {}, se omite", d.getId(), e);
+                    fallidos.add(d.getNombreOriginal());
                 }
             }
-            tracker.completar(expedienteId);
-        } catch (Exception e) {
-            tracker.error(expedienteId);
+            if (fallidos.isEmpty()) {
+                tracker.completar(expedienteId);
+            } else {
+                tracker.completarConErrores(expedienteId,
+                        "No se pudo analizar " + fallidos.size() + " documento(s): " + String.join(", ", fallidos));
+            }
+        } catch (Throwable e) {   // incluso Error (ej. OOM al rasterizar): nunca dejar el estado colgado en EN_PROGRESO
+            tracker.error(expedienteId, "El análisis de IA no se pudo completar");
             log.error("Nivel 3: error general en expediente {}", expedienteId, e);
         }
     }

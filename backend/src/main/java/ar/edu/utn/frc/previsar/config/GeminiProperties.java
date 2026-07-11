@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record GeminiProperties(String model, int timeoutSegundos, int dpi) {
     public GeminiProperties {
         if (model == null || model.isBlank()) model = "gemini-3.5-flash";
-        if (timeoutSegundos <= 0) timeoutSegundos = 30;
-        if (dpi <= 0) dpi = 150;
+        if (timeoutSegundos <= 0) timeoutSegundos = 60;   // imágenes @110 DPI tardan ~15-25s; margen holgado
+        if (dpi <= 0) dpi = 110;                          // 150 daba PNG de ~1.7MB → inferencia lenta y timeouts
     }
 }

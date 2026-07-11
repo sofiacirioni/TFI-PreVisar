@@ -404,9 +404,12 @@ export class ExpedienteArmado {
   // Disparo on-demand del análisis y polling del estado efímero (en memoria del
   // backend). Al completar, se recarga el panel para que aparezcan las observaciones.
   private static readonly IA_POLL_MS = 3000;
-  private static readonly IA_POLL_MAX = 40; // ~2 min; cota para el estado efímero en memoria
+  private static readonly IA_POLL_MAX = 100; // ~5 min; el análisis corre en background, no apura al usuario
 
-  readonly iaEstado = signal<'IDLE' | 'EN_PROGRESO' | 'COMPLETADO' | 'ERROR' | 'TIMEOUT'>('IDLE');
+  readonly iaEstado = signal<
+    'IDLE' | 'EN_PROGRESO' | 'COMPLETADO' | 'COMPLETADO_CON_ERRORES' | 'ERROR' | 'TIMEOUT'
+  >('IDLE');
+  readonly iaDetalle = signal<string>(''); // motivo cuando el análisis termina con errores
   private iaPoll?: Subscription;
 
   analizarConIa(): void {
@@ -425,14 +428,14 @@ export class ExpedienteArmado {
     this.iaPoll = timer(ExpedienteArmado.IA_POLL_MS, ExpedienteArmado.IA_POLL_MS)
       .pipe(
         switchMap(() => this.documentoService.estadoIa(this.expedienteId())),
-        map((r) => r.estado),
         take(ExpedienteArmado.IA_POLL_MAX),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (estado) => {
-          if (estado === 'COMPLETADO') this.finIa('COMPLETADO');
-          else if (estado === 'ERROR') this.finIa('ERROR');
+        next: (r) => {
+          if (r.estado === 'COMPLETADO') this.finIa('COMPLETADO');
+          else if (r.estado === 'COMPLETADO_CON_ERRORES') this.finIa('COMPLETADO_CON_ERRORES', r.detalle);
+          else if (r.estado === 'ERROR') this.finIa('ERROR', r.detalle);
           // EN_PROGRESO / SIN_INICIAR → seguir esperando
         },
         complete: () => {
@@ -441,10 +444,15 @@ export class ExpedienteArmado {
       });
   }
 
-  private finIa(estado: 'COMPLETADO' | 'ERROR' | 'TIMEOUT'): void {
+  private finIa(
+    estado: 'COMPLETADO' | 'COMPLETADO_CON_ERRORES' | 'ERROR' | 'TIMEOUT',
+    detalle?: string,
+  ): void {
     this.iaPoll?.unsubscribe();
     this.iaEstado.set(estado);
-    if (estado === 'COMPLETADO') this.recargar(); // refresca el panel → aparecen las observaciones de IA
+    this.iaDetalle.set(detalle ?? '');
+    // Ambos "completados" refrescan el panel: puede haber observaciones parciales de los docs que sí se analizaron.
+    if (estado === 'COMPLETADO' || estado === 'COMPLETADO_CON_ERRORES') this.recargar();
   }
 
   readonly ORIGENES: { id: OrigenObservacion; label: string; icon: string }[] = [
