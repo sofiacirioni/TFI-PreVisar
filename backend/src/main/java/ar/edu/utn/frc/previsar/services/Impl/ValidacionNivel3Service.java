@@ -74,7 +74,7 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
                 } catch (Exception e) {   // un documento que falla (Gemini, timeout, storage, rasterizado) no aborta el resto
                     // Antes esto se perdía en un warn y el análisis "completaba" vacío sin explicación.
                     log.warn("Nivel 3: falló el análisis del documento {}, se omite", d.getId(), e);
-                    fallidos.add(d.getNombreOriginal());
+                    fallidos.add(d.getNombreOriginal() + " (" + motivo(e) + ")");
                 }
             }
             if (fallidos.isEmpty()) {
@@ -124,6 +124,13 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
         } catch (JsonProcessingException e) {
             return List.of();   // resultado corrupto: no rompe el informe
         }
+    }
+
+    /** Motivo corto y legible del fallo, para el detalle que ve el usuario (ej. "Gemini respondió 503 (UNAVAILABLE)"). */
+    private String motivo(Throwable e) {
+        String m = e.getMessage();
+        if (m == null || m.isBlank()) m = e.getClass().getSimpleName();
+        return m.length() > 120 ? m.substring(0, 117) + "…" : m;
     }
 
 }

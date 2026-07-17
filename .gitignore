@@ -30,3 +30,6 @@ frontend/dist/
 frontend/.angular/
 frontend/coverage/
 frontend/*.log
+
+# Documentos subidos por la app (datos de runtime, no versionar)
+backend/data/

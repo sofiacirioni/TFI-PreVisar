@@ -113,6 +113,9 @@ export class ExpedienteWizard implements OnInit {
   readonly expediente = signal<ExpedienteResponse | null>(null);
   readonly guardando = signal(false);
   readonly cargando = signal(false);
+  // True mientras se precargan los forms al retomar: evita que el auto-limpiado de
+  // obra (disparado al setear el comitente) borre la obra antes de cargar sus opciones.
+  private readonly hidratando = signal(false);
 
   // Un FormGroup por paso
   readonly tareaForm = this.fb.group({
@@ -170,8 +173,10 @@ export class ExpedienteWizard implements OnInit {
         } else {
           this.obrasDelComitente.set([]);
         }
-        // Solo limpiamos la obra si NO coincide con la del expediente cargado
-        // (en modo retomar, el patchValue de obraId viene antes y queremos preservarla).
+        // Durante la hidratación (retomar) no tocamos la obra: sus opciones se cargan
+        // async y limpiarla acá la borraría antes de tiempo. Solo se limpia ante un
+        // cambio real de comitente hecho por el usuario.
+        if (this.hidratando()) return;
         const obraActual = this.obraForm.controls.obraId.value;
         if (obraActual !== null && !this.obrasDelComitente().some((o) => o.id === obraActual)) {
           this.obraForm.controls.obraId.setValue(null);
@@ -183,6 +188,7 @@ export class ExpedienteWizard implements OnInit {
 
     // modo "retomar": cargo el borrador existente y precargo los forms
     this.cargando.set(true);
+    this.hidratando.set(true);
     this.expedienteService.obtener(Number(idParam)).subscribe({
       next: (exp) => {
         this.expedienteId.set(exp.id);
@@ -201,12 +207,16 @@ export class ExpedienteWizard implements OnInit {
           this.calcularAportes();
         }
 
+        // comitenteId al final: dispara la carga async de obras. obraId ya está seteado
+        // y hidratando=true evita que se limpie mientras las obras terminan de cargar.
+        this.comitenteForm.patchValue({ comitenteId: exp.comitenteId });
         this.obraForm.patchValue({ obraId: exp.obraId });
         this.economicoForm.patchValue({ honorariosReferenciales: exp.honorariosReferenciales });
-        this.comitenteForm.patchValue({ comitenteId: exp.comitenteId });
+        this.hidratando.set(false);
         this.cargando.set(false);
       },
       error: () => {
+        this.hidratando.set(false);
         this.cargando.set(false);
         this.snackBar.open('No se encontró el expediente', 'Cerrar', { duration: 4000 });
         this.router.navigate(['/expedientes']);

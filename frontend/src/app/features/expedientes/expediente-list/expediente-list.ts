@@ -106,7 +106,12 @@ export class ExpedienteList implements OnInit {
   }
 
   abrir(expediente: ExpedienteResponse): void {
-    this.router.navigate(['/expedientes', expediente.id]);
+    // EN_PROCESO ya pasó la carga de datos: se retoma en el armado, no en el wizard.
+    if (expediente.estado === 'EN_PROCESO') {
+      this.router.navigate(['/expedientes', expediente.id, 'armado']);
+    } else {
+      this.router.navigate(['/expedientes', expediente.id]);
+    }
   }
 
   async confirmarEliminar(expediente: ExpedienteResponse): Promise<void> {
