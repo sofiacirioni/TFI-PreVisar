@@ -326,13 +326,14 @@
               </button>
               <button
                 mat-stroked-button
-                (click)="analizarConIa()"
-                [disabled]="iaEstado() === 'EN_PROGRESO'"
+                (click)="analizarSeccion(seccionActivaId()!)"
+                [disabled]="!seccionActivaId() || iaEstadoActivo() === 'EN_PROGRESO'"
+                [matTooltip]="'Analiza solo la sección: ' + (seccionActiva()?.nombre ?? '')"
               >
-                @if (iaEstado() === 'EN_PROGRESO') {
+                @if (iaEstadoActivo() === 'EN_PROGRESO') {
                   <mat-spinner diameter="16" /> Analizando…
                 } @else {
-                  <mat-icon>auto_awesome</mat-icon> Analizar con IA
+                  <mat-icon>auto_awesome</mat-icon> Analizar sección con IA
                 }
               </button>
             </div>
@@ -387,24 +388,25 @@
             }
           }
 
-          @if (iaEstado() === 'EN_PROGRESO') {
+          @if (iaEstadoActivo() === 'EN_PROGRESO') {
             <p class="ia-nota">
-              El análisis con IA puede tardar un par de minutos. Podés seguir trabajando; el panel se
-              actualiza al terminar.
+              Analizando la sección con IA. Puede tardar un poco; podés seguir trabajando o analizar
+              otra sección mientras tanto.
             </p>
           }
-          @if (iaEstado() === 'COMPLETADO_CON_ERRORES') {
+          @if (iaEstadoActivo() === 'COMPLETADO_CON_ERRORES') {
             <p class="ia-error">
-              {{ iaDetalle() || 'Algunos documentos no se pudieron analizar.' }} Podés reintentar el
-              análisis.
+              {{ iaDetalleActivo() || 'Algunos documentos no se pudieron analizar.' }} Podés reintentar
+              el análisis.
             </p>
           }
-          @if (iaEstado() === 'ERROR') {
+          @if (iaEstadoActivo() === 'ERROR') {
             <p class="ia-error">
-              {{ iaDetalle() || 'No se pudo completar el análisis con IA.' }} Probá de nuevo en un rato.
+              {{ iaDetalleActivo() || 'No se pudo completar el análisis con IA.' }} Probá de nuevo en un
+              rato.
             </p>
           }
-          @if (iaEstado() === 'TIMEOUT') {
+          @if (iaEstadoActivo() === 'TIMEOUT') {
             <p class="ia-error">
               El análisis está tardando más de lo esperado. Recargá en un rato para ver los
               resultados.

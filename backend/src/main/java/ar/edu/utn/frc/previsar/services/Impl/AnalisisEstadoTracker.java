@@ -12,36 +12,38 @@ public class AnalisisEstadoTracker {
     /** Estado + detalle opcional (motivo cuando hubo errores). */
     public record Resultado(Estado estado, String detalle) {}
 
-    private final Map<Long, Resultado> estados = new ConcurrentHashMap<>();
+    /** El análisis es por (expediente, sección): una sección corre y se sigue de forma independiente. */
+    private record Clave(Long expedienteId, Long seccionId) {}
+
+    private final Map<Clave, Resultado> estados = new ConcurrentHashMap<>();
 
     /**
-     * Marca el expediente como EN_PROGRESO solo si no lo estaba ya (atómico).
-     * @return true si tomó el análisis; false si otro ya está corriendo → evita doble disparo.
+     * Marca la sección como EN_PROGRESO solo si no lo estaba ya (atómico).
+     * @return true si tomó el análisis; false si esa sección ya está corriendo → evita doble disparo.
      */
-    public boolean iniciarSiLibre(Long id) {
-        // compute es atómico por clave: se permite re-analizar tras un estado terminal, no mientras corre.
+    public boolean iniciarSiLibre(Long expedienteId, Long seccionId) {
         boolean[] tomado = {false};
-        estados.compute(id, (k, actual) -> {
-            if (actual != null && actual.estado() == Estado.EN_PROGRESO) return actual;   // ocupado
+        estados.compute(new Clave(expedienteId, seccionId), (k, actual) -> {
+            if (actual != null && actual.estado() == Estado.EN_PROGRESO) return actual;   // ocupada
             tomado[0] = true;
             return new Resultado(Estado.EN_PROGRESO, null);
         });
         return tomado[0];
     }
 
-    public void completar(Long id) {
-        estados.put(id, new Resultado(Estado.COMPLETADO, null));
+    public void completar(Long expedienteId, Long seccionId) {
+        estados.put(new Clave(expedienteId, seccionId), new Resultado(Estado.COMPLETADO, null));
     }
 
-    public void completarConErrores(Long id, String detalle) {
-        estados.put(id, new Resultado(Estado.COMPLETADO_CON_ERRORES, detalle));
+    public void completarConErrores(Long expedienteId, Long seccionId, String detalle) {
+        estados.put(new Clave(expedienteId, seccionId), new Resultado(Estado.COMPLETADO_CON_ERRORES, detalle));
     }
 
-    public void error(Long id, String detalle) {
-        estados.put(id, new Resultado(Estado.ERROR, detalle));
+    public void error(Long expedienteId, Long seccionId, String detalle) {
+        estados.put(new Clave(expedienteId, seccionId), new Resultado(Estado.ERROR, detalle));
     }
 
-    public Resultado resultado(Long id) {
-        return estados.get(id);
+    public Resultado resultado(Long expedienteId, Long seccionId) {
+        return estados.get(new Clave(expedienteId, seccionId));
     }
 }

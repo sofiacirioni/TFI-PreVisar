@@ -59,11 +59,13 @@ export class DocumentoService {
     return this.http.get<ValidacionResultado>(API.EXPEDIENTE_VALIDACION(expId));
   }
 
-  analizarIa(expId: number): Observable<void> {
-    return this.http.post<void>(API.EXPEDIENTE_IA(expId), {});
+  analizarIa(expId: number, seccionId: number): Observable<void> {
+    return this.http.post<void>(API.EXPEDIENTE_IA(expId, seccionId), {});
   }
-  
-  estadoIa(expId: number): Observable<{ estado: string; detalle?: string }> {
-    return this.http.get<{ estado: string; detalle?: string }>(API.EXPEDIENTE_IA_ESTADO(expId));
+
+  estadoIa(expId: number, seccionId: number): Observable<{ estado: string; detalle?: string }> {
+    return this.http.get<{ estado: string; detalle?: string }>(
+      API.EXPEDIENTE_IA_ESTADO(expId, seccionId),
+    );
   }
 }

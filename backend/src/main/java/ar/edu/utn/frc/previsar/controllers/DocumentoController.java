@@ -67,18 +67,18 @@ public class DocumentoController {
     }
 
     @PostMapping("/validacion/ia")
-    public ResponseEntity<Void> analizarConIa(@PathVariable Long expedienteId) {
-        expedienteService.verificarPropio(expedienteId);          // sync: acá SÍ hay SecurityContext
-        if (!analisisEstadoTracker.iniciarSiLibre(expedienteId))  // gate atómico: evita doble disparo
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();   // 409: ya hay un análisis en curso
-        validacionNivel3Service.analizarAsync(expedienteId);      // cross-bean → el proxy @Async aplica
-        return ResponseEntity.accepted().build();                 // 202
+    public ResponseEntity<Void> analizarConIa(@PathVariable Long expedienteId, @RequestParam Long seccionId) {
+        expedienteService.verificarPropio(expedienteId);                     // sync: acá SÍ hay SecurityContext
+        if (!analisisEstadoTracker.iniciarSiLibre(expedienteId, seccionId))  // gate atómico por sección: evita doble disparo
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();       // 409: esa sección ya se está analizando
+        validacionNivel3Service.analizarAsync(expedienteId, seccionId);      // cross-bean → el proxy @Async aplica
+        return ResponseEntity.accepted().build();                           // 202
     }
 
     @GetMapping("/validacion/ia/estado")
-    public Map<String, String> estadoIa(@PathVariable Long expedienteId) {
+    public Map<String, String> estadoIa(@PathVariable Long expedienteId, @RequestParam Long seccionId) {
         expedienteService.verificarPropio(expedienteId);
-        var r = analisisEstadoTracker.resultado(expedienteId);
+        var r = analisisEstadoTracker.resultado(expedienteId, seccionId);
         return Map.of(
                 "estado", r != null ? r.estado().name() : "SIN_INICIAR",
                 "detalle", r != null && r.detalle() != null ? r.detalle() : "");

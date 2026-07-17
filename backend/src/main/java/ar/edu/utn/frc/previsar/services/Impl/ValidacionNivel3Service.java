@@ -64,11 +64,12 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
     /** CARO: rasteriza + Gemini + persiste. Disparado por el botón, asíncrono. Sin chequeo de
      *  seguridad (el id ya viene validado desde el controller). */
     @Async
-    public void analizarAsync(Long expedienteId) {
+    public void analizarAsync(Long expedienteId, Long seccionId) {
         // El estado ya quedó EN_PROGRESO en el gate del controller (iniciarSiLibre).
         List<String> fallidos = new ArrayList<>();
         try {
-            for (DocumentoCargado d : documentoCargadoRepository.findByExpedienteIdAndActivoTrue(expedienteId)) {
+            for (DocumentoCargado d : documentoCargadoRepository
+                    .findByExpedienteIdAndDocumentoRequeridoSeccionIdAndActivoTrue(expedienteId, seccionId)) {
                 try {
                     analizarDocumento(d);
                 } catch (Exception e) {   // un documento que falla (Gemini, timeout, storage, rasterizado) no aborta el resto
@@ -78,14 +79,14 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
                 }
             }
             if (fallidos.isEmpty()) {
-                tracker.completar(expedienteId);
+                tracker.completar(expedienteId, seccionId);
             } else {
-                tracker.completarConErrores(expedienteId,
+                tracker.completarConErrores(expedienteId, seccionId,
                         "No se pudo analizar " + fallidos.size() + " documento(s): " + String.join(", ", fallidos));
             }
         } catch (Throwable e) {   // incluso Error (ej. OOM al rasterizar): nunca dejar el estado colgado en EN_PROGRESO
-            tracker.error(expedienteId, "El análisis de IA no se pudo completar");
-            log.error("Nivel 3: error general en expediente {}", expedienteId, e);
+            tracker.error(expedienteId, seccionId, "El análisis de IA no se pudo completar");
+            log.error("Nivel 3: error general en expediente {} sección {}", expedienteId, seccionId, e);
         }
     }
 

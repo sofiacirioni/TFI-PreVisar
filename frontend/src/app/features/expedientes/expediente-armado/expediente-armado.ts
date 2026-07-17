@@ -36,6 +36,14 @@ type Vm =
   | { status: 'error'; error: unknown }
   | { status: 'ok'; expediente: ExpedienteResponse; secciones: SeccionEstructura[] };
 
+type EstadoIA =
+  | 'IDLE'
+  | 'EN_PROGRESO'
+  | 'COMPLETADO'
+  | 'COMPLETADO_CON_ERRORES'
+  | 'ERROR'
+  | 'TIMEOUT';
+
 @Component({
   selector: 'app-expediente-armado',
   imports: [
@@ -406,53 +414,71 @@ export class ExpedienteArmado {
   private static readonly IA_POLL_MS = 3000;
   private static readonly IA_POLL_MAX = 100; // ~5 min; el análisis corre en background, no apura al usuario
 
-  readonly iaEstado = signal<
-    'IDLE' | 'EN_PROGRESO' | 'COMPLETADO' | 'COMPLETADO_CON_ERRORES' | 'ERROR' | 'TIMEOUT'
-  >('IDLE');
-  readonly iaDetalle = signal<string>(''); // motivo cuando el análisis termina con errores
-  private iaPoll?: Subscription;
+  // Estado por sección: cada sección se dispara y se sigue de forma independiente.
+  private readonly iaEstados = signal<Map<number, EstadoIA>>(new Map());
+  private readonly iaDetalles = signal<Map<number, string>>(new Map());
+  private readonly iaPolls = new Map<number, Subscription>();
 
-  analizarConIa(): void {
-    if (this.iaEstado() === 'EN_PROGRESO') return; // guarda de doble disparo (par del #9 del back)
-    this.iaEstado.set('EN_PROGRESO');
-    this.documentoService.analizarIa(this.expedienteId()).subscribe({
-      next: () => this.pollEstadoIa(),
-      // 409 = el backend ya tiene un análisis en curso: nos enganchamos al polling igual.
+  // Estado/detalle de la sección activa (lo que refleja el panel de observaciones).
+  readonly iaEstadoActivo = computed<EstadoIA>(() => {
+    const id = this.seccionActivaId();
+    return id != null ? (this.iaEstados().get(id) ?? 'IDLE') : 'IDLE';
+  });
+  readonly iaDetalleActivo = computed<string>(() => {
+    const id = this.seccionActivaId();
+    return id != null ? (this.iaDetalles().get(id) ?? '') : '';
+  });
+
+  analizarSeccion(seccionId: number): void {
+    if (this.iaEstados().get(seccionId) === 'EN_PROGRESO') return; // guarda de doble disparo (par del back)
+    this.setEstadoIa(seccionId, 'EN_PROGRESO');
+    this.documentoService.analizarIa(this.expedienteId(), seccionId).subscribe({
+      next: () => this.pollSeccion(seccionId),
+      // 409 = ya hay un análisis en curso para esa sección: nos enganchamos al polling igual.
       error: (e: HttpErrorResponse) =>
-        e.status === 409 ? this.pollEstadoIa() : this.iaEstado.set('ERROR'),
+        e.status === 409 ? this.pollSeccion(seccionId) : this.setEstadoIa(seccionId, 'ERROR'),
     });
   }
 
-  private pollEstadoIa(): void {
-    this.iaPoll?.unsubscribe();
-    this.iaPoll = timer(ExpedienteArmado.IA_POLL_MS, ExpedienteArmado.IA_POLL_MS)
+  private pollSeccion(seccionId: number): void {
+    this.iaPolls.get(seccionId)?.unsubscribe();
+    const sub = timer(ExpedienteArmado.IA_POLL_MS, ExpedienteArmado.IA_POLL_MS)
       .pipe(
-        switchMap(() => this.documentoService.estadoIa(this.expedienteId())),
+        switchMap(() => this.documentoService.estadoIa(this.expedienteId(), seccionId)),
         take(ExpedienteArmado.IA_POLL_MAX),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: (r) => {
-          if (r.estado === 'COMPLETADO') this.finIa('COMPLETADO');
-          else if (r.estado === 'COMPLETADO_CON_ERRORES') this.finIa('COMPLETADO_CON_ERRORES', r.detalle);
-          else if (r.estado === 'ERROR') this.finIa('ERROR', r.detalle);
+          if (r.estado === 'COMPLETADO') this.finSeccion(seccionId, 'COMPLETADO');
+          else if (r.estado === 'COMPLETADO_CON_ERRORES')
+            this.finSeccion(seccionId, 'COMPLETADO_CON_ERRORES', r.detalle);
+          else if (r.estado === 'ERROR') this.finSeccion(seccionId, 'ERROR', r.detalle);
           // EN_PROGRESO / SIN_INICIAR → seguir esperando
         },
         complete: () => {
-          if (this.iaEstado() === 'EN_PROGRESO') this.finIa('TIMEOUT');
+          if (this.iaEstados().get(seccionId) === 'EN_PROGRESO')
+            this.finSeccion(seccionId, 'TIMEOUT');
         },
       });
+    this.iaPolls.set(seccionId, sub);
   }
 
-  private finIa(
+  private finSeccion(
+    seccionId: number,
     estado: 'COMPLETADO' | 'COMPLETADO_CON_ERRORES' | 'ERROR' | 'TIMEOUT',
     detalle?: string,
   ): void {
-    this.iaPoll?.unsubscribe();
-    this.iaEstado.set(estado);
-    this.iaDetalle.set(detalle ?? '');
-    // Ambos "completados" refrescan el panel: puede haber observaciones parciales de los docs que sí se analizaron.
+    this.iaPolls.get(seccionId)?.unsubscribe();
+    this.iaPolls.delete(seccionId);
+    this.setEstadoIa(seccionId, estado, detalle ?? '');
+    // Los "completados" refrescan el panel: aparecen las obs de los docs que sí se analizaron.
     if (estado === 'COMPLETADO' || estado === 'COMPLETADO_CON_ERRORES') this.recargar();
+  }
+
+  private setEstadoIa(seccionId: number, estado: EstadoIA, detalle = ''): void {
+    this.iaEstados.update((m) => new Map(m).set(seccionId, estado));
+    this.iaDetalles.update((m) => new Map(m).set(seccionId, detalle));
   }
 
   readonly ORIGENES: { id: OrigenObservacion; label: string; icon: string }[] = [
