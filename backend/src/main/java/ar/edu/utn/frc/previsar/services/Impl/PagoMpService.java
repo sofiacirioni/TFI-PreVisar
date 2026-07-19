@@ -47,10 +47,15 @@ public class PagoMpService {
         PreferenceRequest.PreferenceRequestBuilder builder = PreferenceRequest.builder()
                 .items(List.of(item))
                 .backUrls(backUrls)
-                .externalReference(String.valueOf(expedienteId));       // CLAVE: el webhook (SCRUM-187) resuelve el expediente por aca
+                // notificationUrl va en la preferencia, NO en back_urls: es a donde MP
+                // manda el webhook (SCRUM-187) que confirma el pago.
+                .notificationUrl(props.backUrlBase() + "/api/pagos/webhook")
+                .externalReference(String.valueOf(expedienteId)); // CLAVE: el webhook resuelve el
+                                                                  // expediente por aca
 
         // auto_return exige el back_url success en HTTPS publico (ej. tunel ngrok).
-        // En http://localhost MP rechaza la preferencia, asi que solo se activa con HTTPS.
+        // En http://localhost MP rechaza la preferencia, asi que solo se activa con
+        // HTTPS.
         if (props.backUrlBase().startsWith("https://")) {
             builder.autoReturn("approved");
         }
@@ -68,7 +73,8 @@ public class PagoMpService {
     }
 
     /**
-     * Monto a cobrar por el arancel CIEC del expediente. Es el total del grupo CIEC,
+     * Monto a cobrar por el arancel CIEC del expediente. Es el total del grupo
+     * CIEC,
      * que YA INCLUYE el Registro de Obra (ROD, 5% s/honorarios) + el arancel
      * administrativo (fijo) — ver conceptos grupo CIEC en V014/V017.
      * NO sumar el 5% aparte: se estaria cobrando el ROD dos veces. El grupo CAJA

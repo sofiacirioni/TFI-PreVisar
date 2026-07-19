@@ -66,6 +66,8 @@ public class SecurityConfig {
                         // Endpoints públicos
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/catalogos/**").permitAll()
+                        // MP llama sin JWT; la autenticidad se valida por firma (x-signature).
+                        .requestMatchers("/api/pagos/webhook").permitAll()
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/error").permitAll()
 
