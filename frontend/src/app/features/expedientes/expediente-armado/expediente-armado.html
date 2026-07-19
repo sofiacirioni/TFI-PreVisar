@@ -20,10 +20,28 @@
       </mat-chip-set>
     </div>
     <div class="armado-header__acciones">
-      <button mat-stroked-button color="primary" (click)="abrirPago()">
-        <mat-icon>payments</mat-icon>
-        Pagar arancel
-      </button>
+      <!-- Estado del arancel: si ya hay pago aprobado/pendiente se muestra el estado, no el
+           botón. Evita el doble cobro (el arancel es único e irreversible) sin CTA engañoso. -->
+      @switch (v.expediente.estadoArancel) {
+        @case ('APROBADO') {
+          <span class="chip-arancel chip-arancel--pagado">
+            <mat-icon>check_circle</mat-icon>
+            Arancel pagado
+          </span>
+        }
+        @case ('PENDIENTE') {
+          <span class="chip-arancel chip-arancel--pendiente">
+            <mat-icon>schedule</mat-icon>
+            Pago pendiente
+          </span>
+        }
+        @default {
+          <button mat-stroked-button color="primary" (click)="abrirPago()">
+            <mat-icon>payments</mat-icon>
+            Pagar arancel
+          </button>
+        }
+      }
       <button
         mat-flat-button
         color="primary"

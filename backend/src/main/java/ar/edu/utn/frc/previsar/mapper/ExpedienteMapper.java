@@ -25,5 +25,6 @@ public interface ExpedienteMapper {
     @Mapping(target = "tipoTareaNombre", source = "tipoTarea.nombre")
     @Mapping(target = "especialidadId", source = "tipoTarea.especialidad.id")
     @Mapping(target = "especialidadNombre", source = "tipoTarea.especialidad.nombre")
+    @Mapping(target = "estadoArancel", ignore = true)   // derivado en el service vía PagoRepository, no viene de la entidad
     ExpedienteResponseDto toResponse(Expediente expediente);
 }

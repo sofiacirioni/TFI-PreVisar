@@ -1,5 +1,8 @@
 export type EstadoExpediente = 'BORRADOR' | 'EN_PROCESO';
 
+// Estado del arancel derivado de los pagos (espeja ar.edu.utn.frc.previsar.enums.EstadoArancel).
+export type EstadoArancel = 'NINGUNO' | 'PENDIENTE' | 'APROBADO';
+
 // Lo que MANDAMOS al backend. Todo opcional = guardado parcial.
 export interface ExpedienteRequest {
   obraId?: number | null;
@@ -25,6 +28,7 @@ export interface ExpedienteResponse {
   especialidadId: number | null;
   especialidadNombre: string | null;
   honorariosReferenciales: number | null;
+  estadoArancel: EstadoArancel;
   createdAt: string;
   updatedAt: string;
 }

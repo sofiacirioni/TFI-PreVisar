@@ -9,13 +9,16 @@ import ar.edu.utn.frc.previsar.entities.Expediente;
 import ar.edu.utn.frc.previsar.entities.Obra;
 import ar.edu.utn.frc.previsar.entities.Profesional;
 import ar.edu.utn.frc.previsar.entities.TipoTarea;
+import ar.edu.utn.frc.previsar.enums.EstadoArancel;
 import ar.edu.utn.frc.previsar.enums.EstadoExpediente;
+import ar.edu.utn.frc.previsar.enums.EstadoPago;
 import ar.edu.utn.frc.previsar.exception.BusinessException;
 import ar.edu.utn.frc.previsar.exception.ResourceNotFoundException;
 import ar.edu.utn.frc.previsar.mapper.ExpedienteMapper;
 import ar.edu.utn.frc.previsar.pdf.*;
 import ar.edu.utn.frc.previsar.repositories.ExpedienteRepository;
 import ar.edu.utn.frc.previsar.repositories.ObraRepository;
+import ar.edu.utn.frc.previsar.repositories.PagoRepository;
 import ar.edu.utn.frc.previsar.repositories.TipoTareaRepository;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import ar.edu.utn.frc.previsar.services.AporteCalculatorService;
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +43,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     private final ExpedienteMapper mapper;
     private final SecurityUtils securityUtils;
     private final PdfGenerationService pdfGenerationService;
+    private final PagoRepository pagoRepository;
 
     @Override
     @Transactional
@@ -47,7 +52,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         e.setProfesional(securityUtils.getProfesionalActual());
         e.setEstado(EstadoExpediente.BORRADOR);
         aplicar(e, request);
-        return mapper.toResponse(expedienteRepository.save(e));
+        return aResponse(expedienteRepository.save(e));
     }
 
     @Override
@@ -55,7 +60,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     public ExpedienteResponseDto actualizarParcial(Long id, ExpedienteRequestDto request) {
         Expediente e = buscarPropio(id);
         aplicar(e, request);
-        return mapper.toResponse(expedienteRepository.save(e));
+        return aResponse(expedienteRepository.save(e));
     }
 
     @Override
@@ -74,23 +79,35 @@ public class ExpedienteServiceImpl implements ExpedienteService {
         // Generar = transición BORRADOR -> EN_PROCESO (pasa al armado documental).
         // No hay estado posterior: la entrega/visado formal vive en otro sistema.
         e.setEstado(EstadoExpediente.EN_PROCESO);
-        return mapper.toResponse(expedienteRepository.save(e));
+        return aResponse(expedienteRepository.save(e));
     }
 
     @Override
     @Transactional(readOnly = true)
     public ExpedienteResponseDto obtener(Long id) {
-        return mapper.toResponse(buscarPropio(id));
+        return aResponse(buscarPropio(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ExpedienteResponseDto> listarMisExpedientes() {
         Long profesionalId = securityUtils.getProfesionalActual().getId();
-        return expedienteRepository
-                .findByProfesionalIdAndActivoTrueOrderByUpdatedAtDesc(profesionalId)
-                .stream()
-                .map(mapper::toResponse)
+        List<Expediente> expedientes = expedienteRepository
+                .findByProfesionalIdAndActivoTrueOrderByUpdatedAtDesc(profesionalId);
+        if (expedientes.isEmpty()) {
+            return List.of();
+        }
+        // Dos queries para todo el lote (en vez de un exists() por expediente): evita N+1.
+        List<Long> ids = expedientes.stream().map(Expediente::getId).toList();
+        Set<Long> aprobados = pagoRepository.findExpedienteIdsConEstado(ids, EstadoPago.APROBADO);
+        Set<Long> pendientes = pagoRepository.findExpedienteIdsConEstado(ids, EstadoPago.PENDIENTE);
+        return expedientes.stream()
+                .map(e -> {
+                    ExpedienteResponseDto dto = mapper.toResponse(e);
+                    dto.setEstadoArancel(derivarEstadoArancel(
+                            aprobados.contains(e.getId()), pendientes.contains(e.getId())));
+                    return dto;
+                })
                 .toList();
     }
 
@@ -213,6 +230,23 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     }
 
     // --- helpers ---
+
+    /** Mapea el expediente a DTO y deriva el estado del arancel a partir de sus pagos. */
+    private ExpedienteResponseDto aResponse(Expediente e) {
+        ExpedienteResponseDto dto = mapper.toResponse(e);
+        dto.setEstadoArancel(derivarEstadoArancel(
+                pagoRepository.existsByExpedienteIdAndEstado(e.getId(), EstadoPago.APROBADO),
+                pagoRepository.existsByExpedienteIdAndEstado(e.getId(), EstadoPago.PENDIENTE)));
+        return dto;
+    }
+
+    /** Prioridad APROBADO &gt; PENDIENTE &gt; NINGUNO (un pago rechazado no cuenta). */
+    private EstadoArancel derivarEstadoArancel(boolean tieneAprobado, boolean tienePendiente) {
+        if (tieneAprobado) {
+            return EstadoArancel.APROBADO;
+        }
+        return tienePendiente ? EstadoArancel.PENDIENTE : EstadoArancel.NINGUNO;
+    }
 
     /** Aplica solo los campos presentes (PATCH parcial) y recalcula aportes. */
     private void aplicar(Expediente e, ExpedienteRequestDto req) {

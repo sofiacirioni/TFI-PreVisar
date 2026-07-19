@@ -20,6 +20,36 @@
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+
+/* Badge de estado del arancel. Colores semánticos del design system (tienen
+   override propio en dark mode, ver _tokens.scss). */
+.chip-arancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+.chip-arancel--pagado {
+  background: var(--success-soft);
+  color: var(--success-text);
+  border-color: var(--success-border);
+}
+.chip-arancel--pendiente {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+  border-color: var(--warning-border);
+}
 .progreso-label {
   color: var(--mat-sys-on-surface-variant);
   font-size: 0.85rem;

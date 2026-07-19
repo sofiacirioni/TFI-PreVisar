@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.previsar.dtos.response;
 
+import ar.edu.utn.frc.previsar.enums.EstadoArancel;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ public class ExpedienteResponseDto {
     private Long especialidadId;
     private String especialidadNombre;
     private BigDecimal honorariosReferenciales;
+    private EstadoArancel estadoArancel;   // derivado de los pagos (no persistido): NINGUNO/PENDIENTE/APROBADO
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
