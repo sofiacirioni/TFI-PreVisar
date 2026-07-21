@@ -21,6 +21,7 @@ import { DocumentoCargado } from '../../../core/models/documento-cargado.model';
 import { GenerarContratoRequest } from '../../../core/models/generar-contrato-request.model';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PagarArancelDialog } from '../../../shared/components/pagar-arancel-dialog/pagar-arancel-dialog';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -74,6 +75,7 @@ export class ExpedienteArmado {
   //signals de documentos para descarga y subida.
   private readonly documentoService = inject(DocumentoService);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly generando = signal(false);
@@ -324,9 +326,12 @@ export class ExpedienteArmado {
         input.value = '';
         this.recargar();
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.subiendo.set(null);
-        input.value = ''; /* snackbar de error */
+        input.value = '';
+        // Sin esto la subida fallaba en silencio y parecía que "no pasaba nada".
+        const mensaje = err.error?.mensaje ?? 'No se pudo subir el documento';
+        this.snackBar.open(mensaje, 'Cerrar', { duration: 4000 });
       },
     });
   }
@@ -454,16 +459,28 @@ export class ExpedienteArmado {
     const visible$ = fromEvent(document, 'visibilitychange').pipe(
       filter(() => document.visibilityState === 'visible'),
     );
+    // Refresco barato al volver a la PESTAÑA: se escucha solo 'visibilitychange'
+    // (cambio de pestaña real), NUNCA el 'focus' de window. Al cerrar el diálogo
+    // nativo de "elegir archivo", el window recupera el foco y dispararía este
+    // refresco: recargar() reinicia el vm a 'loading' y desmonta el <input file>
+    // justo antes de que llegue su evento 'change', y la subida se perdía en
+    // silencio (ni se ejecutaba el handler). visibilitychange NO se dispara por
+    // el diálogo de archivo, así que es seguro.
+    visible$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (!this.esperandoPago) this.recargar();
+      });
+    // Resync del pago tras volver de MP (foco de window o pestaña). Solo actúa
+    // mientras se espera la acreditación, para que el foco del diálogo de archivo
+    // no gatille nada cuando no hay un pago en curso.
     merge(fromEvent(window, 'focus'), visible$)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.resincronizarPago());
   }
 
   private resincronizarPago(): void {
-    if (!this.esperandoPago) {
-      this.recargar(); // refresco barato al volver a la pestaña
-      return;
-    }
+    if (!this.esperandoPago) return;
     timer(0, ExpedienteArmado.PAGO_RESYNC_MS)
       .pipe(take(ExpedienteArmado.PAGO_RESYNC_MAX), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
@@ -492,71 +509,73 @@ export class ExpedienteArmado {
   private static readonly IA_POLL_MS = 3000;
   private static readonly IA_POLL_MAX = 100; // ~5 min; el análisis corre en background, no apura al usuario
 
-  // Estado por sección: cada sección se dispara y se sigue de forma independiente.
+  // Estado por ranura (slot): cada ranura se dispara y se sigue de forma independiente.
+  // Antes la clave era la sección; analizar de a una ranura tarda segundos en vez de
+  // minutos, y permite seguir dos ranuras distintas a la vez.
   private readonly iaEstados = signal<Map<number, EstadoIA>>(new Map());
   private readonly iaDetalles = signal<Map<number, string>>(new Map());
   private readonly iaPolls = new Map<number, Subscription>();
 
-  // Estado/detalle de la sección activa (lo que refleja el panel de observaciones).
+  // Estado/detalle de la ranura activa (la que se está mirando en el panel).
   readonly iaEstadoActivo = computed<EstadoIA>(() => {
-    const id = this.seccionActivaId();
+    const id = this.docActivo()?.id;
     return id != null ? (this.iaEstados().get(id) ?? 'IDLE') : 'IDLE';
   });
   readonly iaDetalleActivo = computed<string>(() => {
-    const id = this.seccionActivaId();
+    const id = this.docActivo()?.id;
     return id != null ? (this.iaDetalles().get(id) ?? '') : '';
   });
 
-  analizarSeccion(seccionId: number): void {
-    if (this.iaEstados().get(seccionId) === 'EN_PROGRESO') return; // guarda de doble disparo (par del back)
-    this.setEstadoIa(seccionId, 'EN_PROGRESO');
-    this.documentoService.analizarIa(this.expedienteId(), seccionId).subscribe({
-      next: () => this.pollSeccion(seccionId),
-      // 409 = ya hay un análisis en curso para esa sección: nos enganchamos al polling igual.
+  analizarRanura(docReqId: number): void {
+    if (this.iaEstados().get(docReqId) === 'EN_PROGRESO') return; // guarda de doble disparo (par del back)
+    this.setEstadoIa(docReqId, 'EN_PROGRESO');
+    this.documentoService.analizarIa(this.expedienteId(), docReqId).subscribe({
+      next: () => this.pollRanura(docReqId),
+      // 409 = ya hay un análisis en curso para esa ranura: nos enganchamos al polling igual.
       error: (e: HttpErrorResponse) =>
-        e.status === 409 ? this.pollSeccion(seccionId) : this.setEstadoIa(seccionId, 'ERROR'),
+        e.status === 409 ? this.pollRanura(docReqId) : this.setEstadoIa(docReqId, 'ERROR'),
     });
   }
 
-  private pollSeccion(seccionId: number): void {
-    this.iaPolls.get(seccionId)?.unsubscribe();
+  private pollRanura(docReqId: number): void {
+    this.iaPolls.get(docReqId)?.unsubscribe();
     const sub = timer(ExpedienteArmado.IA_POLL_MS, ExpedienteArmado.IA_POLL_MS)
       .pipe(
-        switchMap(() => this.documentoService.estadoIa(this.expedienteId(), seccionId)),
+        switchMap(() => this.documentoService.estadoIa(this.expedienteId(), docReqId)),
         take(ExpedienteArmado.IA_POLL_MAX),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: (r) => {
-          if (r.estado === 'COMPLETADO') this.finSeccion(seccionId, 'COMPLETADO');
+          if (r.estado === 'COMPLETADO') this.finRanura(docReqId, 'COMPLETADO');
           else if (r.estado === 'COMPLETADO_CON_ERRORES')
-            this.finSeccion(seccionId, 'COMPLETADO_CON_ERRORES', r.detalle);
-          else if (r.estado === 'ERROR') this.finSeccion(seccionId, 'ERROR', r.detalle);
+            this.finRanura(docReqId, 'COMPLETADO_CON_ERRORES', r.detalle);
+          else if (r.estado === 'ERROR') this.finRanura(docReqId, 'ERROR', r.detalle);
           // EN_PROGRESO / SIN_INICIAR → seguir esperando
         },
         complete: () => {
-          if (this.iaEstados().get(seccionId) === 'EN_PROGRESO')
-            this.finSeccion(seccionId, 'TIMEOUT');
+          if (this.iaEstados().get(docReqId) === 'EN_PROGRESO')
+            this.finRanura(docReqId, 'TIMEOUT');
         },
       });
-    this.iaPolls.set(seccionId, sub);
+    this.iaPolls.set(docReqId, sub);
   }
 
-  private finSeccion(
-    seccionId: number,
+  private finRanura(
+    docReqId: number,
     estado: 'COMPLETADO' | 'COMPLETADO_CON_ERRORES' | 'ERROR' | 'TIMEOUT',
     detalle?: string,
   ): void {
-    this.iaPolls.get(seccionId)?.unsubscribe();
-    this.iaPolls.delete(seccionId);
-    this.setEstadoIa(seccionId, estado, detalle ?? '');
+    this.iaPolls.get(docReqId)?.unsubscribe();
+    this.iaPolls.delete(docReqId);
+    this.setEstadoIa(docReqId, estado, detalle ?? '');
     // Los "completados" refrescan el panel: aparecen las obs de los docs que sí se analizaron.
     if (estado === 'COMPLETADO' || estado === 'COMPLETADO_CON_ERRORES') this.recargar();
   }
 
-  private setEstadoIa(seccionId: number, estado: EstadoIA, detalle = ''): void {
-    this.iaEstados.update((m) => new Map(m).set(seccionId, estado));
-    this.iaDetalles.update((m) => new Map(m).set(seccionId, detalle));
+  private setEstadoIa(docReqId: number, estado: EstadoIA, detalle = ''): void {
+    this.iaEstados.update((m) => new Map(m).set(docReqId, estado));
+    this.iaDetalles.update((m) => new Map(m).set(docReqId, detalle));
   }
 
   readonly ORIGENES: { id: OrigenObservacion; label: string; icon: string }[] = [

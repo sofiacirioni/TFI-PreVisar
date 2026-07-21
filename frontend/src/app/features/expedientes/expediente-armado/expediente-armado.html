@@ -344,14 +344,14 @@
               </button>
               <button
                 mat-stroked-button
-                (click)="analizarSeccion(seccionActivaId()!)"
-                [disabled]="!seccionActivaId() || iaEstadoActivo() === 'EN_PROGRESO'"
-                [matTooltip]="'Analiza solo la sección: ' + (seccionActiva()?.nombre ?? '')"
+                (click)="analizarRanura(docActivo()!.id)"
+                [disabled]="!docActivo() || iaEstadoActivo() === 'EN_PROGRESO'"
+                [matTooltip]="'Analiza solo: ' + (docActivo()?.nombre ?? 'el documento seleccionado')"
               >
                 @if (iaEstadoActivo() === 'EN_PROGRESO') {
                   <mat-spinner diameter="16" /> Analizando…
                 } @else {
-                  <mat-icon>auto_awesome</mat-icon> Analizar sección con IA
+                  <mat-icon>auto_awesome</mat-icon> Analizar este documento
                 }
               </button>
             </div>
@@ -408,8 +408,16 @@
 
           @if (iaEstadoActivo() === 'EN_PROGRESO') {
             <p class="ia-nota">
-              Analizando la sección con IA. Puede tardar un poco; podés seguir trabajando o analizar
-              otra sección mientras tanto.
+              Analizando este documento con IA. Puede tardar un poco; podés seguir trabajando o
+              analizar otro documento mientras tanto.
+            </p>
+          }
+          <!-- Un análisis exitoso sin hallazgos también avisa: sin esto era indistinguible
+               de uno que falló en silencio. -->
+          @if (iaEstadoActivo() === 'COMPLETADO') {
+            <p class="ia-ok">
+              <mat-icon>check_circle</mat-icon>
+              {{ iaDetalleActivo() || 'Análisis completado.' }}
             </p>
           }
           @if (iaEstadoActivo() === 'COMPLETADO_CON_ERRORES') {

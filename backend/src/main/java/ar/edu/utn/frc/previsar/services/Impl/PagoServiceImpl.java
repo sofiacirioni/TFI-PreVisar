@@ -33,6 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class PagoServiceImpl implements PagoService {
+    /** Tope de pagos a traer por expediente: el arancel se paga una vez, varios son reintentos. */
+    private static final int MAX_PAGOS_SYNC = 50;
+
     private final PagoRepository pagoRepository;
     private final ExpedienteRepository expedienteRepository;
     private final ExpedienteService expedienteService;
@@ -98,8 +101,12 @@ public class PagoServiceImpl implements PagoService {
         List<Payment> pagos;
         try {
             // external_reference = expedienteId, el mismo hilo que usa el webhook.
+            // limit/offset son obligatorios: si quedan en null el SDK explota con un
+            // NPE al armar los query params (Map.Entry con valor nulo).
             MPSearchRequest busqueda = MPSearchRequest.builder()
                     .filters(Map.of("external_reference", String.valueOf(expedienteId)))
+                    .limit(MAX_PAGOS_SYNC)
+                    .offset(0)
                     .build();
             pagos = new PaymentClient().search(busqueda).getResults();
         } catch (Exception e) {

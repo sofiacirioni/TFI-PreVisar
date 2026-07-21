@@ -47,11 +47,11 @@ export const API = {
   // Validación nivel 1 (on-demand). Vive en DocumentoController: GET /documentos/validacion.
   EXPEDIENTE_VALIDACION: (id: number) =>
     `${environment.apiBaseUrl}/expedientes/${id}/documentos/validacion`,
-  // El análisis IA es por sección (validacion/ia?seccionId=X).
-  EXPEDIENTE_IA: (id: number, seccionId: number) =>
-    `${environment.apiBaseUrl}/expedientes/${id}/documentos/validacion/ia?seccionId=${seccionId}`,
-  EXPEDIENTE_IA_ESTADO: (id: number, seccionId: number) =>
-    `${environment.apiBaseUrl}/expedientes/${id}/documentos/validacion/ia/estado?seccionId=${seccionId}`,
+  // El análisis IA es por ranura/slot (validacion/ia?documentoRequeridoId=X).
+  EXPEDIENTE_IA: (id: number, docReqId: number) =>
+    `${environment.apiBaseUrl}/expedientes/${id}/documentos/validacion/ia?documentoRequeridoId=${docReqId}`,
+  EXPEDIENTE_IA_ESTADO: (id: number, docReqId: number) =>
+    `${environment.apiBaseUrl}/expedientes/${id}/documentos/validacion/ia/estado?documentoRequeridoId=${docReqId}`,
   EXPEDIENTE_COMPILADO: (id: number) =>
     `${environment.apiBaseUrl}/expedientes/${id}/documentos/compilado`,
 

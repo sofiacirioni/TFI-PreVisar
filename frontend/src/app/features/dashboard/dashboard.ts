@@ -5,7 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { ProfesionalService } from '../../core/services/profesional.service';
 import { ExpedienteService } from '../../core/services/expediente.service';
-import { ExpedienteResponse } from '../../core/models/expediente.model';
+import { ExpedienteResponse, rutaRetomarExpediente } from '../../core/models/expediente.model';
 
 const MAX_EXPEDIENTES_RECIENTES = 4;
 
@@ -30,6 +30,9 @@ export class Dashboard implements OnInit {
   // Listado de los más recientes (el back ya devuelve ordenado por updatedAt desc)
   readonly expedientesRecientes = signal<ExpedienteResponse[]>([]);
   readonly cargandoExpedientes = signal(true);
+
+  /** Retoma donde quedó: armado si ya está EN_PROCESO, wizard si sigue en BORRADOR. */
+  readonly rutaRetomar = rutaRetomarExpediente;
 
   readonly saludo = computed(() => {
     const hora = new Date().getHours();

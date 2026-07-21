@@ -62,16 +62,24 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
     }
 
     /** CARO: rasteriza + Gemini + persiste. Disparado por el botón, asíncrono. Sin chequeo de
-     *  seguridad (el id ya viene validado desde el controller). */
+     *  seguridad (el id ya viene validado desde el controller).
+     *  <p>
+     *  El alcance es UNA ranura (el slot que el profesional está mirando, ej. "Contrato de
+     *  locación") y no la sección entera: analizar de a una da respuesta en segundos en vez de
+     *  minutos, y se analiza solo aquello sobre lo que hay dudas. Una ranura puede tener varios
+     *  archivos cargados, por eso sigue siendo un bucle. */
     @Async
-    public void analizarAsync(Long expedienteId, Long seccionId) {
+    public void analizarAsync(Long expedienteId, Long documentoRequeridoId) {
         // El estado ya quedó EN_PROGRESO en el gate del controller (iniciarSiLibre).
         List<String> fallidos = new ArrayList<>();
+        int analizados = 0;
+        int problemas = 0;
         try {
             for (DocumentoCargado d : documentoCargadoRepository
-                    .findByExpedienteIdAndDocumentoRequeridoSeccionIdAndActivoTrue(expedienteId, seccionId)) {
+                    .findByExpedienteIdAndDocumentoRequeridoIdAndActivoTrue(expedienteId, documentoRequeridoId)) {
                 try {
-                    analizarDocumento(d);
+                    problemas += analizarDocumento(d);
+                    analizados++;
                 } catch (Exception e) {   // un documento que falla (Gemini, timeout, storage, rasterizado) no aborta el resto
                     // Antes esto se perdía en un warn y el análisis "completaba" vacío sin explicación.
                     log.warn("Nivel 3: falló el análisis del documento {}, se omite", d.getId(), e);
@@ -79,22 +87,48 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
                 }
             }
             if (fallidos.isEmpty()) {
-                tracker.completar(expedienteId, seccionId);
+                tracker.completar(expedienteId, documentoRequeridoId, resumen(analizados, problemas));
             } else {
-                tracker.completarConErrores(expedienteId, seccionId,
+                tracker.completarConErrores(expedienteId, documentoRequeridoId,
                         "No se pudo analizar " + fallidos.size() + " documento(s): " + String.join(", ", fallidos));
             }
         } catch (Throwable e) {   // incluso Error (ej. OOM al rasterizar): nunca dejar el estado colgado en EN_PROGRESO
-            tracker.error(expedienteId, seccionId, "El análisis de IA no se pudo completar");
-            log.error("Nivel 3: error general en expediente {} sección {}", expedienteId, seccionId, e);
+            tracker.error(expedienteId, documentoRequeridoId, "El análisis de IA no se pudo completar");
+            log.error("Nivel 3: error general en expediente {} ranura {}", expedienteId, documentoRequeridoId, e);
         }
     }
 
-    private void analizarDocumento(DocumentoCargado d) {
+    /**
+     * Analiza SIEMPRE, aunque el contenido no haya cambiado: el análisis lo dispara el
+     * profesional a mano, y si aprieta "Analizar" espera un resultado nuevo. Antes se
+     * saltaba la llamada cuando el hash coincidía, y el botón parecía no hacer nada.
+     * Además el modelo no es determinista: volver a correrlo puede detectar algo que la
+     * pasada anterior se salteó, que es justamente por qué alguien re-dispara el análisis.
+     * <p>
+     * El resultado se guarda pisando el análisis previo de ese mismo contenido (hay un
+     * índice único por documento+hash), así que el panel siempre muestra el último.
+     */
+    /**
+     * Mensaje para el profesional. Un análisis exitoso que no encuentra nada tiene que
+     * decirlo: si no, es indistinguible de uno que falló en silencio (que es justo lo
+     * que pasaba).
+     */
+    private String resumen(int analizados, int problemas) {
+        if (analizados == 0) {
+            return "No hay documentos cargados en esta ranura para analizar.";
+        }
+        if (problemas == 0) {
+            return "Parece que está todo en orden: la IA no detectó problemas de presentación.";
+        }
+        return problemas == 1
+                ? "La IA detectó 1 observación."
+                : "La IA detectó " + problemas + " observaciones.";
+    }
+
+    /** @return cuántos problemas detectó, para poder informarle el resultado al usuario. */
+    private int analizarDocumento(DocumentoCargado d) {
         byte[] bytes = storage.leerBytes(d.getRutaRelativa());
-        String hash = HashUtil.sha256(bytes);
-        if (validacionVisualRepository.findByDocumentoCargadoIdAndHashDocumento(d.getId(), hash).isPresent())
-            return;   // ya analizado con este contenido → no re-llama a Gemini
+        String hash = HashUtil.sha256(bytes);   // deja registro de QUE contenido se analizó
 
         List<byte[]> paginas = "application/pdf".equals(d.getTipoMime())
                 ? rasterizer.rasterizar(bytes)
@@ -108,8 +142,15 @@ public class ValidacionNivel3Service implements ValidadorExpediente {
         ObjectNode resultado = MAPPER.createObjectNode();
         resultado.set("problemas", problemas);
 
-        validacionVisualRepository.save(ValidacionVisual.builder()
-                .documentoCargado(d).hashDocumento(hash).resultado(resultado.toString()).build());
+        // Hay un índice único (documento_cargado_id, hash_documento): al re-analizar el
+        // mismo contenido no se puede insertar otra fila, se pisa el resultado anterior.
+        ValidacionVisual vv = validacionVisualRepository
+                .findByDocumentoCargadoIdAndHashDocumento(d.getId(), hash)
+                .orElseGet(() -> ValidacionVisual.builder()
+                        .documentoCargado(d).hashDocumento(hash).build());
+        vv.setResultado(resultado.toString());
+        validacionVisualRepository.save(vv);
+        return problemas.size();
     }
 
     private List<ObservacionDto> aObservaciones(String json) {

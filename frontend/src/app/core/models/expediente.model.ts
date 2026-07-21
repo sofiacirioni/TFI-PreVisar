@@ -32,3 +32,15 @@ export interface ExpedienteResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * Ruta donde se retoma un expediente. Un EN_PROCESO ya pasó la carga de datos
+ * iniciales, así que el profesional debe volver al armado y no al wizard.
+ * Vive acá para que la regla no se repita en cada pantalla que abre un expediente
+ * (lista, dashboard, …) y no vuelva a quedar desalineada entre ellas.
+ */
+export function rutaRetomarExpediente(exp: Pick<ExpedienteResponse, 'id' | 'estado'>): unknown[] {
+  return exp.estado === 'EN_PROCESO'
+    ? ['/expedientes', exp.id, 'armado']
+    : ['/expedientes', exp.id];
+}

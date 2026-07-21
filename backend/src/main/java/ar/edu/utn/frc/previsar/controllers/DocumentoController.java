@@ -66,19 +66,23 @@ public class DocumentoController {
         return validacionService.validarTodo(expedienteId);   // on-demand, nada se persiste
     }
 
+    /** Analiza con IA UNA ranura (slot) del expediente, no la sección entera: es lo que el
+     *  profesional está mirando, y así el análisis tarda segundos en vez de minutos. */
     @PostMapping("/validacion/ia")
-    public ResponseEntity<Void> analizarConIa(@PathVariable Long expedienteId, @RequestParam Long seccionId) {
-        expedienteService.verificarPropio(expedienteId);                     // sync: acá SÍ hay SecurityContext
-        if (!analisisEstadoTracker.iniciarSiLibre(expedienteId, seccionId))  // gate atómico por sección: evita doble disparo
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();       // 409: esa sección ya se está analizando
-        validacionNivel3Service.analizarAsync(expedienteId, seccionId);      // cross-bean → el proxy @Async aplica
-        return ResponseEntity.accepted().build();                           // 202
+    public ResponseEntity<Void> analizarConIa(@PathVariable Long expedienteId,
+                                              @RequestParam Long documentoRequeridoId) {
+        expedienteService.verificarPropio(expedienteId);                               // sync: acá SÍ hay SecurityContext
+        if (!analisisEstadoTracker.iniciarSiLibre(expedienteId, documentoRequeridoId)) // gate atómico por ranura: evita doble disparo
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();                 // 409: esa ranura ya se está analizando
+        validacionNivel3Service.analizarAsync(expedienteId, documentoRequeridoId);     // cross-bean → el proxy @Async aplica
+        return ResponseEntity.accepted().build();                                      // 202
     }
 
     @GetMapping("/validacion/ia/estado")
-    public Map<String, String> estadoIa(@PathVariable Long expedienteId, @RequestParam Long seccionId) {
+    public Map<String, String> estadoIa(@PathVariable Long expedienteId,
+                                        @RequestParam Long documentoRequeridoId) {
         expedienteService.verificarPropio(expedienteId);
-        var r = analisisEstadoTracker.resultado(expedienteId, seccionId);
+        var r = analisisEstadoTracker.resultado(expedienteId, documentoRequeridoId);
         return Map.of(
                 "estado", r != null ? r.estado().name() : "SIN_INICIAR",
                 "detalle", r != null && r.detalle() != null ? r.detalle() : "");

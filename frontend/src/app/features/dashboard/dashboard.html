@@ -41,11 +41,11 @@
           </div>
         </div>
       } @else {
-        <!-- Cards reales de expedientes recientes (retomar wizard) -->
+        <!-- Cards reales de expedientes recientes: se retoma donde quedó (armado si ya está EN_PROCESO) -->
         @for (exp of expedientesRecientes(); track exp.id) {
           <a
             class="expediente-wrapper"
-            [routerLink]="['/expedientes', exp.id]"
+            [routerLink]="rutaRetomar(exp)"
             [matTooltip]="exp.tipoTareaNombre || 'Sin tipo definido'"
             matTooltipPosition="above"
           >

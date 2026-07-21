@@ -17,7 +17,10 @@ import { debounceTime } from 'rxjs/internal/operators/debounceTime';
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ExpedienteService } from '../../../core/services/expediente.service';
-import { ExpedienteResponse } from '../../../core/models/expediente.model';
+import {
+  ExpedienteResponse,
+  rutaRetomarExpediente,
+} from '../../../core/models/expediente.model';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog';
 
 @Component({
@@ -106,12 +109,7 @@ export class ExpedienteList implements OnInit {
   }
 
   abrir(expediente: ExpedienteResponse): void {
-    // EN_PROCESO ya pasó la carga de datos: se retoma en el armado, no en el wizard.
-    if (expediente.estado === 'EN_PROCESO') {
-      this.router.navigate(['/expedientes', expediente.id, 'armado']);
-    } else {
-      this.router.navigate(['/expedientes', expediente.id]);
-    }
+    this.router.navigate(rutaRetomarExpediente(expediente));
   }
 
   async confirmarEliminar(expediente: ExpedienteResponse): Promise<void> {
