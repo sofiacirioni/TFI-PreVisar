@@ -1,6 +1,7 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 import javax.crypto.Mac;
@@ -12,14 +13,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.net.MPSearchRequest;
 import com.mercadopago.resources.payment.Payment;
 
 import ar.edu.utn.frc.previsar.config.MercadoPagoProperties;
 import ar.edu.utn.frc.previsar.entities.Pago;
+import ar.edu.utn.frc.previsar.enums.EstadoArancel;
 import ar.edu.utn.frc.previsar.enums.EstadoPago;
 import ar.edu.utn.frc.previsar.exception.PagoException;
 import ar.edu.utn.frc.previsar.repositories.ExpedienteRepository;
 import ar.edu.utn.frc.previsar.repositories.PagoRepository;
+import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import ar.edu.utn.frc.previsar.services.PagoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PagoServiceImpl implements PagoService {
     private final PagoRepository pagoRepository;
     private final ExpedienteRepository expedienteRepository;
+    private final ExpedienteService expedienteService;
     private final MercadoPagoProperties props;
 
     @Override
@@ -37,25 +43,77 @@ public class PagoServiceImpl implements PagoService {
     public ResponseEntity<Void> procesarNotificacion(String type, String dataIdQuery,
             String xSignature, String xRequestId, Map<String, Object> body) {
 
+        // Trazabilidad: sin esto el webhook es una caja negra cuando MP dice que
+        // notificó y en la app "no pasó nada".
+        log.info("Webhook MP recibido: type={} dataId={} firmada={}", type, dataIdQuery, xSignature != null);
+
         String paymentId = dataIdQuery != null ? dataIdQuery : extraerDataId(body);
-        if (!"payment".equals(type) || paymentId == null)
-            return ResponseEntity.ok().build(); // otro evento: ignorar
+        if (!"payment".equals(type) || paymentId == null) {
+            log.info("Webhook ignorado (no es un evento de payment): type={} id={}", type, paymentId);
+            return ResponseEntity.ok().build();
+        }
 
         if (!firmaValida(paymentId, xRequestId, xSignature)) {
-            log.warn("Webhook con firma inválida para payment {}", paymentId);
+            log.warn("Webhook con firma inválida para payment {} — se rechaza", paymentId);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        long mpPaymentId;
+        try {
+            mpPaymentId = Long.parseLong(paymentId);
+        } catch (NumberFormatException e) {
+            // Permanente: reintentar no lo arregla. 200 para que MP deje de insistir.
+            log.warn("data.id no numérico ({}): se ignora la notificación", paymentId);
+            return ResponseEntity.ok().build();
         }
 
         Payment mpPago;
         try {
-            mpPago = new PaymentClient().get(Long.parseLong(paymentId)); // fuente de verdad
-        } catch (Exception e) {
-            log.error("No se pudo consultar el pago {} en MP", paymentId, e);
+            mpPago = new PaymentClient().get(mpPaymentId); // fuente de verdad
+        } catch (MPApiException e) {
+            if (e.getStatusCode() == 404) {
+                // El pago no existe o es de otra cuenta: no va a aparecer por reintentar.
+                // Es el caso de "Simular notificación" del panel, que manda un id ficticio.
+                // Se ACK-ea con 200; devolver 5xx dejaba a MP reintentando para siempre.
+                log.warn("Pago {} inexistente en MP (404): se ignora la notificación", paymentId);
+                return ResponseEntity.ok().build();
+            }
+            log.error("MP respondió {} al consultar el pago {}", e.getStatusCode(), paymentId, e);
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build(); // 5xx → MP reintenta
+        } catch (Exception e) {
+            // Transitorio (red, timeout): que MP reintente.
+            log.error("No se pudo consultar el pago {} en MP", paymentId, e);
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
         }
 
         acreditar(paymentId, mpPago);
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public EstadoArancel sincronizarConMp(Long expedienteId) {
+        expedienteService.verificarPropio(expedienteId); // 404 ante ajenos
+
+        List<Payment> pagos;
+        try {
+            // external_reference = expedienteId, el mismo hilo que usa el webhook.
+            MPSearchRequest busqueda = MPSearchRequest.builder()
+                    .filters(Map.of("external_reference", String.valueOf(expedienteId)))
+                    .build();
+            pagos = new PaymentClient().search(busqueda).getResults();
+        } catch (Exception e) {
+            throw new PagoException("No se pudieron consultar los pagos en Mercado Pago", e);
+        }
+
+        // Mismo upsert que el webhook: llamar esto N veces no duplica filas.
+        pagos.forEach(p -> acreditar(String.valueOf(p.getId()), p));
+
+        EstadoArancel estado = EstadoArancel.de(
+                pagoRepository.existsByExpedienteIdAndEstado(expedienteId, EstadoPago.APROBADO),
+                pagoRepository.existsByExpedienteIdAndEstado(expedienteId, EstadoPago.PENDIENTE));
+        log.info("Sync expediente {}: {} pago(s) en MP → {}", expedienteId, pagos.size(), estado);
+        return estado;
     }
 
     /** Idempotente: upsert por mp_payment_id. */
@@ -86,8 +144,20 @@ public class PagoServiceImpl implements PagoService {
     }
 
     private boolean firmaValida(String dataId, String xRequestId, String xSignature) {
-        if (xSignature == null || props.webhookSecret() == null)
+        // Sin secret configurado no se puede validar nada. Se procesa igual (si no,
+        // en dev el webhook queda muerto y el 401 es indistinguible de un ataque),
+        // pero se avisa fuerte. El riesgo es acotado: el pago SIEMPRE se re-consulta
+        // a MP con nuestro token, asi que un webhook forjado no puede inventar una
+        // aprobacion, solo forzar una re-sincronizacion de un pago real.
+        if (props.webhookSecret() == null || props.webhookSecret().isBlank()) {
+            log.warn("MP_WEBHOOK_SECRET sin configurar: se procesa el webhook SIN validar la firma. "
+                    + "Configuralo (panel MP -> Webhooks) antes de produccion.");
+            return true;
+        }
+        if (xSignature == null) {
+            log.warn("Webhook sin header x-signature pero hay secret configurado — se rechaza");
             return false;
+        }
         String ts = null, v1 = null;
         for (String parte : xSignature.split(",")) {
             String[] kv = parte.split("=", 2);

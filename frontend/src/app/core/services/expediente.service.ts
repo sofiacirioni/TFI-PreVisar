@@ -4,7 +4,7 @@ import { ExpedienteRequest, ExpedienteResponse } from '../models/expediente.mode
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '../constants/api.constants';
 import { AportesResponse, CalcularAportesRequest } from '../models/aportes.model';
-import { PreferenciaPago } from '../models/pago.model';
+import { EstadoArancelResponse, PreferenciaPago } from '../models/pago.model';
 
 @Injectable({
   providedIn: 'root',
@@ -41,6 +41,14 @@ export class ExpedienteService {
   }
 
   /** Crea la preferencia de pago del arancel en MP y devuelve el initPoint para redirigir al checkout. */
+  /**
+   * Reconcilia el arancel contra MP. Red de seguridad del webhook: se llama al
+   * volver del pago, así el estado se refleja aunque la notificación se pierda.
+   */
+  sincronizarPago(id: number): Observable<EstadoArancelResponse> {
+    return this.http.post<EstadoArancelResponse>(API.EXPEDIENTE_PAGO_SYNC(id), {});
+  }
+
   iniciarPago(id: number): Observable<PreferenciaPago> {
     return this.http.post<PreferenciaPago>(API.EXPEDIENTE_PAGO(id), {});
   }

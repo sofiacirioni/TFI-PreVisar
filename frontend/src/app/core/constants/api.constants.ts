@@ -43,6 +43,7 @@ export const API = {
   EXPEDIENTE_CARATULA: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/caratula`,
   // Inicia el pago del arancel: crea la preferencia de MP y devuelve el initPoint.
   EXPEDIENTE_PAGO: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/pago`,
+  EXPEDIENTE_PAGO_SYNC: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/pago/sync`,
   // Validación nivel 1 (on-demand). Vive en DocumentoController: GET /documentos/validacion.
   EXPEDIENTE_VALIDACION: (id: number) =>
     `${environment.apiBaseUrl}/expedientes/${id}/documentos/validacion`,

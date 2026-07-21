@@ -4,11 +4,13 @@ import ar.edu.utn.frc.previsar.dtos.PreferenciaPagoDto;
 import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
+import ar.edu.utn.frc.previsar.dtos.response.EstadoArancelDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.pdf.GenerarContratoRequest;
 import ar.edu.utn.frc.previsar.pdf.PdfResponseFactory;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import ar.edu.utn.frc.previsar.services.Impl.PagoMpService;
+import ar.edu.utn.frc.previsar.services.PagoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
@@ -25,6 +27,7 @@ import java.util.List;
 public class ExpedienteController {
     private final ExpedienteService expedienteService;
     private final PagoMpService pagoMpService;
+    private final PagoService pagoService;
 
     @PostMapping
     public ResponseEntity<ExpedienteResponseDto> crear(@Valid @RequestBody ExpedienteRequestDto request,
@@ -84,5 +87,16 @@ public class ExpedienteController {
     public PreferenciaPagoDto iniciarPago(@PathVariable("id") Long expedienteId) {
         // La pertenencia (404 ante ajenos) ya la valida crearPreferenciaArancel vía obtener().
         return pagoMpService.crearPreferenciaArancel(expedienteId);
+    }
+
+    /**
+     * Reconcilia el estado del arancel contra Mercado Pago. Red de seguridad del
+     * webhook: el front lo llama al volver del pago, así el estado se refleja
+     * aunque la notificación se haya perdido. Idempotente.
+     */
+    @PostMapping("/{id}/pago/sync")
+    public ResponseEntity<EstadoArancelDto> sincronizarPago(@PathVariable("id") Long expedienteId) {
+        // La pertenencia (404 ante ajenos) la valida sincronizarConMp.
+        return ResponseEntity.ok(new EstadoArancelDto(pagoService.sincronizarConMp(expedienteId)));
     }
 }

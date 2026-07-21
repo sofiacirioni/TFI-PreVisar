@@ -1,9 +1,9 @@
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, startWith, switchMap, take } from 'rxjs/operators';
-import { combineLatest, Observable, of, Subscription, timer } from 'rxjs';
+import { catchError, filter, map, startWith, switchMap, take } from 'rxjs/operators';
+import { combineLatest, fromEvent, merge, Observable, of, Subscription, timer } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -77,6 +77,34 @@ export class ExpedienteArmado {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly generando = signal(false);
+
+  constructor() {
+    this.observarVueltaDePago();
+    this.reconciliarSiFiguraImpago();
+  }
+
+  /** Expedientes ya reconciliados en esta sesión, para no repetir la consulta a MP. */
+  private readonly yaReconciliados = new Set<number>();
+
+  /**
+   * Si el expediente figura impago, se le pregunta a MP una vez por sesión. Cubre
+   * el caso en que el webhook se perdió en otra sesión: sin esto el expediente
+   * quedaba desactualizado para siempre, porque el reintento por foco solo aplica
+   * cuando el pago se inició en esta pantalla.
+   */
+  private reconciliarSiFiguraImpago(): void {
+    effect(() => {
+      const exp = this.expediente();
+      if (!exp || exp.estadoArancel !== 'NINGUNO' || this.yaReconciliados.has(exp.id)) return;
+      this.yaReconciliados.add(exp.id);
+      this.expedienteService
+        .sincronizarPago(exp.id)
+        .pipe(catchError(() => of(null)))
+        .subscribe((r) => {
+          if (r && r.estadoArancel !== 'NINGUNO') this.recargar();
+        });
+    });
+  }
 
   readonly expedienteId = toSignal(this.route.paramMap.pipe(map((pm) => Number(pm.get('id')))), {
     initialValue: 0,
@@ -208,8 +236,10 @@ export class ExpedienteArmado {
   // Sin <Vm> explícito: con un único type-arg se descartan los overloads que
   // aceptan initialValue y vm quedaría Signal<Vm | undefined>.
   readonly vm = toSignal(
-    this.route.paramMap.pipe(
-      map((pm) => Number(pm.get('id'))),
+    // Usa expedienteId$ (paramMap + refresh) y no paramMap solo: si no, recargar()
+    // refrescaba documentos y validación pero NO el expediente, y el estado del
+    // arancel (el chip) quedaba viejo hasta recargar la página entera.
+    this.expedienteId$.pipe(
       switchMap((id) =>
         this.expedienteService.obtener(id).pipe(
           switchMap((exp) => {
@@ -406,6 +436,54 @@ export class ExpedienteArmado {
         expedienteNombre: vm.status === 'ok' ? vm.expediente.nombre : undefined,
       },
     });
+    // Pagar saca al usuario de la app (o abre MP en otra pestaña). Al volver,
+    // el foco dispara la resincronización que actualiza el chip.
+    this.esperandoPago = true;
+  }
+
+  /** Hubo un intento de pago: justifica reintentar al recuperar el foco. */
+  private esperandoPago = false;
+
+  // El pago se confirma por webhook, que es asíncrono: cuando el usuario vuelve
+  // de MP el estado puede tardar unos segundos en estar acreditado. Se reintenta
+  // un puñado de veces en vez de una sola, y se corta apenas queda pagado.
+  private static readonly PAGO_RESYNC_MS = 2500;
+  private static readonly PAGO_RESYNC_MAX = 4;
+
+  private observarVueltaDePago(): void {
+    const visible$ = fromEvent(document, 'visibilitychange').pipe(
+      filter(() => document.visibilityState === 'visible'),
+    );
+    merge(fromEvent(window, 'focus'), visible$)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.resincronizarPago());
+  }
+
+  private resincronizarPago(): void {
+    if (!this.esperandoPago) {
+      this.recargar(); // refresco barato al volver a la pestaña
+      return;
+    }
+    timer(0, ExpedienteArmado.PAGO_RESYNC_MS)
+      .pipe(take(ExpedienteArmado.PAGO_RESYNC_MAX), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.expediente()?.estadoArancel !== 'NINGUNO') {
+          this.esperandoPago = false; // ya se reflejó: no seguir insistiendo
+          return;
+        }
+        // No alcanza con recargar: si el webhook se perdió, el backend tampoco
+        // sabe del pago. Se le pide que reconcilie contra MP y recién ahí se
+        // refresca. Si falla (red, MP caído), se reintenta en el próximo tick.
+        this.expedienteService
+          .sincronizarPago(this.expedienteId())
+          .pipe(catchError(() => of(null)))
+          .subscribe((r) => {
+            if (r && r.estadoArancel !== 'NINGUNO') {
+              this.esperandoPago = false;
+            }
+            this.recargar();
+          });
+      });
   }
 
   // ── Validación visual con IA (nivel 3) ──────────────────────────────────

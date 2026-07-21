@@ -242,10 +242,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
 
     /** Prioridad APROBADO &gt; PENDIENTE &gt; NINGUNO (un pago rechazado no cuenta). */
     private EstadoArancel derivarEstadoArancel(boolean tieneAprobado, boolean tienePendiente) {
-        if (tieneAprobado) {
-            return EstadoArancel.APROBADO;
-        }
-        return tienePendiente ? EstadoArancel.PENDIENTE : EstadoArancel.NINGUNO;
+        return EstadoArancel.de(tieneAprobado, tienePendiente);
     }
 
     /** Aplica solo los campos presentes (PATCH parcial) y recalcula aportes. */
