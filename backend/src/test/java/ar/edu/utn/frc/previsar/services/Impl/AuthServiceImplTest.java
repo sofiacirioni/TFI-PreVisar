@@ -105,6 +105,7 @@ class AuthServiceImplTest {
                 .regionalId(3L)
                 .condicionIvaId(1L)
                 .afiliadoCaja8470(false)
+                .terminosVersion("1.0")
                 .build();
     }
 

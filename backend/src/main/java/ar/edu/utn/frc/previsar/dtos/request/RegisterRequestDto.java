@@ -81,4 +81,10 @@ public class RegisterRequestDto {
 
     @NotNull(message = "Debe declarar si está afiliado a la Caja Ley 8470")
     private Boolean afiliadoCaja8470;
+
+    // ---------- Aceptación de Términos y Condiciones ----------
+
+    @NotBlank(message = "Debe aceptar los Términos y Condiciones")
+    @Size(max = 20)
+    private String terminosVersion;
 }

@@ -88,6 +88,7 @@ public class AuthServiceImpl implements AuthService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .rol(Rol.PROFESIONAL)
                 .activo(true)
+                .terminosVersion(request.getTerminosVersion())
                 .build();
 
         usuario = usuarioRepository.save(usuario);

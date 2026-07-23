@@ -41,6 +41,13 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean activo;
 
+    /**
+     * Versión de los Términos y Condiciones que el usuario aceptó al registrarse.
+     * El momento de la aceptación coincide con {@link #createdAt}.
+     */
+    @Column(name="terminos_version", length = 20)
+    private String terminosVersion;
+
     @Column(name="created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

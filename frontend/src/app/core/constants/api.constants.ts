@@ -16,6 +16,7 @@ export const API = {
   // --- Profesional ---
   PROFESIONAL_ME: `${environment.apiBaseUrl}/profesional/me`,
   PROFESIONAL_CAMBIAR_PASSWORD: `${environment.apiBaseUrl}/profesional/me/cambiar-password`,
+  PROFESIONAL_BAJA: `${environment.apiBaseUrl}/profesional/me/baja`,
 
   // --- Comitentes ---
   COMITENTES: `${environment.apiBaseUrl}/comitentes`,

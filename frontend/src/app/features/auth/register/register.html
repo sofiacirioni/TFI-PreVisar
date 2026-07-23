@@ -291,6 +291,21 @@
           </mat-checkbox>
         </section>
 
+        <mat-divider />
+
+        <!-- ========== Aceptación de Términos y Condiciones ========== -->
+        <section>
+          <mat-checkbox formControlName="aceptaTerminos" class="checkbox-row">
+            Leí y acepto los
+            <a routerLink="/terminos" target="_blank" rel="noopener">Términos y Condiciones</a>
+            y la
+            <a routerLink="/privacidad" target="_blank" rel="noopener">Política de Privacidad</a>
+          </mat-checkbox>
+          @if (form.controls.aceptaTerminos.touched && form.controls.aceptaTerminos.errors?.['required']) {
+            <span class="terminos-error">Debés aceptar los Términos y Condiciones para continuar</span>
+          }
+        </section>
+
         <!-- Banner de error general -->
         @if (errorGeneral(); as error) {
           <div class="error-banner">

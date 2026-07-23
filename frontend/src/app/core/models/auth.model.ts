@@ -32,11 +32,18 @@ export interface RegisterRequest {
   regionalId: number;
   condicionIvaId: number;
   afiliadoCaja8470: boolean;
+  // Versión de los T&C aceptada al registrarse (se persiste en el backend).
+  terminosVersion: string;
 }
 
 export interface CambiarPasswordRequest {
   passwordActual: string;
   passwordNueva: string;
+}
+
+export interface BajaCuentaRequest {
+  /** Contraseña actual, como confirmación de la baja. */
+  password: string;
 }
 
 // --- Response ---

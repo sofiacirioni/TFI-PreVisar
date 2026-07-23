@@ -22,6 +22,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { CambiarPasswordDialog } from '../../shared/components/cambiar-password-dialog/cambiar-password-dialog';
+import { DarDeBajaDialog } from '../../shared/components/dar-de-baja-dialog/dar-de-baja-dialog';
+import { AuthService } from '../../core/services/auth.service';
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 
 @Component({
@@ -50,6 +52,7 @@ export class Profile implements OnInit {
   private readonly catalogoService = inject(CatalogoService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly authService = inject(AuthService);
 
   // Estado UI
   readonly cargando = signal(true);
@@ -237,6 +240,22 @@ export class Profile implements OnInit {
         duration: 3000,
         panelClass: ['snackbar-success'],
       });
+    }
+  }
+
+  async abrirDarDeBaja(): Promise<void> {
+    const ref = this.dialog.open<DarDeBajaDialog, void, boolean>(DarDeBajaDialog, {
+      width: '480px',
+      disableClose: false,
+    });
+
+    const dadoDeBaja = await firstValueFrom(ref.afterClosed());
+    if (dadoDeBaja) {
+      this.snackBar.open('Tu cuenta fue dada de baja', 'Cerrar', {
+        duration: 4000,
+      });
+      // La cuenta quedó deshabilitada: cerramos sesión y volvemos al login.
+      this.authService.logout();
     }
   }
 

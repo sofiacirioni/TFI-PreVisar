@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
+import ar.edu.utn.frc.previsar.dtos.request.BajaCuentaRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.CambiarPasswordRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ProfesionalUpdateRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProfesionalResponseDto;
@@ -103,6 +104,26 @@ public class ProfesionalServiceImpl implements ProfesionalService {
         // 3. Hashear y guardar la nueva
         usuario.setPasswordHash(passwordEncoder.encode(request.getPasswordNueva()));
         usuarioRepository.save(usuario);
+    }
+
+    @Override
+    @Transactional
+    public void darDeBajaCuenta(BajaCuentaRequestDto request) {
+        Profesional profesional = securityUtils.getProfesionalActual();
+        Usuario usuario = profesional.getUsuario();
+
+        // Confirmar identidad con la contraseña actual antes de deshabilitar.
+        if (!passwordEncoder.matches(request.getPassword(), usuario.getPasswordHash())) {
+            throw new BusinessException("La contraseña es incorrecta");
+        }
+
+        // Soft-delete: se conservan los datos y expedientes por integridad
+        // referencial; solo se deshabilita el acceso (CustomUserDetailsService
+        // marca .disabled(!activo), por lo que el login queda bloqueado).
+        usuario.setActivo(false);
+        usuarioRepository.save(usuario);
+
+        log.info("Cuenta dada de baja (soft-delete) para email {}", usuario.getEmail());
     }
 
     // -------------------------- Mappers --------------------------

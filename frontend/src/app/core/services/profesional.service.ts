@@ -4,7 +4,7 @@ import { tap } from 'rxjs/internal/operators/tap';
 import { HttpClient } from '@angular/common/http';
 import { API } from '../constants/api.constants';
 import { Profesional, ProfesionalUpdateRequest } from '../models/profesional.model';
-import { CambiarPasswordRequest } from '../models';
+import { BajaCuentaRequest, CambiarPasswordRequest } from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -34,6 +34,11 @@ export class ProfesionalService {
   /** Cambia la contraseña del profesional. No devuelve datos, solo éxito o error. */
   cambiarPassword(request: CambiarPasswordRequest): Observable<void> {
     return this.http.post<void>(API.PROFESIONAL_CAMBIAR_PASSWORD, request);
+  }
+
+  /** Da de baja la cuenta (soft-delete). Requiere la contraseña como confirmación. */
+  darDeBaja(request: BajaCuentaRequest): Observable<void> {
+    return this.http.post<void>(API.PROFESIONAL_BAJA, request);
   }
 
   /** Limpia el cache (al logout). */

@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.previsar.controllers;
 
+import ar.edu.utn.frc.previsar.dtos.request.BajaCuentaRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.CambiarPasswordRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ProfesionalUpdateRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProfesionalResponseDto;
@@ -40,6 +41,14 @@ public class ProfesionalController {
     public ResponseEntity<Void> cambiarPassword(
             @Valid @RequestBody CambiarPasswordRequestDto request) {
         profesionalService.cambiarPassword(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/me/baja")
+    @Operation(summary = "Da de baja (deshabilita) la cuenta del profesional autenticado")
+    public ResponseEntity<Void> darDeBaja(
+            @Valid @RequestBody BajaCuentaRequestDto request) {
+        profesionalService.darDeBajaCuenta(request);
         return ResponseEntity.noContent().build();
     }
 }

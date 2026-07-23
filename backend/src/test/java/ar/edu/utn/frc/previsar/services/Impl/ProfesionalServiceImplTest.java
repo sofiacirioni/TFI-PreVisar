@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
+import ar.edu.utn.frc.previsar.dtos.request.BajaCuentaRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.CambiarPasswordRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ProfesionalUpdateRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProfesionalResponseDto;
@@ -332,6 +333,53 @@ class ProfesionalServiceImplTest {
                 assertTrue(ex.getMessage().toLowerCase().contains("distinta"));
 
                 verify(passwordEncoder, never()).encode(anyString());
+                verify(usuarioRepository, never()).save(any());
+        }
+
+        // Tests de darDeBajaCuenta
+        @Test
+        @DisplayName("darDeBajaCuenta: password correcta deshabilita la cuenta (activo=false)")
+        void darDeBajaCuenta_passwordCorrecta_deshabilitaCuenta() {
+                Usuario usuario = profesional.getUsuario();
+                String hashActualBD = "$2a$10$hashActualHardcodeadoPruebas";
+                usuario.setPasswordHash(hashActualBD);
+                usuario.setActivo(true);
+
+                BajaCuentaRequestDto request = BajaCuentaRequestDto.builder()
+                                .password("PasswordActual123!")
+                                .build();
+
+                when(securityUtils.getProfesionalActual()).thenReturn(profesional);
+                when(passwordEncoder.matches("PasswordActual123!", hashActualBD))
+                                .thenReturn(true);
+
+                profesionalService.darDeBajaCuenta(request);
+
+                ArgumentCaptor<Usuario> usuarioCaptor = ArgumentCaptor.forClass(Usuario.class);
+                verify(usuarioRepository).save(usuarioCaptor.capture());
+                assertFalse(usuarioCaptor.getValue().getActivo());
+        }
+
+        @Test
+        @DisplayName("darDeBajaCuenta: password incorrecta lanza BusinessException y no deshabilita")
+        void darDeBajaCuenta_passwordIncorrecta_lanzaBusinessException() {
+                Usuario usuario = profesional.getUsuario();
+                String hashActualBD = "$2a$10$hashActualHardcodeadoPruebas";
+                usuario.setPasswordHash(hashActualBD);
+                usuario.setActivo(true);
+
+                BajaCuentaRequestDto request = BajaCuentaRequestDto.builder()
+                                .password("PasswordIncorrecta")
+                                .build();
+
+                when(securityUtils.getProfesionalActual()).thenReturn(profesional);
+                when(passwordEncoder.matches("PasswordIncorrecta", hashActualBD))
+                                .thenReturn(false);
+
+                assertThrows(BusinessException.class,
+                                () -> profesionalService.darDeBajaCuenta(request));
+
+                assertTrue(usuario.getActivo());
                 verify(usuarioRepository, never()).save(any());
         }
 

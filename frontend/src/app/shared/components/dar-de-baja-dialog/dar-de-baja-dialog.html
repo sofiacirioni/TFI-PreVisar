@@ -1,0 +1,72 @@
+<div class="dialog">
+  <div class="dialog-header">
+    <mat-icon class="dialog-icon" svgIcon="warning"></mat-icon>
+    <h2 mat-dialog-title>Dar de baja mi cuenta</h2>
+  </div>
+
+  <mat-dialog-content>
+    <form [formGroup]="form" (ngSubmit)="confirmar()" id="dar-de-baja-form">
+      <p class="info-text">
+        Al dar de baja tu cuenta, se desactiva y dejás de poder acceder al servicio. Tus
+        expedientes y datos se conservan por razones de integridad de la información.
+      </p>
+      <p class="info-text">
+        Si querés la eliminación definitiva de tus datos personales, escribinos al correo de
+        contacto indicado en la
+        <a routerLink="/privacidad" target="_blank" rel="noopener">Política de Privacidad</a>.
+      </p>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Ingresá tu contraseña para confirmar</mat-label>
+        <input
+          matInput
+          [type]="mostrarPassword() ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="togglePassword()"
+          [attr.aria-label]="mostrarPassword() ? 'Ocultar' : 'Mostrar'"
+        >
+          <mat-icon [svgIcon]="mostrarPassword() ? 'visibility_off' : 'visibility'"></mat-icon>
+        </button>
+        @if (form.controls.password.touched && form.controls.password.errors; as e) {
+          @if (e['required']) {
+            <mat-error>Ingresá tu contraseña</mat-error>
+          } @else if (e['backend']) {
+            <mat-error>{{ e['backend'] }}</mat-error>
+          }
+        }
+      </mat-form-field>
+
+      @if (errorGeneral(); as error) {
+        <div class="error-banner">
+          <mat-icon svgIcon="error_outline"></mat-icon>
+          <span>{{ error }}</span>
+        </div>
+      }
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button type="button" (click)="cancelar()" [disabled]="procesando()">
+      Cancelar
+    </button>
+    <button
+      mat-flat-button
+      type="submit"
+      form="dar-de-baja-form"
+      class="btn-baja"
+      [disabled]="procesando()"
+    >
+      @if (procesando()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        <span>Dar de baja</span>
+      }
+    </button>
+  </mat-dialog-actions>
+</div>

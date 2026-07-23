@@ -41,6 +41,22 @@ section {
 
 .checkbox-row {
   margin: 8px 0;
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.terminos-error {
+  display: block;
+  margin: -4px 0 4px 4px;
+  font-size: 0.75rem;
+  color: #c62828;
 }
 
 .loader-wrap {

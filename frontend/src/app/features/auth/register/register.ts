@@ -24,6 +24,7 @@ import { PasswordMismatchMatcher } from '@shared/validators/password-mismatch.ma
 import { toSignal } from '@angular/core/rxjs-interop';
 import { cuitDigitoVerificadorValidator, cuitPrefijoValidator, dniCuitCoherenciaValidator, dniValidator } from '../../../shared/validators/dni-cuit.validators';
 import { numeroOrdenValidator } from '../../../shared/validators/numero-orden-validator';
+import { TERMINOS_VERSION } from '../../legal/legal.constants';
 
 @Component({
   selector: 'app-register',
@@ -90,6 +91,9 @@ export class Register implements OnInit {
       regionalId: [null as number | null, [Validators.required]],
       condicionIvaId: [null as number | null, [Validators.required]],
       afiliadoCaja8470: [false, [Validators.required]],
+
+      // Aceptación de Términos y Condiciones: obligatoria para registrarse.
+      aceptaTerminos: [false, [Validators.requiredTrue]],
     },
     {
       validators: [passwordMatchValidator('password', 'confirmarPassword'),
@@ -205,6 +209,7 @@ export class Register implements OnInit {
     regionalId: raw.regionalId!,
     condicionIvaId: raw.condicionIvaId!,
     afiliadoCaja8470: raw.afiliadoCaja8470,
+    terminosVersion: TERMINOS_VERSION,
   };
 
   this.authService.register(credenciales).subscribe({

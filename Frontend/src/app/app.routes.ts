@@ -29,6 +29,21 @@ export const routes: Routes = [
       import('@features/pago/pago-retorno/pago-retorno').then((m) => m.PagoRetorno),
   },
 
+  // Términos y Condiciones. Público y sin guard: lo enlaza la casilla del registro
+  // (usuario sin sesión) y también debe poder consultarse ya logueado.
+  {
+    path: 'terminos',
+    loadComponent: () =>
+      import('@features/legal/terminos/terminos').then((m) => m.Terminos),
+  },
+
+  // Política de Privacidad. Pública: forma parte de los T&C y la enlaza el registro.
+  {
+    path: 'privacidad',
+    loadComponent: () =>
+      import('@features/legal/privacidad/privacidad').then((m) => m.Privacidad),
+  },
+
   // ===== Zona privada (con MainLayout) =====
   {
     path: '',
@@ -45,6 +60,11 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () =>
           import('@features/profile/profile').then((m) => m.Profile),
+      },
+      {
+        path: 'ayuda',
+        loadComponent: () =>
+          import('@features/ayuda/ayuda').then((m) => m.Ayuda),
       },
       {
         path: 'comitentes',
