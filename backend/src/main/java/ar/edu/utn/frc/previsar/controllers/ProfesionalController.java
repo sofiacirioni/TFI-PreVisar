@@ -3,6 +3,7 @@ package ar.edu.utn.frc.previsar.controllers;
 import ar.edu.utn.frc.previsar.dtos.request.BajaCuentaRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.CambiarPasswordRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ProfesionalUpdateRequestDto;
+import ar.edu.utn.frc.previsar.dtos.request.SolicitudRolRevisorRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.ProfesionalResponseDto;
 import ar.edu.utn.frc.previsar.services.ProfesionalService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,14 @@ public class ProfesionalController {
     public ResponseEntity<ProfesionalResponseDto> actualizarPerfilActual(
             @Valid @RequestBody ProfesionalUpdateRequestDto request) {
         return ResponseEntity.ok(profesionalService.actualizarPerfilActual(request));
+    }
+
+    @PostMapping("/me/solicitar-rol-revisor")
+    @Operation(summary = "Solicita el rol de revisor: notifica a la institución por correo")
+    public ResponseEntity<Void> solicitarRolRevisor(
+            @Valid @RequestBody(required = false) SolicitudRolRevisorRequestDto request) {
+        profesionalService.solicitarRolRevisor(request != null ? request.getMensaje() : null);
+        return ResponseEntity.accepted().build();
     }
 
     @PostMapping("/me/cambiar-password")

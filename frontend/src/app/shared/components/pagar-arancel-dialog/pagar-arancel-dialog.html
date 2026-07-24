@@ -58,6 +58,10 @@
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Cerrar</button>
+    <a mat-stroked-button [href]="mailtoUrl">
+      <mat-icon>mail</mat-icon>
+      Enviar por correo
+    </a>
     <a mat-flat-button color="primary" [href]="whatsappUrl" target="_blank" rel="noopener">
       <mat-icon>share</mat-icon>
       Compartir por WhatsApp

@@ -30,4 +30,11 @@ public interface ProfesionalService {
      * confirmación. Los datos y expedientes se conservan por integridad referencial.
      */
     void darDeBajaCuenta(BajaCuentaRequestDto request);
+
+    /**
+     * Registra la solicitud del profesional autenticado para obtener el rol de
+     * revisor: notifica por correo a la institución. Falla si ya es revisor.
+     * El alta efectiva del rol es manual (desde la administración).
+     */
+    void solicitarRolRevisor(String mensaje);
 }

@@ -24,6 +24,7 @@ import ar.edu.utn.frc.previsar.enums.EstadoPago;
 import ar.edu.utn.frc.previsar.exception.PagoException;
 import ar.edu.utn.frc.previsar.repositories.ExpedienteRepository;
 import ar.edu.utn.frc.previsar.repositories.PagoRepository;
+import ar.edu.utn.frc.previsar.services.EmailService;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import ar.edu.utn.frc.previsar.services.PagoService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class PagoServiceImpl implements PagoService {
     private final ExpedienteRepository expedienteRepository;
     private final ExpedienteService expedienteService;
     private final MercadoPagoProperties props;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -123,23 +125,39 @@ public class PagoServiceImpl implements PagoService {
         return estado;
     }
 
-    /** Idempotente: upsert por mp_payment_id. */
+    /** Idempotente: upsert por mp_payment_id. Notifica al profesional solo en la transición a APROBADO. */
     private void acreditar(String paymentId, Payment mpPago) {
         Long expedienteId = Long.valueOf(mpPago.getExternalReference());
         EstadoPago estado = mapearEstado(mpPago.getStatus());
 
         pagoRepository.findByMpPaymentId(paymentId).ifPresentOrElse(
-                p -> {
+                p -> {   // ya existía: solo actualiza
+                    boolean eraAprobado = p.getEstado() == EstadoPago.APROBADO;
                     p.setEstado(estado);
                     pagoRepository.save(p);
-                }, // ya existía: solo actualiza
-                () -> pagoRepository.save(Pago.builder()
-                        .expediente(expedienteRepository.getReferenceById(expedienteId))
-                        .mpPaymentId(paymentId)
-                        .estado(estado)
-                        .monto(mpPago.getTransactionAmount())
-                        .build()));
+                    // Solo al PASAR a aprobado: reprocesar el mismo webhook no re-notifica.
+                    if (!eraAprobado && estado == EstadoPago.APROBADO) notificarPago(p);
+                },
+                () -> {
+                    Pago nuevo = pagoRepository.save(Pago.builder()
+                            .expediente(expedienteRepository.getReferenceById(expedienteId))
+                            .mpPaymentId(paymentId)
+                            .estado(estado)
+                            .monto(mpPago.getTransactionAmount())
+                            .build());
+                    if (estado == EstadoPago.APROBADO) notificarPago(nuevo);
+                });
         log.info("Pago {} del expediente {} → {}", paymentId, expedienteId, estado);
+    }
+
+    /**
+     * Resuelve el destinatario (dueño del expediente) DENTRO de la transacción y delega
+     * el envío al EmailService (asíncrono). Se pasan valores, no la entidad: el correo
+     * se manda en otro hilo y ahí las relaciones lazy ya estarían detached.
+     */
+    private void notificarPago(Pago pago) {
+        String email = pago.getExpediente().getProfesional().getUsuario().getEmail();
+        emailService.notificarPagoAcreditado(pago.getExpediente().getId(), email, pago.getMonto());
     }
 
     private EstadoPago mapearEstado(String status) {

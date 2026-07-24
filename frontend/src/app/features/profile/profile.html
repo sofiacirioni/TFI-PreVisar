@@ -57,6 +57,31 @@
               </div>
             </div>
 
+            @if (!p.esRevisor) {
+              <div class="revisor-zone">
+                <div class="revisor-text">
+                  <span class="revisor-title">¿Sos revisor de tu institución?</span>
+                  <span class="revisor-desc"
+                    >Solicitá acceso a las funciones de revisor. Se notificará a tu institución y el
+                    alta del rol es manual.</span
+                  >
+                </div>
+                <button
+                  mat-stroked-button
+                  class="btn-revisor"
+                  [disabled]="solicitandoRevisor()"
+                  (click)="solicitarRolRevisor()"
+                >
+                  @if (solicitandoRevisor()) {
+                    <mat-spinner diameter="20" />
+                  } @else {
+                    <mat-icon svgIcon="fact_check"></mat-icon>
+                  }
+                  Solicitar rol de revisor
+                </button>
+              </div>
+            }
+
             <div class="danger-zone">
               <div class="danger-text">
                 <span class="danger-title">Dar de baja mi cuenta</span>

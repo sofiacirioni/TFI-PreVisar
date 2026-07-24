@@ -173,6 +173,14 @@
 			<artifactId>sdk-java</artifactId>
 			<version>2.9.2</version>   <!-- verificá la última 2.x en Maven Central -->
 		</dependency>
+
+		<!-- ============================================== -->
+		<!-- Gmail service                                  -->
+		<!-- ============================================== -->
+		<dependency>
+  			<groupId>org.springframework.boot</groupId>
+  			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

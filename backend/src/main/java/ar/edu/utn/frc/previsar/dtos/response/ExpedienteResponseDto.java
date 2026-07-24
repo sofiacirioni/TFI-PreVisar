@@ -22,6 +22,7 @@ public class ExpedienteResponseDto {
     private Long comitenteId;   // derivado de obra -> comitente (para el wizard)
     private String comitenteNombre;
     private String comitenteDniCuit;   // DNI o CUIT del comitente (para validaciones de coherencia)
+    private String comitenteEmail;     // para autocompletar el destinatario al compartir el link de pago
     private Long tipoTareaId;
     private String tipoTareaCodigo;
     private String tipoTareaNombre;

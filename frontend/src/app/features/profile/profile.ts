@@ -23,6 +23,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { CambiarPasswordDialog } from '../../shared/components/cambiar-password-dialog/cambiar-password-dialog';
 import { DarDeBajaDialog } from '../../shared/components/dar-de-baja-dialog/dar-de-baja-dialog';
+import {
+  ConfirmDialog,
+  ConfirmDialogData,
+} from '../../shared/components/confirm-dialog/confirm-dialog';
 import { AuthService } from '../../core/services/auth.service';
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 
@@ -58,6 +62,7 @@ export class Profile implements OnInit {
   readonly cargando = signal(true);
   readonly guardando = signal(false);
   readonly editando = signal(false);
+  readonly solicitandoRevisor = signal(false);
   readonly errorCarga = signal<string | null>(null);
   readonly errorGeneral = signal<string | null>(null);
 
@@ -241,6 +246,41 @@ export class Profile implements OnInit {
         panelClass: ['snackbar-success'],
       });
     }
+  }
+
+  async solicitarRolRevisor(): Promise<void> {
+    const data: ConfirmDialogData = {
+      titulo: 'Solicitar rol de revisor',
+      mensaje: '¿Enviar tu solicitud para acceder a las funciones de revisor?',
+      detalle:
+        'Se notificará por correo a tu institución. El alta del rol es manual: te avisarán cuando quede habilitado.',
+      textoConfirmar: 'Enviar solicitud',
+      textoCancelar: 'Cancelar',
+    };
+
+    const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData, boolean>(ConfirmDialog, {
+      data,
+      width: '440px',
+    });
+
+    const confirmado = await firstValueFrom(ref.afterClosed());
+    if (!confirmado) return;
+
+    this.solicitandoRevisor.set(true);
+    this.profesionalService.solicitarRolRevisor().subscribe({
+      next: () => {
+        this.solicitandoRevisor.set(false);
+        this.snackBar.open('Solicitud enviada. Tu institución fue notificada.', 'Cerrar', {
+          duration: 4000,
+          panelClass: ['snackbar-success'],
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.solicitandoRevisor.set(false);
+        const mensaje = err.error?.mensaje || 'No se pudo enviar la solicitud. Intentá de nuevo.';
+        this.snackBar.open(mensaje, 'Cerrar', { duration: 5000, panelClass: ['snackbar-error'] });
+      },
+    });
   }
 
   async abrirDarDeBaja(): Promise<void> {

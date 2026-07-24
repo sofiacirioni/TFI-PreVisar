@@ -22,6 +22,7 @@ export interface ExpedienteResponse {
   provinciaNombre: string | null;
   comitenteId: number | null;
   comitenteNombre: string | null;
+  comitenteEmail: string | null;
   tipoTareaId: number | null;
   tipoTareaCodigo: string | null;
   tipoTareaNombre: string | null;

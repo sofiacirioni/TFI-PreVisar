@@ -439,6 +439,7 @@ export class ExpedienteArmado {
       data: {
         expedienteId: this.expedienteId(),
         expedienteNombre: vm.status === 'ok' ? vm.expediente.nombre : undefined,
+        comitenteEmail: vm.status === 'ok' ? (vm.expediente.comitenteEmail ?? undefined) : undefined,
       },
     });
     // Pagar saca al usuario de la app (o abre MP en otra pestaña). Al volver,

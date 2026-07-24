@@ -11,6 +11,8 @@ import { ExpedienteService } from '../../../core/services/expediente.service';
 export interface PagarArancelData {
   expedienteId: number;
   expedienteNombre?: string;
+  /** Email del comitente para autocompletar el destinatario. Si no se conoce, queda vacío. */
+  comitenteEmail?: string;
 }
 
 /**
@@ -83,5 +85,22 @@ export class PagarArancelDialog {
     const suffix = this.data.expedienteNombre ? ` ${this.data.expedienteNombre}` : '';
     const msg = `Hola, te comparto el link para pagar el arancel del expediente${suffix}:\n${this.initPoint()}`;
     return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  }
+
+  /**
+   * Abre el cliente de correo con asunto, cuerpo (con el link) y destinatario
+   * precargados. Si no se conoce el email del comitente, el "to" queda vacío para
+   * que lo complete el profesional.
+   */
+  get mailtoUrl(): string {
+    const suffix = this.data.expedienteNombre ? ` ${this.data.expedienteNombre}` : '';
+    const asunto = `Pago del arancel del expediente${suffix}`;
+    const cuerpo =
+      `Hola,\n\n` +
+      `Te comparto el link para pagar el arancel del expediente${suffix} desde Mercado Pago:\n` +
+      `${this.initPoint()}\n\n` +
+      `No necesitás acceso a la aplicación.\n\nSaludos.`;
+    const para = this.data.comitenteEmail ?? '';
+    return `mailto:${para}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
   }
 }

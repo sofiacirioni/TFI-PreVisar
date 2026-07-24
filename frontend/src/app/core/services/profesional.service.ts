@@ -41,6 +41,14 @@ export class ProfesionalService {
     return this.http.post<void>(API.PROFESIONAL_BAJA, request);
   }
 
+  /**
+   * Solicita el rol de revisor: el backend notifica a la institución por correo.
+   * El mensaje es opcional. El alta efectiva del rol es manual.
+   */
+  solicitarRolRevisor(mensaje?: string): Observable<void> {
+    return this.http.post<void>(API.PROFESIONAL_SOLICITAR_REVISOR, { mensaje });
+  }
+
   /** Limpia el cache (al logout). */
   limpiar(): void {
     this._perfilActual.set(null);
