@@ -1,0 +1,118 @@
+<div class="detalle-page">
+  <button mat-button class="volver" (click)="volver()">
+    <mat-icon svgIcon="arrow_back"></mat-icon>
+    Volver al historial
+  </button>
+
+  @if (errorCarga()) {
+    <div class="error-banner">
+      <mat-icon svgIcon="error_outline"></mat-icon>
+      <span>{{ errorCarga() }}</span>
+    </div>
+  } @else if (!revision()) {
+    <div class="loader-wrap">
+      <mat-spinner diameter="40" />
+      <span>Cargando...</span>
+    </div>
+  } @else {
+    <header class="detalle-header">
+      <mat-icon class="icono-pdf" svgIcon="description"></mat-icon>
+      <div>
+        <h1>{{ revision()!.nombreArchivo }}</h1>
+        <p class="subtitle">{{ revision()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+    </header>
+
+    <!-- EN_PROGRESO: análisis corriendo -->
+    @if (enProgreso()) {
+      <div class="estado-card">
+        <mat-spinner diameter="36" />
+        <div>
+          <h3>Analizando el expediente...</h3>
+          <p>Esto puede tardar hasta un par de minutos. La página se actualiza sola.</p>
+        </div>
+      </div>
+    } @else if (conError()) {
+      <!-- ERROR: fallo visible con el motivo -->
+      <div class="estado-card estado-error">
+        <mat-icon svgIcon="warning"></mat-icon>
+        <div>
+          <h3>No se pudo analizar el expediente</h3>
+          <p>{{ revision()!.detalle || 'Ocurrió un error durante el análisis.' }}</p>
+        </div>
+      </div>
+    } @else if (resumen()) {
+      <!-- COMPLETADO: resumen -->
+      <section class="resumen">
+        <!-- Cabecera del expediente -->
+        <div class="cabecera-grid">
+          <div class="dato">
+            <span class="dato-label">Tipo de expediente / tarea</span>
+            <span class="dato-valor">{{ resumen()!.tipoExpediente || 'No identificado' }}</span>
+          </div>
+          <div class="dato">
+            <span class="dato-label">Profesional</span>
+            <span class="dato-valor">{{ resumen()!.profesional || 'No identificado' }}</span>
+          </div>
+          <div class="dato">
+            <span class="dato-label">Comitente</span>
+            <span class="dato-valor">{{ resumen()!.comitente || 'No identificado' }}</span>
+          </div>
+          <div class="dato">
+            <span class="dato-label">Total de páginas</span>
+            <span class="dato-valor">{{ resumen()!.totalPaginas ?? '—' }}</span>
+          </div>
+        </div>
+
+        <!-- Documentos identificados -->
+        <div class="bloque">
+          <h2>
+            <mat-icon svgIcon="description"></mat-icon>
+            Documentos identificados
+            <span class="conteo">({{ resumen()!.documentos?.length || 0 }})</span>
+          </h2>
+          @if (resumen()!.documentos?.length) {
+            <ul class="lista-docs">
+              @for (doc of resumen()!.documentos; track $index) {
+                <li>
+                  <span class="doc-tipo">{{ doc.tipo }}</span>
+                  <span class="doc-paginas">pág. {{ doc.paginas }}</span>
+                  @if (doc.observacion) {
+                    <span class="doc-obs">{{ doc.observacion }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="vacio">No se identificaron documentos.</p>
+          }
+        </div>
+
+        <!-- Problemas de calidad -->
+        <div class="bloque">
+          <h2>
+            <mat-icon svgIcon="warning"></mat-icon>
+            Problemas de calidad
+            <span class="conteo">({{ resumen()!.problemas?.length || 0 }})</span>
+          </h2>
+          @if (resumen()!.problemas?.length) {
+            <ul class="lista-problemas">
+              @for (p of resumen()!.problemas; track $index) {
+                <li>
+                  <span class="prob-tipo">{{ p.tipo }}</span>
+                  <span class="prob-pagina">pág. {{ p.pagina }}</span>
+                  <span class="prob-detalle">{{ p.detalle }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="vacio ok">
+              <mat-icon svgIcon="check_circle"></mat-icon>
+              No se detectaron problemas graves de calidad.
+            </p>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

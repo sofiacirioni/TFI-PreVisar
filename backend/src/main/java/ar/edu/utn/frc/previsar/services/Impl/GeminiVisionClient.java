@@ -31,12 +31,14 @@ public class GeminiVisionClient {
     private final Client client;
     private final String model;
     private final int timeout;
+    private final int timeoutPdf;
     private final int reintentos;
 
     public GeminiVisionClient(Client client, GeminiProperties props) {
         this.client = client;
         this.model = props.model();
         this.timeout = props.timeoutSegundos();
+        this.timeoutPdf = props.timeoutPdfSegundos();
         this.reintentos = props.reintentos();
     }
 
@@ -48,6 +50,23 @@ public class GeminiVisionClient {
         Content contenido = Content.fromParts(
                 Part.fromText(prompt),
                 Part.fromBytes(imagenPng, "image/png"));
+        return generar(contenido, timeout);
+    }
+
+    /**
+     * Envía un PDF completo (Gemini lo procesa con visión nativa, sin rasterizar). Usa un
+     * timeout más largo que {@link #analizar} porque el documento entero tarda más.
+     * Comparte la misma lógica de reintentos/backoff.
+     */
+    public JsonNode analizarPdf(byte[] pdf, String prompt) {
+        Content contenido = Content.fromParts(
+                Part.fromText(prompt),
+                Part.fromBytes(pdf, "application/pdf"));
+        return generar(contenido, timeoutPdf);
+    }
+
+    /** Núcleo compartido: llama a Gemini con timeout propio y reintenta ante errores transitorios. */
+    private JsonNode generar(Content contenido, int timeoutSegundos) {
         GenerateContentConfig config = GenerateContentConfig.builder()
                 .responseMimeType("application/json")
                 .build();
@@ -57,18 +76,18 @@ public class GeminiVisionClient {
             try {
                 GenerateContentResponse resp = CompletableFuture
                         .supplyAsync(() -> client.models.generateContent(model, contenido, config))
-                        .orTimeout(timeout, TimeUnit.SECONDS)
+                        .orTimeout(timeoutSegundos, TimeUnit.SECONDS)
                         .join();
                 return MAPPER.readTree(resp.text());
             } catch (JsonProcessingException e) {
                 throw new GeminiException("Gemini devolvió un JSON inválido", e);   // no es transitorio
             } catch (CompletionException e) {
                 Throwable causa = e.getCause() != null ? e.getCause() : e;
-                ultimo = new GeminiException(descripcion(causa), causa);
+                ultimo = new GeminiException(descripcion(causa, timeoutSegundos), causa);
                 if (!esTransitorio(causa) || intento == reintentos) throw ultimo;
                 long espera = backoffMs(intento);
                 log.warn("Gemini: intento {}/{} falló ({}); reintento en {} ms",
-                        intento, reintentos, descripcion(causa), espera);
+                        intento, reintentos, descripcion(causa, timeoutSegundos), espera);
                 dormir(espera);
             }
         }
@@ -86,9 +105,9 @@ public class GeminiVisionClient {
     }
 
     /** Mensaje corto y legible (va a los logs y a la observación de error que ve el usuario). */
-    private String descripcion(Throwable causa) {
+    private String descripcion(Throwable causa, int timeoutSegundos) {
         for (Throwable t = causa; t != null; t = t.getCause()) {
-            if (t instanceof TimeoutException) return "Gemini no respondió a tiempo (timeout de " + timeout + "s)";
+            if (t instanceof TimeoutException) return "Gemini no respondió a tiempo (timeout de " + timeoutSegundos + "s)";
             if (t instanceof ApiException api) return "Gemini respondió " + api.code() + " (" + api.status() + ")";
         }
         return causa.getMessage() != null ? causa.getMessage() : causa.getClass().getSimpleName();

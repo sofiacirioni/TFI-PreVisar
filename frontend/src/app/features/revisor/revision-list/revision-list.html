@@ -1,0 +1,116 @@
+<div class="revisiones-page">
+  <header class="page-header">
+    <div>
+      <h1>Revisar expediente</h1>
+      <p class="subtitle">
+        Subí un expediente completo en PDF y la IA te da un pantallazo general: qué documentos
+        contiene y qué problemas de calidad detectó.
+      </p>
+    </div>
+
+    <!-- Input file oculto: el botón lo dispara -->
+    <input
+      #fileInput
+      type="file"
+      accept="application/pdf"
+      hidden
+      (change)="onArchivoSeleccionado($event)"
+    />
+    <button
+      mat-flat-button
+      class="cta-button"
+      [disabled]="subiendo()"
+      (click)="fileInput.click()"
+    >
+      @if (subiendo()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        <mat-icon svgIcon="upload"></mat-icon>
+      }
+      {{ subiendo() ? 'Subiendo...' : 'Subir expediente (PDF)' }}
+    </button>
+  </header>
+
+  @if (cargando()) {
+    <div class="loader-wrap">
+      <mat-spinner diameter="40" />
+      <span>Cargando revisiones...</span>
+    </div>
+  } @else if (errorCarga()) {
+    <div class="error-banner">
+      <mat-icon svgIcon="error_outline"></mat-icon>
+      <span>{{ errorCarga() }}</span>
+      <button mat-button (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (revisiones().length === 0) {
+    <div class="empty-state">
+      <mat-icon svgIcon="history"></mat-icon>
+      <h3>Todavía no analizaste ningún expediente</h3>
+      <p>Subí un PDF para obtener el primer resumen.</p>
+    </div>
+  } @else {
+    <div class="tabla-wrap">
+      <table mat-table [dataSource]="revisiones()" class="revisiones-table">
+        <!-- Archivo -->
+        <ng-container matColumnDef="archivo">
+          <th mat-header-cell *matHeaderCellDef>Archivo</th>
+          <td mat-cell *matCellDef="let r">
+            <mat-icon class="icono-pdf" svgIcon="description"></mat-icon>
+            {{ r.nombreArchivo }}
+          </td>
+        </ng-container>
+
+        <!-- Estado -->
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let r">
+            <mat-chip
+              class="chip-estado"
+              [class.chip-progreso]="r.estado === 'EN_PROGRESO'"
+              [class.chip-ok]="r.estado === 'COMPLETADO'"
+              [class.chip-error]="r.estado === 'ERROR'"
+            >
+              @switch (r.estado) {
+                @case ('EN_PROGRESO') { Analizando }
+                @case ('COMPLETADO') { Completado }
+                @case ('ERROR') { Error }
+              }
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Fecha -->
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let r">{{ r.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+        </ng-container>
+
+        <!-- Acciones -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef class="col-acciones">Acciones</th>
+          <td mat-cell *matCellDef="let r" class="col-acciones">
+            <button
+              mat-icon-button
+              matTooltip="Ver resumen"
+              aria-label="Ver resumen"
+              (click)="abrir(r)"
+            >
+              <mat-icon svgIcon="open_in_new"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              matTooltip="Eliminar"
+              aria-label="Eliminar revisión"
+              (click)="confirmarEliminar(r)"
+            >
+              <mat-icon class="icono-eliminar" svgIcon="delete"></mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnas"></tr>
+      </table>
+    </div>
+  }
+</div>

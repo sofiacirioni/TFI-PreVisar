@@ -82,6 +82,12 @@ export const routes: Routes = [
           import('@features/expedientes/expedientes.routes').then((m) => m.EXPEDIENTES_ROUTES),
       },
       {
+        path: 'revisar',
+        canActivate: [revisorGuard],
+        loadChildren: () =>
+          import('@features/revisor/revisor.routes').then((m) => m.REVISOR_ROUTES),
+      },
+      {
         path: 'admin',
         canActivate: [revisorGuard],
         loadChildren: () =>

@@ -56,6 +56,11 @@ export const API = {
   EXPEDIENTE_COMPILADO: (id: number) =>
     `${environment.apiBaseUrl}/expedientes/${id}/documentos/compilado`,
 
+  // --- Revisor: análisis de expedientes completos (PDF) ---
+  REVISOR_REVISIONES: `${environment.apiBaseUrl}/revisor/revisiones`,
+  REVISOR_REVISION_BY_ID: (id: number) =>
+    `${environment.apiBaseUrl}/revisor/revisiones/${id}`,
+
   // --- Parámetros de aporte (gestión, solo revisor) ---
   APORTE_ARANCEL: `${environment.apiBaseUrl}/aportes/arancel`,
 

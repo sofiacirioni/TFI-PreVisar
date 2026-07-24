@@ -71,16 +71,15 @@ export class MainLayout implements OnInit {
     { label: 'Mi perfil', icon: 'person', route: '/profile' },
   ];
 
-  // Ítem visible solo para revisores
-  private readonly navItemRevisor: NavItem = {
-    label: 'Gestión de parámetros',
-    icon: 'settings',
-    route: '/admin/parametros',
-  };
+  // Ítems visibles solo para revisores
+  private readonly navItemsRevisor: NavItem[] = [
+    { label: 'Revisar', icon: 'fact_check', route: '/revisar' },
+    { label: 'Gestión de parámetros', icon: 'settings', route: '/admin/parametros' },
+  ];
 
   // Listado final según el rol del usuario
   readonly navItems = computed<NavItem[]>(() =>
-    this.esRevisor() ? [...this.navItemsBase, this.navItemRevisor] : this.navItemsBase
+    this.esRevisor() ? [...this.navItemsBase, ...this.navItemsRevisor] : this.navItemsBase
   );
 
   ngOnInit(): void {

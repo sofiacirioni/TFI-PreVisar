@@ -27,11 +27,19 @@ public class FileStorageService {
         }
     }
 
-    /** Guarda el archivo y devuelve la ruta relativa a la base (lo que va en BD). */
+    /** Guarda el archivo bajo la carpeta del expediente y devuelve la ruta relativa (lo que va en BD). */
     public String guardar(MultipartFile archivo, Long expedienteId) {
+        return guardar(archivo, String.valueOf(expedienteId));
+    }
+
+    /**
+     * Guarda el archivo bajo una subcarpeta arbitraria (ej. "revisiones/42") y devuelve la ruta
+     * relativa a la base. La subcarpeta se normaliza y se valida contra path traversal.
+     */
+    public String guardar(MultipartFile archivo, String subcarpeta) {
         if (archivo == null || archivo.isEmpty()) throw new StorageException("Archivo vacío", null);
 
-        String relativa = expedienteId + "/" + UUID.randomUUID() + extension(archivo.getOriginalFilename());
+        String relativa = subcarpeta + "/" + UUID.randomUUID() + extension(archivo.getOriginalFilename());
         Path destino = base.resolve(relativa).normalize();
         if (!destino.startsWith(base)) throw new StorageException("Ruta inválida", null); // anti traversal
 

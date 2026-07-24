@@ -4,3 +4,4 @@ export * from './comitente.model';
 export * from './obra.model';
 export * from './catalogos.model';
 export * from './api-error.model';
+export * from './revision-externa.model';
