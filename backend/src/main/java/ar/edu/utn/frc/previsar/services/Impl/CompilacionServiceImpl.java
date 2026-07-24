@@ -11,6 +11,7 @@ import ar.edu.utn.frc.previsar.services.CompilacionService;
 import ar.edu.utn.frc.previsar.services.EstructuraService;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CompilacionServiceImpl implements CompilacionService {
     private static final float MARGEN = 28f; // ~1 cm
@@ -51,14 +53,38 @@ public class CompilacionServiceImpl implements CompilacionService {
                 estructuraService.obtenerEstructura(exp.getTipoTareaId(), exp.getProvinciaId());
 
         try (PDDocument salida = new PDDocument()) {
+            int totalArchivos = 0;
+            int fallidos = 0;
             // Recorre en el orden de la estructura: secciones, y dentro, documentos requeridos
             for (SeccionDto seccion : estructura.secciones()) {
                 for (DocumentoRequeridoDto docReq : seccion.documentos()) {
                     for (DocumentoCargado archivo : porSlot.getOrDefault(docReq.id(), List.of())) {
-                        anexar(salida, archivo);
+                        totalArchivos++;
+                        try {
+                            anexar(salida, archivo);
+                        } catch (Exception e) {
+                            // Un archivo ilegible (falta en disco, PDF dañado) no puede tirar abajo
+                            // toda la compilación: se saltea y se sigue con el resto.
+                            fallidos++;
+                            log.warn("Compilación exp {}: se omite el documento {} ({}): {}",
+                                    expedienteId, archivo.getId(), archivo.getNombreOriginal(), e.getMessage());
+                        }
                     }
                 }
             }
+
+            // Sin páginas no se puede guardar (PDFBox falla) y además no tendría sentido
+            // devolver un PDF vacío: es señal de que faltan los archivos físicos.
+            if (salida.getNumberOfPages() == 0) {
+                throw new PdfGenerationException("No se pudo compilar el expediente " + expedienteId
+                        + ": no hay documentos legibles (se encontraron " + totalArchivos
+                        + " archivo(s), " + fallidos + " ilegible(s)).");
+            }
+            if (fallidos > 0) {
+                log.warn("Compilación exp {}: {} de {} documento(s) quedaron fuera por ser ilegibles",
+                        expedienteId, fallidos, totalArchivos);
+            }
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             salida.save(baos);
             return baos.toByteArray();
