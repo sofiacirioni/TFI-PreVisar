@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ParametroAporteService } from '@core/services/parametro-aporte.service';
 import { ArancelVigente } from '@core/models/aportes.model';
+import { GestionEstructura } from '../gestion-estructura/gestion-estructura';
 
 @Component({
   selector: 'app-gestion-parametros',
@@ -23,6 +24,7 @@ import { ArancelVigente } from '@core/models/aportes.model';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    GestionEstructura,
   ],
   templateUrl: './gestion-parametros.html',
   styleUrl: './gestion-parametros.scss',

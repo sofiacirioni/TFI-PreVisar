@@ -5,6 +5,7 @@ import ar.edu.utn.frc.previsar.dtos.EstructuraExpedienteDto;
 import ar.edu.utn.frc.previsar.dtos.SeccionDto;
 import ar.edu.utn.frc.previsar.dtos.request.DocumentoRequeridoRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.SeccionRequestDto;
+import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.entities.DocumentoRequerido;
 import ar.edu.utn.frc.previsar.entities.Profesional;
 import ar.edu.utn.frc.previsar.entities.Provincia;
@@ -20,6 +21,7 @@ import ar.edu.utn.frc.previsar.repositories.SeccionRepository;
 import ar.edu.utn.frc.previsar.repositories.TipoTareaRepository;
 import ar.edu.utn.frc.previsar.security.SecurityUtils;
 import ar.edu.utn.frc.previsar.services.EstructuraService;
+import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ public class EstructuraServiceImpl implements EstructuraService {
     private final RolRevisorRepository rolRevisorRepository;
     private final EstructuraMapper estructuraMapper;
     private final SecurityUtils securityUtils;
+    private final ExpedienteService expedienteService;
 
     @Override
     public EstructuraExpedienteDto obtenerEstructura(Long tipoTareaId, Long provinciaId) {
@@ -50,6 +53,30 @@ public class EstructuraServiceImpl implements EstructuraService {
                 tipoTarea.getId(),
                 tipoTarea.getCodigo(),
                 estructuraMapper.toDtoList(secciones));
+    }
+
+    @Override
+    public EstructuraExpedienteDto obtenerEstructuraParaExpediente(Long expedienteId) {
+        ExpedienteResponseDto exp = expedienteService.obtener(expedienteId);   // 404 ante ajenos
+
+        // Borrador sin tarea/provincia elegidas: todavía no hay estructura.
+        if (exp.getTipoTareaId() == null || exp.getProvinciaId() == null) {
+            return new EstructuraExpedienteDto(exp.getTipoTareaId(), exp.getTipoTareaCodigo(), List.of());
+        }
+
+        List<Seccion> secciones = seccionRepository.findEstructuraParaExpediente(
+                exp.getTipoTareaId(), exp.getProvinciaId(), expedienteId);
+
+        return new EstructuraExpedienteDto(
+                exp.getTipoTareaId(),
+                exp.getTipoTareaCodigo(),
+                estructuraMapper.toDtoList(secciones));
+    }
+
+    @Override
+    public EstructuraExpedienteDto obtenerEstructuraDeMiProvincia(Long tipoTareaId) {
+        Provincia provincia = provinciaDelRevisorActual();   // exige rol revisor
+        return obtenerEstructura(tipoTareaId, provincia.getId());
     }
 
     @Override

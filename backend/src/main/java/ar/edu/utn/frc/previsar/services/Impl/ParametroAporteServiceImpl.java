@@ -51,14 +51,26 @@ public class ParametroAporteServiceImpl implements ParametroAporteService {
         ConceptoAporte arancel = obtenerConceptoArancel();
 
         LocalDate hoy = LocalDate.now();
+        var vigenteOpt = parametroAporteRepository.findVigente(arancel.getId(), hoy);
 
-        // 2. Cerrar el arancel vigente (vigencia_hasta = ayer)
-        parametroAporteRepository.findVigente(arancel.getId(), hoy).ifPresent(vigente -> {
+        // 2. Si ya se fijó un arancel HOY, se corrige ESE mismo registro en vez de crear
+        //    uno nuevo: no tiene sentido generar historia intra-día, y cerrar el vigente con
+        //    vigencia_hasta = ayer dejaría hasta < desde y violaría chk_parametro_vigencia
+        //    (el bug que aparecía al cambiar el monto dos veces el mismo día).
+        if (vigenteOpt.isPresent() && hoy.equals(vigenteOpt.get().getVigenciaDesde())) {
+            ParametroAporte vigenteHoy = vigenteOpt.get();
+            vigenteHoy.setValor(request.getValor());
+            parametroAporteRepository.save(vigenteHoy);
+            return;
+        }
+
+        // 3. El vigente empezó antes de hoy: se cierra (vigencia_hasta = ayer) y se abre uno nuevo.
+        vigenteOpt.ifPresent(vigente -> {
             vigente.setVigenciaHasta(hoy.minusDays(1));
             parametroAporteRepository.save(vigente);
         });
 
-        // 3. Insertar el nuevo valor vigente
+        // 4. Insertar el nuevo valor vigente
         ParametroAporte nuevo = new ParametroAporte();
         nuevo.setConcepto(arancel);
         nuevo.setTipoValor(TipoValor.FIJO);

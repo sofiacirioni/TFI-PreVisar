@@ -7,5 +7,11 @@ public record DocumentoRequeridoDto(
         boolean obligatorio,
         int orden,
         boolean permiteMultiples,
-        boolean generable
+        boolean generable,
+        /**
+         * true cuando el documento fue retirado de la estructura vigente (activo=false)
+         * pero este expediente ya tiene un archivo cargado en esa ranura. Solo se marca
+         * en la estructura scopeada por expediente; en la lectura por provincia es siempre false.
+         */
+        boolean desactivado
 ) {}

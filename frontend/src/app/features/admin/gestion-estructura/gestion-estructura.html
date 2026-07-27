@@ -1,0 +1,109 @@
+<section class="estructura-section">
+  <header class="seccion-intro">
+    <div>
+      <h2>Estructura documental</h2>
+      <p class="subtitle">
+        Configurá qué documentos se piden en cada sección para tu provincia. Los cambios afectan a
+        los expedientes de toda la provincia; los archivos ya cargados se conservan siempre.
+      </p>
+    </div>
+
+    @if (tiposTarea().length > 1) {
+      <mat-form-field appearance="outline" class="tipo-tarea">
+        <mat-label>Tipo de tarea</mat-label>
+        <mat-select [formControl]="tipoTareaCtrl">
+          @for (t of tiposTarea(); track t.id) {
+            <mat-option [value]="t.id">{{ t.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+  </header>
+
+  @if (cargando()) {
+    <div class="loader-wrap">
+      <mat-spinner diameter="40" />
+      <span>Cargando estructura...</span>
+    </div>
+  } @else if (errorCarga()) {
+    <div class="error-banner">
+      <mat-icon svgIcon="error_outline"></mat-icon>
+      <span>{{ errorCarga() }}</span>
+      <button mat-button (click)="cargarEstructura()">Reintentar</button>
+    </div>
+  } @else if (!secciones().length) {
+    <div class="empty-state">
+      <mat-icon svgIcon="search_off"></mat-icon>
+      <h3>No hay estructura para este tipo de tarea en tu provincia</h3>
+    </div>
+  } @else {
+    @for (s of secciones(); track s.id) {
+      <mat-card appearance="outlined" class="seccion-card">
+        <div class="seccion-header">
+          <h2>{{ s.nombre }}</h2>
+          <button mat-stroked-button [disabled]="trabajando()" (click)="agregar(s)">
+            <mat-icon svgIcon="add"></mat-icon>
+            Agregar documento
+          </button>
+        </div>
+
+        @if (!s.documentos.length) {
+          <p class="seccion-vacia">Esta sección no tiene documentos.</p>
+        } @else {
+          <ul class="doc-lista">
+            @for (doc of s.documentos; track doc.id; let i = $index) {
+              <li class="doc-fila">
+                <div class="doc-orden">
+                  <button
+                    mat-icon-button
+                    matTooltip="Subir"
+                    [disabled]="i === 0 || trabajando()"
+                    (click)="mover(s, i, -1)"
+                  >
+                    <mat-icon svgIcon="arrow_upward"></mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    matTooltip="Bajar"
+                    [disabled]="i === s.documentos.length - 1 || trabajando()"
+                    (click)="mover(s, i, 1)"
+                  >
+                    <mat-icon svgIcon="arrow_downward"></mat-icon>
+                  </button>
+                </div>
+
+                <div class="doc-info">
+                  <span class="doc-nombre">{{ doc.nombre }}</span>
+                  <span class="doc-codigo">{{ doc.codigo }}</span>
+                </div>
+
+                <mat-chip class="doc-chip" [class.opcional]="!doc.obligatorio">
+                  {{ doc.obligatorio ? 'Obligatorio' : 'Opcional' }}
+                </mat-chip>
+
+                <div class="doc-acciones">
+                  <button
+                    mat-icon-button
+                    matTooltip="Editar"
+                    [disabled]="trabajando()"
+                    (click)="editar(s, doc)"
+                  >
+                    <mat-icon svgIcon="edit"></mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    matTooltip="Quitar"
+                    [disabled]="trabajando()"
+                    (click)="quitar(doc)"
+                  >
+                    <mat-icon class="icono-quitar" svgIcon="delete"></mat-icon>
+                  </button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </mat-card>
+    }
+  }
+</section>

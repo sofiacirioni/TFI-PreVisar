@@ -25,6 +25,26 @@ public interface SeccionRepository extends JpaRepository<Seccion, Long> {
     List<Seccion> findEstructura(@Param("tipoTareaId") Long tipoTareaId,
                                  @Param("provinciaId") Long provinciaId);
 
+    // Estructura scopeada a un expediente: además de los documentos activos, incluye
+    // los INACTIVOS que este expediente ya tiene cargados, para no esconder un archivo
+    // subido a una ranura recién desactivada por el revisor.
+    @Query("""
+        SELECT DISTINCT s
+        FROM Seccion s
+        LEFT JOIN FETCH s.documentos d
+        WHERE s.tipoTarea.id = :tipoTareaId
+          AND s.provincia.id = :provinciaId
+          AND s.activo = true
+          AND (d IS NULL
+               OR d.activo = true
+               OR d.id IN (SELECT dc.documentoRequerido.id FROM DocumentoCargado dc
+                           WHERE dc.expediente.id = :expedienteId AND dc.activo = true))
+        ORDER BY s.orden, d.orden
+        """)
+    List<Seccion> findEstructuraParaExpediente(@Param("tipoTareaId") Long tipoTareaId,
+                                               @Param("provinciaId") Long provinciaId,
+                                               @Param("expedienteId") Long expedienteId);
+
     boolean existsByProvinciaIdAndTipoTareaIdAndCodigoAndActivoTrue(
             Long provinciaId, Long tipoTareaId, String codigo);
 

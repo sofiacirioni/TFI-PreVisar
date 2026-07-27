@@ -19,6 +19,20 @@ public interface EstructuraService {
     /** Estructura vigente de un tipo de tarea en una provincia. */
     EstructuraExpedienteDto obtenerEstructura(Long tipoTareaId, Long provinciaId);
 
+    /**
+     * Estructura para el armado de un expediente propio: incluye los documentos
+     * vigentes MÁS los que el expediente ya tiene cargados aunque hayan sido
+     * retirados de la estructura (marcados con {@code desactivado=true}). Valida que
+     * el expediente pertenezca al usuario (404 ante ajenos).
+     */
+    EstructuraExpedienteDto obtenerEstructuraParaExpediente(Long expedienteId);
+
+    /**
+     * Estructura vigente de un tipo de tarea en la provincia del revisor autenticado.
+     * Para la pantalla de configuración: el revisor solo ve/edita su propia provincia.
+     */
+    EstructuraExpedienteDto obtenerEstructuraDeMiProvincia(Long tipoTareaId);
+
     SeccionDto crearSeccion(SeccionRequestDto request);
 
     SeccionDto actualizarSeccion(Long seccionId, SeccionRequestDto request);

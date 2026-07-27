@@ -67,4 +67,14 @@ export const API = {
 
   // --- Estructura de expediente (seccion, documentos requeridos) ---
   ESTRUCTURA: `${environment.apiBaseUrl}/estructura`,
+  // Estructura scopeada a un expediente propio (incluye ranuras desactivadas con archivo).
+  ESTRUCTURA_EXPEDIENTE: (expedienteId: number) =>
+    `${environment.apiBaseUrl}/estructura/expediente/${expedienteId}`,
+  // Estructura de la provincia del revisor (para la pantalla de configuración). ?tipoTareaId=X
+  ESTRUCTURA_MIA: `${environment.apiBaseUrl}/estructura/mia`,
+  // CRUD de documentos requeridos (solo revisor de su provincia).
+  ESTRUCTURA_SECCION_DOCUMENTOS: (seccionId: number) =>
+    `${environment.apiBaseUrl}/estructura/secciones/${seccionId}/documentos`,
+  ESTRUCTURA_DOCUMENTO: (documentoId: number) =>
+    `${environment.apiBaseUrl}/estructura/documentos/${documentoId}`,
 } as const;

@@ -14,6 +14,8 @@ export const LUCIDE_ICONS: Record<string, string> = {
     '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
   arrow_drop_down: '<path d="m6 9 6 6 6-6"/>',
   arrow_back: '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+  arrow_upward: '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
+  arrow_downward: '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
   open_in_new:
     '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
 

@@ -3,6 +3,7 @@ package ar.edu.utn.frc.previsar.exception;
 import ar.edu.utn.frc.previsar.dtos.response.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -102,6 +103,25 @@ public class GlobalExceptionHandler {
         return construirRespuesta(
                 HttpStatus.UNAUTHORIZED,
                 "No autorizado: " + ex.getMessage(),
+                request);
+    }
+
+    /**
+     * Violación de una restricción de la base (check, unique, FK): la operación
+     * choca con los datos existentes. Devuelve HTTP 409 con un mensaje entendible
+     * en vez del 500 genérico. Se loguea el detalle porque suele revelar un caso
+     * de negocio que faltó contemplar.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDto> manejarIntegridad(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+        log.warn("Violación de integridad en {}: {}", request.getRequestURI(),
+                ex.getMostSpecificCause().getMessage());
+        return construirRespuesta(
+                HttpStatus.CONFLICT,
+                "La operación no se pudo completar porque entra en conflicto con datos existentes. "
+                        + "Revisá los valores e intentá de nuevo.",
                 request);
     }
 

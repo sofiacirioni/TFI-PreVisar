@@ -90,7 +90,9 @@
                   }}
                 </mat-icon>
                 <span class="indice-doc__nombre">{{ doc.nombre }}</span>
-                @if (!doc.obligatorio) {
+                @if (doc.desactivado) {
+                  <small class="indice-doc__desactivado" matTooltip="Retirado de la estructura vigente">retirado</small>
+                } @else if (!doc.obligatorio) {
                   <small class="indice-doc__opcional">opcional</small>
                 }
               </button>
@@ -102,6 +104,15 @@
       <!-- CENTRO: hoja con la previsualización del documento activo -->
       @if (docActivo(); as doc) {
         <section class="hoja">
+          @if (doc.desactivado) {
+            <div class="hoja__aviso-desactivado">
+              <mat-icon>warning_amber</mat-icon>
+              <span>
+                Este documento fue retirado de la estructura vigente. El archivo que cargaste se
+                conserva, pero revisá si sigue siendo necesario.
+              </span>
+            </div>
+          }
           <div class="hoja__toolbar">
             <div class="hoja__titulo">
               <mat-icon class="hoja__estado" [class.cargado]="cargados().has(doc.id)">

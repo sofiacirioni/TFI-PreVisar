@@ -246,10 +246,12 @@ export class ExpedienteArmado {
         this.expedienteService.obtener(id).pipe(
           switchMap((exp) => {
             // Sin tipo de tarea o sin provincia no hay estructura que pedir.
+            // Se usa la estructura scopeada al expediente: incluye ranuras retiradas de
+            // la estructura vigente que este expediente ya tiene cargadas (desactivado=true).
             const estructura$: Observable<EstructuraExpediente> =
               exp.tipoTareaId == null || exp.provinciaId == null
                 ? of({ tipoTareaId: 0, tipoTareaCodigo: '', secciones: [] })
-                : this.estructuraService.getEstructura(exp.tipoTareaId, exp.provinciaId);
+                : this.estructuraService.getEstructuraExpediente(exp.id);
             return estructura$.pipe(
               map((est): Vm => ({ status: 'ok', expediente: exp, secciones: est.secciones })),
             );

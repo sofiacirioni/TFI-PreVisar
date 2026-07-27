@@ -3,13 +3,11 @@ package ar.edu.utn.frc.previsar.services.Impl;
 import ar.edu.utn.frc.previsar.dtos.DocumentoRequeridoDto;
 import ar.edu.utn.frc.previsar.dtos.EstructuraExpedienteDto;
 import ar.edu.utn.frc.previsar.dtos.SeccionDto;
-import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
 import ar.edu.utn.frc.previsar.entities.DocumentoCargado;
 import ar.edu.utn.frc.previsar.exception.PdfGenerationException;
 import ar.edu.utn.frc.previsar.repositories.DocumentoCargadoRepository;
 import ar.edu.utn.frc.previsar.services.CompilacionService;
 import ar.edu.utn.frc.previsar.services.EstructuraService;
-import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -34,7 +32,6 @@ import java.util.stream.Collectors;
 public class CompilacionServiceImpl implements CompilacionService {
     private static final float MARGEN = 28f; // ~1 cm
 
-    private final ExpedienteService expedienteService;          // obtener: 404 ante ajenos + tipoTarea/provincia derivados
     private final EstructuraService estructuraService;          // estructura ordenada por tarea+provincia
     private final DocumentoCargadoRepository documentoCargadoRepository;
     private final FileStorageService storage;
@@ -42,15 +39,16 @@ public class CompilacionServiceImpl implements CompilacionService {
     @Override
     @Transactional(readOnly = true)
     public byte[] compilar(Long expedienteId) {
-        ExpedienteResponseDto exp = expedienteService.obtener(expedienteId);   // 404 ante ajenos
+        // Estructura scopeada al expediente: incluye las ranuras retiradas que aún tienen
+        // archivo cargado, para que esos PDFs también entren en el compilado. Valida además
+        // que el expediente sea propio (404 ante ajenos).
+        EstructuraExpedienteDto estructura =
+                estructuraService.obtenerEstructuraParaExpediente(expedienteId);
 
         // Archivos activos agrupados por slot (un slot puede tener varios)
         Map<Long, List<DocumentoCargado>> porSlot = documentoCargadoRepository
                 .findByExpedienteIdAndActivoTrue(expedienteId).stream()
                 .collect(Collectors.groupingBy(d -> d.getDocumentoRequerido().getId()));
-
-        EstructuraExpedienteDto estructura =
-                estructuraService.obtenerEstructura(exp.getTipoTareaId(), exp.getProvinciaId());
 
         try (PDDocument salida = new PDDocument()) {
             int totalArchivos = 0;

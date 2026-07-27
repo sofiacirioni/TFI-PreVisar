@@ -38,6 +38,21 @@ public class EstructuraController {
         return ResponseEntity.ok(estructuraService.obtenerEstructura(tipoTareaId, provinciaId));
     }
 
+    @GetMapping("/expediente/{expedienteId}")
+    @Operation(summary = "Estructura para el armado de un expediente propio "
+            + "(incluye ranuras retiradas que ya tienen archivo cargado)")
+    public ResponseEntity<EstructuraExpedienteDto> obtenerEstructuraParaExpediente(
+            @PathVariable Long expedienteId) {
+        return ResponseEntity.ok(estructuraService.obtenerEstructuraParaExpediente(expedienteId));
+    }
+
+    @GetMapping("/mia")
+    @Operation(summary = "Estructura de la provincia del revisor autenticado (para configurar)")
+    public ResponseEntity<EstructuraExpedienteDto> obtenerEstructuraDeMiProvincia(
+            @RequestParam Long tipoTareaId) {
+        return ResponseEntity.ok(estructuraService.obtenerEstructuraDeMiProvincia(tipoTareaId));
+    }
+
     // --- Secciones ----------------------------------------------------------
 
     @PostMapping("/secciones")

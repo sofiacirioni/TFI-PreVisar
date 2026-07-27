@@ -2,10 +2,11 @@
   <header class="page-header">
     <div>
       <h1>Gestión de parámetros</h1>
-      <p class="subtitle">Actualizá el arancel administrativo vigente.</p>
+      <p class="subtitle">Configurá el arancel administrativo y la estructura documental de tu provincia.</p>
     </div>
   </header>
 
+  <h2 class="bloque-titulo">Arancel administrativo</h2>
   @if (cargando()) {
     <div class="loader-wrap">
       <mat-spinner diameter="40" />
@@ -70,4 +71,7 @@
       </mat-card-content>
     </mat-card>
   }
+
+  <!-- Configuración de la estructura documental (misma página) -->
+  <app-gestion-estructura />
 </div>
