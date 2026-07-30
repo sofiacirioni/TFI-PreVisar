@@ -8,6 +8,7 @@ import ar.edu.utn.frc.previsar.exception.PdfGenerationException;
 import ar.edu.utn.frc.previsar.repositories.DocumentoCargadoRepository;
 import ar.edu.utn.frc.previsar.services.CompilacionService;
 import ar.edu.utn.frc.previsar.services.EstructuraService;
+import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -35,6 +36,7 @@ public class CompilacionServiceImpl implements CompilacionService {
     private final EstructuraService estructuraService;          // estructura ordenada por tarea+provincia
     private final DocumentoCargadoRepository documentoCargadoRepository;
     private final FileStorageService storage;
+    private final ExpedienteService expedienteService;          // PDFs que produce el sistema (carátula, contrato)
 
     @Override
     @Transactional(readOnly = true)
@@ -56,7 +58,25 @@ public class CompilacionServiceImpl implements CompilacionService {
             // Recorre en el orden de la estructura: secciones, y dentro, documentos requeridos
             for (SeccionDto seccion : estructura.secciones()) {
                 for (DocumentoRequeridoDto docReq : seccion.documentos()) {
-                    for (DocumentoCargado archivo : porSlot.getOrDefault(docReq.id(), List.of())) {
+                    List<DocumentoCargado> archivos = porSlot.getOrDefault(docReq.id(), List.of());
+
+                    // Ranura generable sin archivo propio (carátula, contrato): el PDF lo produce
+                    // el sistema. Se genera acá para que el compilado no salga incompleto. Si el
+                    // profesional subió su versión (ej. el contrato ya firmado), esa tiene prioridad
+                    // y este bloque no corre.
+                    if (archivos.isEmpty() && docReq.generable()) {
+                        totalArchivos++;
+                        try {
+                            anexarPdf(salida, generar(expedienteId, docReq));
+                        } catch (Exception e) {
+                            fallidos++;
+                            log.warn("Compilación exp {}: no se pudo generar '{}': {}",
+                                    expedienteId, docReq.codigo(), e.getMessage());
+                        }
+                        continue;
+                    }
+
+                    for (DocumentoCargado archivo : archivos) {
                         totalArchivos++;
                         try {
                             anexar(salida, archivo);
@@ -89,6 +109,14 @@ public class CompilacionServiceImpl implements CompilacionService {
         } catch (IOException e) {
             throw new PdfGenerationException("No se pudo compilar el expediente " + expedienteId, e);
         }
+    }
+
+    /** PDF de una ranura generable. Falla explícito si la ranura está marcada como tal sin generador. */
+    private byte[] generar(Long expedienteId, DocumentoRequeridoDto docReq) {
+        byte[] pdf = expedienteService.generarDocumento(expedienteId, docReq.codigo());
+        if (pdf == null) throw new PdfGenerationException("La ranura '" + docReq.codigo()
+                + "' está marcada como generable pero no tiene generador asociado");
+        return pdf;
     }
 
     private void anexar(PDDocument salida, DocumentoCargado archivo) throws IOException {

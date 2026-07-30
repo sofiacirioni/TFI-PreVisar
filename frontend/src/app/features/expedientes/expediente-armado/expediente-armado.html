@@ -157,13 +157,18 @@
               }
 
               @if (doc.generable) {
-                <button
-                  mat-stroked-button
-                  (click)="actualizarPreview()"
-                  [disabled]="generandoPreview()"
-                >
-                  <mat-icon>autorenew</mat-icon> Previsualizar
-                </button>
+                <!-- La previsualización se genera sola; el botón está para forzarla
+                     si falló. No aplica cuando ya hay un archivo subido: en ese caso
+                     manda ese archivo, no el PDF del sistema. -->
+                @if (!archivosDe(doc.id).length) {
+                  <button
+                    mat-stroked-button
+                    (click)="regenerarPreview()"
+                    [disabled]="generandoPreview()"
+                  >
+                    <mat-icon>autorenew</mat-icon> Regenerar
+                  </button>
+                }
                 <button
                   mat-stroked-button
                   (click)="descargarGenerada()"
@@ -217,12 +222,11 @@
               <div class="hoja__placeholder">
                 <mat-icon>picture_as_pdf</mat-icon>
                 <h2>{{ doc.nombre }}</h2>
+                <!-- La previsualización se genera automáticamente: si se llega acá es
+                     porque el pedido falló (faltan datos del expediente, o hubo un error). -->
                 <p class="hoja__hint">
-                  @if (esContrato()) {
-                    Completá los campos y generá la previsualización.
-                  } @else {
-                    Generá la previsualización para verla acá.
-                  }
+                  No se pudo generar la previsualización. Revisá que el expediente tenga
+                  todos sus datos y volvé a intentar con «Regenerar».
                 </p>
               </div>
             } @else {
@@ -335,11 +339,15 @@
                 <button
                   mat-flat-button
                   color="primary"
-                  (click)="actualizarPreview()"
-                  [disabled]="generandoPreview()"
+                  (click)="guardarDatosContrato()"
+                  [disabled]="guardandoContrato()"
                 >
-                  <mat-icon>autorenew</mat-icon>
-                  Actualizar previsualización
+                  @if (guardandoContrato()) {
+                    <mat-spinner diameter="18" />
+                  } @else {
+                    <mat-icon>save</mat-icon>
+                  }
+                  Guardar y actualizar
                 </button>
               </div>
             </mat-expansion-panel>

@@ -1,7 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { DocumentoCargado } from '../models/documento-cargado.model';
-import { GenerarContratoRequest } from '../models/generar-contrato-request.model';
 import { Observable } from 'rxjs';
 import { API } from '../constants/api.constants';
 import { ValidacionResultado } from '../models/validacion.model';
@@ -41,8 +40,9 @@ export class DocumentoService {
     });
   }
 
-  descargarContrato(expId: number, req: GenerarContratoRequest): Observable<HttpResponse<Blob>> {
-    return this.http.post(API.EXPEDIENTE_CONTRATO(expId), req, {
+  /** El contrato se arma con los datos ya guardados en el expediente: es un GET sin body. */
+  descargarContrato(expId: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(API.EXPEDIENTE_CONTRATO(expId), {
       responseType: 'blob',
       observe: 'response',
     });

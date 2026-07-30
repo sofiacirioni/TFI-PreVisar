@@ -1,10 +1,12 @@
 package ar.edu.utn.frc.previsar.services.Impl;
 
 import ar.edu.utn.frc.previsar.dtos.AportesCalculadosDto;
+import ar.edu.utn.frc.previsar.dtos.DatosContratoDto;
 import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
+import ar.edu.utn.frc.previsar.entities.DatosContrato;
 import ar.edu.utn.frc.previsar.entities.Expediente;
 import ar.edu.utn.frc.previsar.entities.Obra;
 import ar.edu.utn.frc.previsar.entities.Profesional;
@@ -139,15 +141,34 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     }
 
     @Override
+    @Transactional
+    public ExpedienteResponseDto actualizarDatosContrato(Long id, DatosContratoDto dto) {
+        Expediente e = buscarPropio(id);
+        // Se reemplaza el embebido completo: el panel de armado siempre manda los seis campos.
+        // Los textos en blanco se guardan como null para que el PDF caiga a la línea de puntos.
+        e.setDatosContrato(DatosContrato.builder()
+                .honorariosPactados(dto.honorariosPactados())
+                .documentacionConfeccion(blancoANull(dto.documentacionConfeccion()))
+                .tareasEspeciales(blancoANull(dto.tareasEspeciales()))
+                .formaPago(blancoANull(dto.formaPago()))
+                .plazoEntrega(blancoANull(dto.plazoEntrega()))
+                .gastosEspeciales(blancoANull(dto.gastosEspeciales()))
+                .build());
+        return aResponse(expedienteRepository.save(e));
+    }
+
+    @Override
     @Transactional(readOnly = true)
-    public byte[] generarContrato(Long id, GenerarContratoRequest req) {
+    public byte[] generarContrato(Long id) {
         // Mismo patrón de aislamiento 404 que el resto del service.
         Expediente exp = buscarPropio(id);
+        DatosContrato datos = exp.getDatosContrato();   // nunca null (ver Expediente)
 
         BigDecimal referenciales = exp.getHonorariosReferenciales();
-        // Si no mandan pactado, se usa el referencial como default.
-        BigDecimal honorariosPactados = req != null ? req.honorariosPactados() : null;
-        BigDecimal pactados = honorariosPactados != null ? honorariosPactados : referenciales;
+        // Si el profesional no pactó un monto distinto, el contrato usa el referencial.
+        BigDecimal pactados = datos.getHonorariosPactados() != null
+                ? datos.getHonorariosPactados()
+                : referenciales;
 
         Obra obra = exp.getObra();
         ContratoData data = new ContratoData(
@@ -165,12 +186,12 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                 pactados,
                 referenciales,
                 obra.getLocalidad(),   // ciudad = localidad de la obra
-                // Campos que el profesional completa desde el panel lateral (fallback a puntos si vienen vacíos).
-                req != null ? req.documentacionConfeccion() : null,
-                req != null ? req.tareasEspeciales() : null,
-                req != null ? req.formaPago() : null,
-                req != null ? req.plazoEntrega() : null,
-                req != null ? req.gastosEspeciales() : null
+                // Campos que el profesional completa desde el panel lateral (fallback a puntos si están vacíos).
+                datos.getDocumentacionConfeccion(),
+                datos.getTareasEspeciales(),
+                datos.getFormaPago(),
+                datos.getPlazoEntrega(),
+                datos.getGastosEspeciales()
         );
 
         return pdfGenerationService.generar(new ContratoTemplate(data));
@@ -181,7 +202,7 @@ public class ExpedienteServiceImpl implements ExpedienteService {
     public byte[] generarCaratula(Long id) {
         Expediente exp = buscarPropio(id);
         CaratulaData data = new CaratulaData(
-                exp.getProfesional().getTitulo().getNombre(),
+                exp.getProfesional().tituloDescripcion(),          // "Otro" => el texto que cargó el profesional
                 apellidoNombre(exp.getProfesional()),              // "APELLIDO Nombre"
                 formatMatriculaOrden(exp.getProfesional()),        // el helper del contrato
                 exp.getObra().getComitente().getNombreRazonSocial(),
@@ -192,6 +213,23 @@ public class ExpedienteServiceImpl implements ExpedienteService {
                 exp.getTipoTarea().getNombre()
         );
         return pdfGenerationService.generar(new CaratulaTemplate(data));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] generarDocumento(Long id, String codigoDocumento) {
+        return switch (codigoDocumento) {
+            case "CARATULA" -> generarCaratula(id);
+            // Sin request: los campos editables del contrato son de la pantalla de armado
+            // y el backend cae a puntos suspensivos cuando no vienen.
+            case "CONTRATO_LOCACION" -> generarContrato(id);
+            default -> null;
+        };
+    }
+
+    /** Texto vacío o en blanco se guarda como null: así el PDF dibuja la línea de puntos. */
+    private static String blancoANull(String s) {
+        return s == null || s.isBlank() ? null : s.trim();
     }
 
     /** "Nombre Apellido" del profesional para el encabezado del contrato. */

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ExpedienteRequest, ExpedienteResponse } from '../models/expediente.model';
+import { DatosContrato } from '../models/datos-contrato.model';
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '../constants/api.constants';
 import { AportesResponse, CalcularAportesRequest } from '../models/aportes.model';
@@ -38,6 +39,11 @@ export class ExpedienteService {
 
   calcularAportes(request: CalcularAportesRequest): Observable<AportesResponse> {
     return this.http.post<AportesResponse>(API.EXPEDIENTES_CALCULAR_APORTES, request);
+  }
+
+  /** Guarda los campos del contrato y devuelve el expediente ya actualizado. */
+  guardarDatosContrato(id: number, datos: DatosContrato): Observable<ExpedienteResponse> {
+    return this.http.put<ExpedienteResponse>(API.EXPEDIENTE_CONTRATO_DATOS(id), datos);
   }
 
   /** Crea la preferencia de pago del arancel en MP y devuelve el initPoint para redirigir al checkout. */

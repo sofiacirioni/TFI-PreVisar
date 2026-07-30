@@ -42,6 +42,9 @@ export const API = {
   EXPEDIENTE_DOCUMENTO: (id: number, docId: number) =>
     `${environment.apiBaseUrl}/expedientes/${id}/documentos/${docId}`,
   EXPEDIENTE_CONTRATO: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/contrato`,
+  // Campos editables del contrato: se guardan en el expediente y el PDF los toma de ahí.
+  EXPEDIENTE_CONTRATO_DATOS: (id: number) =>
+    `${environment.apiBaseUrl}/expedientes/${id}/contrato/datos`,
   EXPEDIENTE_CARATULA: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/caratula`,
   // Inicia el pago del arancel: crea la preferencia de MP y devuelve el initPoint.
   EXPEDIENTE_PAGO: (id: number) => `${environment.apiBaseUrl}/expedientes/${id}/pago`,

@@ -18,7 +18,7 @@ import { ExpedienteService } from '../../../core/services/expediente.service';
 import { EstructuraService } from '../../../core/services/estructura.service';
 import { DocumentoService } from '../../../core/services/documento.service';
 import { DocumentoCargado } from '../../../core/models/documento-cargado.model';
-import { GenerarContratoRequest } from '../../../core/models/generar-contrato-request.model';
+import { DatosContrato } from '../../../core/models/datos-contrato.model';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -83,6 +83,9 @@ export class ExpedienteArmado {
   constructor() {
     this.observarVueltaDePago();
     this.reconciliarSiFiguraImpago();
+    this.previsualizarGenerables();
+    this.invalidarPreviewsAlEditarDatos();
+    this.hidratarDatosContrato();
   }
 
   /** Expedientes ya reconciliados en esta sesión, para no repetir la consulta a MP. */
@@ -152,12 +155,18 @@ export class ExpedienteArmado {
 
   readonly generales = computed(() => this.validacion().generales);
 
-  readonly documentosCargados = toSignal(
+  // null mientras viaja el primer pedido: hace falta poder distinguir "todavía no sé"
+  // de "la ranura está vacía", si no se generaría un PDF al aire en las ranuras que
+  // ya tienen archivo subido (ver previsualizarGenerables).
+  private readonly documentosCargadosCargando = toSignal(
     this.expedienteId$.pipe(
-      switchMap((id) => this.documentoService.listar(id).pipe(catchError(() => of([])))),
+      switchMap((id) =>
+        this.documentoService.listar(id).pipe(catchError(() => of<DocumentoCargado[] | null>([]))),
+      ),
     ),
-    { initialValue: [] as DocumentoCargado[] },
+    { initialValue: null },
   );
+  readonly documentosCargados = computed(() => this.documentosCargadosCargando() ?? []);
 
   private readonly archivosPorSlot = computed(() => {
     const map = new Map<number, DocumentoCargado[]>();
@@ -201,22 +210,97 @@ export class ExpedienteArmado {
     { initialValue: null as Blob | null },
   );
 
-  // PDF generado por el sistema para previsualizar (contrato o carátula). Es
-  // efímero: se regenera bajo demanda y se limpia al cambiar de documento.
-  private readonly previewGeneradaBlob = signal<Blob | null>(null);
-  readonly generandoPreview = signal(false);
+  // PDFs que produce el sistema (carátula, contrato), cacheados por ranura para no
+  // volver a pedirlos cada vez que se abre el slot. No se guardan en el servidor: son
+  // estado derivado de los datos del expediente, y generarlos cuesta milisegundos.
+  private readonly previewsGeneradas = signal<ReadonlyMap<number, Blob>>(new Map());
+  // Ranuras con una generación en curso: evita pedir dos veces el mismo PDF.
+  private readonly generandoIds = signal<ReadonlySet<number>>(new Set());
 
   // El slot admite generación de PDF por el sistema (dato: documento_requerido.generable).
   readonly esGenerable = computed(() => this.docActivo()?.generable ?? false);
   // El contrato es el único generable con campos editables (panel lateral).
   readonly esContrato = computed(() => this.docActivo()?.codigo === 'CONTRATO_LOCACION');
-
-  // Fuente del visor central: el PDF generado tiene prioridad cuando el slot es
-  // generable; si no, el archivo subido del slot.
-  readonly viewerSrc = computed<Blob | null>(() => {
-    if (this.esGenerable() && this.previewGeneradaBlob()) return this.previewGeneradaBlob();
-    return this.previewBlob();
+  readonly generandoPreview = computed(() => {
+    const id = this.docActivo()?.id;
+    return id != null && this.generandoIds().has(id);
   });
+
+  // Fuente del visor central: el archivo subido manda. Si el profesional cargó su
+  // versión —el contrato ya firmado, por ejemplo— es la que vale, igual que en el
+  // compilado; solo cuando la ranura está vacía se muestra el PDF del sistema.
+  readonly viewerSrc = computed<Blob | null>(() => {
+    const doc = this.docActivo();
+    if (!doc) return null;
+    if (this.archivosDe(doc.id).length) return this.previewBlob();
+    return this.previewsGeneradas().get(doc.id) ?? null;
+  });
+
+  /**
+   * Genera la previsualización de la ranura activa cuando hace falta. Al entrar al
+   * armado la carátula ya aparece sola, y cada ranura se genera una única vez: después
+   * queda en caché hasta que cambien los datos del expediente.
+   */
+  private previsualizarGenerables(): void {
+    effect(() => {
+      const doc = this.docActivo();
+      if (!doc?.generable) return;
+      if (this.documentosCargadosCargando() === null) return; // aún no sé si hay archivo
+      if (this.archivosDe(doc.id).length) return; // subió su propia versión
+      if (this.previewsGeneradas().has(doc.id)) return; // ya está en caché
+      if (this.generandoIds().has(doc.id)) return; // ya se está pidiendo
+      this.generarPreview(doc);
+    });
+  }
+
+  /**
+   * Los PDFs generados son función de los datos del expediente: si el profesional los
+   * editó (updatedAt cambia), la caché quedó vieja y se descarta para que se regeneren.
+   */
+  private invalidarPreviewsAlEditarDatos(): void {
+    let ultimoUpdatedAt: string | null = null;
+    effect(() => {
+      const exp = this.expediente();
+      if (!exp) return;
+      if (ultimoUpdatedAt !== null && ultimoUpdatedAt !== exp.updatedAt) {
+        this.previewsGeneradas.set(new Map());
+      }
+      ultimoUpdatedAt = exp.updatedAt;
+    });
+  }
+
+  private generarPreview(doc: DocumentoRequerido): void {
+    const pdf$ = this.pdfGenerado(doc.codigo);
+    if (!pdf$) return;
+    this.generandoIds.update((s) => new Set(s).add(doc.id));
+    pdf$.subscribe({
+      next: (resp) => {
+        const blob = resp.body;
+        if (blob) this.previewsGeneradas.update((m) => new Map(m).set(doc.id, blob));
+        this.finGeneracion(doc.id);
+      },
+      error: () => this.finGeneracion(doc.id),
+    });
+  }
+
+  private finGeneracion(docReqId: number): void {
+    this.generandoIds.update((s) => {
+      const resto = new Set(s);
+      resto.delete(docReqId);
+      return resto;
+    });
+  }
+
+  /** Descarta la preview cacheada de la ranura activa; el effect la vuelve a generar. */
+  regenerarPreview(): void {
+    const doc = this.docActivo();
+    if (!doc) return;
+    this.previewsGeneradas.update((m) => {
+      const resto = new Map(m);
+      resto.delete(doc.id);
+      return resto;
+    });
+  }
 
   // un slot está "cargado" si tiene al menos un archivo activo
   readonly cargados = computed(
@@ -233,6 +317,58 @@ export class ExpedienteArmado {
   readonly formaPago = signal('');
   readonly plazoEntrega = signal('');
   readonly gastosEspeciales = signal('');
+  readonly guardandoContrato = signal(false);
+
+  /** Expediente ya volcado al panel del contrato: se precarga una sola vez. */
+  private hidratadoDe: number | null = null;
+
+  /**
+   * Precarga el panel con los campos guardados del contrato. Una sola vez por
+   * expediente: recargar() se dispara también al volver a la pestaña, y re-hidratar
+   * pisaría lo que el profesional está escribiendo sin haber guardado todavía.
+   */
+  private hidratarDatosContrato(): void {
+    effect(() => {
+      const exp = this.expediente();
+      if (!exp || this.hidratadoDe === exp.id) return;
+      this.hidratadoDe = exp.id;
+      const datos = exp.datosContrato;
+      this.honorariosPactados.set(datos?.honorariosPactados ?? null);
+      this.documentacionConfeccion.set(datos?.documentacionConfeccion ?? '');
+      this.tareasEspeciales.set(datos?.tareasEspeciales ?? '');
+      this.formaPago.set(datos?.formaPago ?? '');
+      this.plazoEntrega.set(datos?.plazoEntrega ?? '');
+      this.gastosEspeciales.set(datos?.gastosEspeciales ?? '');
+    });
+  }
+
+  /**
+   * Guarda los campos del contrato en el expediente. Al recargar cambia updatedAt, lo
+   * que invalida la caché de previews y hace que el contrato se regenere solo.
+   */
+  guardarDatosContrato(): void {
+    if (this.guardandoContrato()) return;
+    this.guardandoContrato.set(true);
+    const datos: DatosContrato = {
+      honorariosPactados: this.honorariosPactados(),
+      documentacionConfeccion: this.documentacionConfeccion() || null,
+      tareasEspeciales: this.tareasEspeciales() || null,
+      formaPago: this.formaPago() || null,
+      plazoEntrega: this.plazoEntrega() || null,
+      gastosEspeciales: this.gastosEspeciales() || null,
+    };
+    this.expedienteService.guardarDatosContrato(this.expedienteId(), datos).subscribe({
+      next: () => {
+        this.guardandoContrato.set(false);
+        this.recargar();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.guardandoContrato.set(false);
+        const mensaje = err.error?.mensaje ?? 'No se pudieron guardar los campos del contrato';
+        this.snackBar.open(mensaje, 'Cerrar', { duration: 4000 });
+      },
+    });
+  }
 
   // Carga encadenada: expediente -> (tipoTareaId, provinciaId) -> estructura.
   // Sin <Vm> explícito: con un único type-arg se descartan los overloads que
@@ -308,7 +444,6 @@ export class ExpedienteArmado {
   seleccionarDoc(id: number): void {
     this.docSeleccionadoId.set(id);
     this.archivoSeleccionadoId.set(null);
-    this.previewGeneradaBlob.set(null); // la preview generada es por-documento
   }
 
   // Reabre el wizard en modo edición (la ruta ':id' lo carga como "retomar").
@@ -348,23 +483,12 @@ export class ExpedienteArmado {
     this.documentoService.eliminar(this.expedienteId(), doc.id).subscribe(() => this.recargar());
   }
 
-  private contratoReq(): GenerarContratoRequest {
-    return {
-      honorariosPactados: this.honorariosPactados(),
-      documentacionConfeccion: this.documentacionConfeccion() || null,
-      tareasEspeciales: this.tareasEspeciales() || null,
-      formaPago: this.formaPago() || null,
-      plazoEntrega: this.plazoEntrega() || null,
-      gastosEspeciales: this.gastosEspeciales() || null,
-    };
-  }
-
-  // Despacha al generador según el código del slot (registro cliente: el flag
-  // `generable` decide si se muestra el botón, el código elige el endpoint).
-  private generarPdf(): Observable<HttpResponse<Blob>> | null {
-    switch (this.docActivo()?.codigo) {
+  // Despacha al endpoint según el código del slot (el flag `generable` decide si la
+  // ranura tiene PDF del sistema; el código, cuál de ellos).
+  private pdfGenerado(codigo: string): Observable<HttpResponse<Blob>> | null {
+    switch (codigo) {
       case 'CONTRATO_LOCACION':
-        return this.documentoService.descargarContrato(this.expedienteId(), this.contratoReq());
+        return this.documentoService.descargarContrato(this.expedienteId());
       case 'CARATULA':
         return this.documentoService.descargarCaratula(this.expedienteId());
       default:
@@ -372,34 +496,22 @@ export class ExpedienteArmado {
     }
   }
 
-  private nombreGenerado(): string {
-    return this.docActivo()?.codigo === 'CARATULA' ? 'caratula.pdf' : 'contrato-locacion.pdf';
+  private nombreGenerado(codigo: string): string {
+    return codigo === 'CARATULA' ? 'caratula.pdf' : 'contrato-locacion.pdf';
   }
 
-  // Genera el PDF del slot y lo muestra en el visor central.
-  actualizarPreview(): void {
-    const pdf$ = this.generarPdf();
-    if (!pdf$) return;
-    this.generandoPreview.set(true);
-    pdf$.subscribe({
-      next: (resp) => {
-        this.previewGeneradaBlob.set(resp.body);
-        this.generandoPreview.set(false);
-      },
-      error: () => this.generandoPreview.set(false),
-    });
-  }
-
-  // Descarga el PDF generado. Si ya hay una preview, baja ese mismo; si no, lo genera.
+  // Descarga el PDF del sistema: si está en caché baja ese mismo, si no lo pide.
   descargarGenerada(): void {
-    const blob = this.previewGeneradaBlob();
-    if (blob) {
-      this.descargarBlob(blob, this.nombreGenerado());
+    const doc = this.docActivo();
+    if (!doc) return;
+    const enCache = this.previewsGeneradas().get(doc.id);
+    if (enCache) {
+      this.descargarBlob(enCache, this.nombreGenerado(doc.codigo));
       return;
     }
-    const pdf$ = this.generarPdf();
-    if (!pdf$) return;
-    pdf$.subscribe((resp) => this.guardarBlob(resp, this.nombreGenerado()));
+    this.pdfGenerado(doc.codigo)?.subscribe((resp) =>
+      this.guardarBlob(resp, this.nombreGenerado(doc.codigo)),
+    );
   }
 
   private guardarBlob(resp: HttpResponse<Blob>, fallback: string): void {

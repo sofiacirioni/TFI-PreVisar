@@ -1,12 +1,12 @@
 package ar.edu.utn.frc.previsar.controllers;
 
+import ar.edu.utn.frc.previsar.dtos.DatosContratoDto;
 import ar.edu.utn.frc.previsar.dtos.PreferenciaPagoDto;
 import ar.edu.utn.frc.previsar.dtos.request.CalcularAportesRequestDto;
 import ar.edu.utn.frc.previsar.dtos.request.ExpedienteRequestDto;
 import ar.edu.utn.frc.previsar.dtos.response.AportesResponseDto;
 import ar.edu.utn.frc.previsar.dtos.response.EstadoArancelDto;
 import ar.edu.utn.frc.previsar.dtos.response.ExpedienteResponseDto;
-import ar.edu.utn.frc.previsar.pdf.GenerarContratoRequest;
 import ar.edu.utn.frc.previsar.pdf.PdfResponseFactory;
 import ar.edu.utn.frc.previsar.services.ExpedienteService;
 import ar.edu.utn.frc.previsar.services.Impl.PagoMpService;
@@ -71,11 +71,17 @@ public class ExpedienteController {
         return ResponseEntity.ok(expedienteService.calcularAportes(request));
     }
 
-    @PostMapping("/{id}/contrato")
-    public ResponseEntity<ByteArrayResource> generarContrato(
-            @PathVariable Long id, @RequestBody(required = false) GenerarContratoRequest req) {
-        byte[] pdf = expedienteService.generarContrato(id, req);
-        return PdfResponseFactory.attachment(pdf, "contrato-locacion-" + id);
+    /** Campos editables del contrato. Se guardan en el expediente y el PDF los toma de ahí. */
+    @PutMapping("/{id}/contrato/datos")
+    public ResponseEntity<ExpedienteResponseDto> guardarDatosContrato(
+            @PathVariable Long id, @Valid @RequestBody DatosContratoDto datos) {
+        return ResponseEntity.ok(expedienteService.actualizarDatosContrato(id, datos));
+    }
+
+    // GET y no POST: el PDF es una lectura de datos ya persistidos, sin cuerpo de request.
+    @GetMapping("/{id}/contrato")
+    public ResponseEntity<ByteArrayResource> generarContrato(@PathVariable Long id) {
+        return PdfResponseFactory.attachment(expedienteService.generarContrato(id), "contrato-locacion-" + id);
     }
 
     @GetMapping("/{id}/caratula")

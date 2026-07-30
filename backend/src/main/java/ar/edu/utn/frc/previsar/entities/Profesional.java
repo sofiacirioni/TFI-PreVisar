@@ -95,6 +95,18 @@ public class Profesional {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Título tal como debe leerse en documentos y pantallas: si el catálogo permite texto
+     * libre (la opción "Otro"), el título real es el que escribió el profesional. Sin esto
+     * los PDFs imprimían literalmente "Otro" en vez de, por ejemplo, "Ingeniero en Mecatrónica".
+     */
+    public String tituloDescripcion() {
+        return Boolean.TRUE.equals(titulo.getPermiteTextoLibre())
+                && tituloOtroDescripcion != null && !tituloOtroDescripcion.isBlank()
+                ? tituloOtroDescripcion
+                : titulo.getNombre();
+    }
+
 //    @Override
 //    public boolean equals(Object o) {
 //        if (this == o) return true;

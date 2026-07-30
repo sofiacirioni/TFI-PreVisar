@@ -44,6 +44,9 @@ public class Expediente {
     @Column(name = "honorarios_referenciales", precision = 15, scale = 2)
     private BigDecimal honorariosReferenciales;
 
+    @Embedded
+    private DatosContrato datosContrato;
+
     @Column(name = "activo", nullable = false)
     private boolean activo = true;
 
@@ -54,4 +57,14 @@ public class Expediente {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    /**
+     * Nunca devuelve null: Hibernate deja el embebido en null cuando todas sus columnas
+     * están vacías (expedientes viejos o sin contrato completado), y así quien lo lee no
+     * tiene que preguntarlo. Devuelve una instancia nueva, no la guarda: para modificar
+     * los datos se reemplaza el embebido completo con setDatosContrato().
+     */
+    public DatosContrato getDatosContrato() {
+        return datosContrato != null ? datosContrato : new DatosContrato();
+    }
 }

@@ -1,3 +1,5 @@
+import { DatosContrato } from './datos-contrato.model';
+
 export type EstadoExpediente = 'BORRADOR' | 'EN_PROCESO';
 
 // Estado del arancel derivado de los pagos (espeja ar.edu.utn.frc.previsar.enums.EstadoArancel).
@@ -29,6 +31,8 @@ export interface ExpedienteResponse {
   especialidadId: number | null;
   especialidadNombre: string | null;
   honorariosReferenciales: number | null;
+  /** Campos del contrato ya guardados; null en expedientes sin contrato completado. */
+  datosContrato: DatosContrato | null;
   estadoArancel: EstadoArancel;
   createdAt: string;
   updatedAt: string;
