@@ -120,6 +120,9 @@ export class ExpedienteArmado {
     this.refresh.update((n) => n + 1);
   }
 
+  /** Último expediente que llegó a cargarse: distingue "primera carga" de "refresco". */
+  private ultimoIdCargado: number | null = null;
+
   // Id del expediente que reemite ante cada recarga, para refrescar documentos
   // cargados y validación a la vez (subida/baja/revalidación).
   private readonly expedienteId$ = combineLatest([
@@ -378,8 +381,15 @@ export class ExpedienteArmado {
     // refrescaba documentos y validación pero NO el expediente, y el estado del
     // arancel (el chip) quedaba viejo hasta recargar la página entera.
     this.expedienteId$.pipe(
-      switchMap((id) =>
-        this.expedienteService.obtener(id).pipe(
+      switchMap((id) => {
+        // Solo la primera carga de un expediente muestra el esqueleto. Los
+        // refrescos (resync del pago cada 2,5s, vuelta a la pestaña, subida de
+        // archivo) mantienen la vista montada y actualizan en silencio: con el
+        // startWith incondicional que había antes, la pantalla parpadeaba
+        // entera en cada tick.
+        const esOtroExpediente = this.ultimoIdCargado !== id;
+        this.ultimoIdCargado = id;
+        return this.expedienteService.obtener(id).pipe(
           switchMap((exp) => {
             // Sin tipo de tarea o sin provincia no hay estructura que pedir.
             // Se usa la estructura scopeada al expediente: incluye ranuras retiradas de
@@ -392,10 +402,11 @@ export class ExpedienteArmado {
               map((est): Vm => ({ status: 'ok', expediente: exp, secciones: est.secciones })),
             );
           }),
-          startWith({ status: 'loading' } as Vm),
+          // El esqueleto solo en la primera carga de este expediente.
+          esOtroExpediente ? startWith({ status: 'loading' } as Vm) : (o$: Observable<Vm>) => o$,
           catchError((error) => of({ status: 'error', error } as Vm)),
-        ),
-      ),
+        );
+      }),
     ),
     { initialValue: { status: 'loading' } as Vm },
   );

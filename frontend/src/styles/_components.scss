@@ -75,6 +75,16 @@
   }
 }
 
+/* Campos que se guardan en mayúsculas (CPA): se muestran así mientras se tipea,
+   sin tocar el valor del control. */
+.input-mayusculas {
+  text-transform: uppercase;
+
+  &::placeholder {
+    text-transform: none;
+  }
+}
+
 /* ---------- Encabezado de página ----------
    Diez features tenían su propio `page-header`; de ahí que el título arrancara
    en una x distinta en cada pantalla. */

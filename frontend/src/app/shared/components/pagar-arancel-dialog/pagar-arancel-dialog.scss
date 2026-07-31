@@ -6,11 +6,18 @@
 .pagar__opciones {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
 
   button {
     justify-content: flex-start;
-    height: 48px;
+    height: 52px;
+    padding-inline: var(--space-5);
+
+    /* El icono necesita separarse del label: sin esto quedaban pegados. */
+    mat-icon {
+      margin-right: var(--space-4);
+    }
   }
 }
 

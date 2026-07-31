@@ -77,9 +77,12 @@ export class ObraForm implements OnInit {
     barrio: ['', [Validators.maxLength(100)]],
     localidad: ['', [Validators.required, Validators.maxLength(100)]],
     provinciaId: [null as number | null, [Validators.required]],
+    // El CPA se guarda en mayúsculas (ver el toUpperCase del submit), pero se
+    // acepta como venga tipeado: exigir [A-Z] rechazaba "x5000abc", que es como
+    // se escribe en la práctica, y el error no explicaba por qué.
     codigoPostal: [
       '',
-      [Validators.required, Validators.pattern(/^[A-Z0-9]{4,10}$/)],
+      [Validators.required, Validators.pattern(/^[A-Za-z0-9]{4,10}$/)],
     ],
 
     // Datos catastrales (opcionales)

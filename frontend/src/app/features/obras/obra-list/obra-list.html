@@ -5,10 +5,14 @@
       <p class="subtitle">Inmuebles donde realizás tus tareas profesionales</p>
     </div>
 
-    <button mat-flat-button class="cta-button" (click)="irANueva()">
-      <mat-icon svgIcon="add"></mat-icon>
-      Nueva obra
-    </button>
+    <!-- Con la lista vacía el CTA vive en el estado vacío, que es más contextual.
+         Tenerlo en los dos lados era redundante. -->
+    @if (cargando() || obras().length > 0) {
+      <button mat-flat-button class="cta-button" (click)="irANueva()">
+        <mat-icon svgIcon="add"></mat-icon>
+        Nueva obra
+      </button>
+    }
   </header>
 
   @if (cargando()) {
@@ -23,21 +27,24 @@
       <button mat-button (click)="cargarObras()">Reintentar</button>
     </div>
   } @else {
-    <mat-form-field appearance="outline" class="buscador">
-      <mat-label>Buscar por designación, comitente, dirección o localidad</mat-label>
-      <mat-icon matPrefix svgIcon="search"></mat-icon>
-      <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
-      @if (filtroControl.value) {
-        <button
-          matSuffix
-          mat-icon-button
-          aria-label="Limpiar búsqueda"
-          (click)="filtroControl.setValue('')"
-        >
-          <mat-icon svgIcon="close"></mat-icon>
-        </button>
-      }
-    </mat-form-field>
+    <!-- Buscador: sin obras cargadas no hay nada que filtrar. -->
+    @if (obras().length > 0) {
+      <mat-form-field appearance="outline" class="buscador">
+        <mat-label>Buscar por designación, comitente, dirección o localidad</mat-label>
+        <mat-icon matPrefix svgIcon="search"></mat-icon>
+        <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
+        @if (filtroControl.value) {
+          <button
+            matSuffix
+            mat-icon-button
+            aria-label="Limpiar búsqueda"
+            (click)="filtroControl.setValue('')"
+          >
+            <mat-icon svgIcon="close"></mat-icon>
+          </button>
+        }
+      </mat-form-field>
+    }
 
     @if (obrasFiltradas().length === 0) {
       @if (obras().length === 0) {

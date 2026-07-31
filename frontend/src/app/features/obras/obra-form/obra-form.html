@@ -167,8 +167,13 @@
 
               <mat-form-field appearance="outline">
                 <mat-label>Código postal</mat-label>
-                <input matInput formControlName="codigoPostal" placeholder="X5000HCD" />
-                <mat-hint>4 a 10 caracteres alfanuméricos</mat-hint>
+                <input
+                  matInput
+                  class="input-mayusculas"
+                  formControlName="codigoPostal"
+                  placeholder="X5000HCD"
+                />
+                <mat-hint>4 a 10 letras o números</mat-hint>
                 @if (
                   form.controls.codigoPostal.touched && form.controls.codigoPostal.errors;
                   as e

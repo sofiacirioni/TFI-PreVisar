@@ -5,10 +5,14 @@
       <p class="subtitle">Tus expedientes técnicos en borrador y completados</p>
     </div>
 
-    <button mat-flat-button class="cta-button" (click)="irANuevo()">
-      <mat-icon svgIcon="add"></mat-icon>
-      Nuevo expediente
-    </button>
+    <!-- Con la lista vacía el CTA vive en el estado vacío, que es más contextual.
+         Tenerlo en los dos lados era redundante. -->
+    @if (cargando() || expedientes().length > 0) {
+      <button mat-flat-button class="cta-button" (click)="irANuevo()">
+        <mat-icon svgIcon="add"></mat-icon>
+        Nuevo expediente
+      </button>
+    }
   </header>
 
   @if (cargando()) {
@@ -23,22 +27,24 @@
       <button mat-button (click)="cargarExpedientes()">Reintentar</button>
     </div>
   } @else {
-    <!-- Buscador -->
-    <mat-form-field appearance="outline" class="buscador">
-      <mat-label>Buscar por nombre, comitente, obra o tarea</mat-label>
-      <mat-icon matPrefix svgIcon="search"></mat-icon>
-      <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
-      @if (filtroControl.value) {
-        <button
-          matSuffix
-          mat-icon-button
-          aria-label="Limpiar búsqueda"
-          (click)="filtroControl.setValue('')"
-        >
-          <mat-icon svgIcon="close"></mat-icon>
-        </button>
-      }
-    </mat-form-field>
+    <!-- Buscador: sin expedientes cargados no hay nada que filtrar. -->
+    @if (expedientes().length > 0) {
+      <mat-form-field appearance="outline" class="buscador">
+        <mat-label>Buscar por nombre, comitente, obra o tarea</mat-label>
+        <mat-icon matPrefix svgIcon="search"></mat-icon>
+        <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
+        @if (filtroControl.value) {
+          <button
+            matSuffix
+            mat-icon-button
+            aria-label="Limpiar búsqueda"
+            (click)="filtroControl.setValue('')"
+          >
+            <mat-icon svgIcon="close"></mat-icon>
+          </button>
+        }
+      </mat-form-field>
+    }
 
     <!-- Lista vacía o tabla -->
     @if (expedientesFiltrados().length === 0) {

@@ -50,8 +50,17 @@
   color: var(--warning-text);
   border-color: var(--warning-border);
 }
+/* La barra venía pegada al header; necesita aire propio para leerse como un
+   bloque aparte y no como parte del título. */
+.armado-header + mat-progress-bar,
+mat-progress-bar.mat-mdc-progress-bar {
+  margin-top: var(--space-6);
+  border-radius: var(--radius-pill);
+}
+
 .progreso-label {
-  color: var(--mat-sys-on-surface-variant);
+  margin: var(--space-3) 0 var(--space-6);
+  color: var(--text-muted);
   font-size: var(--text-md);
 }
 

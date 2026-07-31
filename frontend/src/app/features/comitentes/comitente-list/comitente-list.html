@@ -5,10 +5,14 @@
       <p class="subtitle">Personas o empresas que te encomiendan tareas profesionales</p>
     </div>
 
-    <button mat-flat-button class="cta-button" (click)="irANuevo()">
-      <mat-icon svgIcon="add"></mat-icon>
-      Nuevo comitente
-    </button>
+    <!-- Con la lista vacía el CTA vive en el estado vacío, que es más contextual.
+         Tenerlo en los dos lados era redundante. -->
+    @if (cargando() || comitentes().length > 0) {
+      <button mat-flat-button class="cta-button" (click)="irANuevo()">
+        <mat-icon svgIcon="add"></mat-icon>
+        Nuevo comitente
+      </button>
+    }
   </header>
 
   @if (cargando()) {
@@ -23,8 +27,9 @@
       <button mat-button (click)="cargarComitentes()">Reintentar</button>
     </div>
   } @else {
-    <!-- Buscador -->
-    <mat-form-field appearance="outline" class="buscador">
+    <!-- Buscador: sin comitentes cargados no hay nada que filtrar. -->
+    @if (comitentes().length > 0) {
+      <mat-form-field appearance="outline" class="buscador">
       <mat-label>Buscar por nombre, DNI/CUIT o email</mat-label>
       <mat-icon matPrefix svgIcon="search"></mat-icon>
       <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
@@ -38,7 +43,8 @@
           <mat-icon svgIcon="close"></mat-icon>
         </button>
       }
-    </mat-form-field>
+      </mat-form-field>
+    }
 
     <!-- Lista vacía o tabla -->
     @if (comitentesFiltrados().length === 0) {

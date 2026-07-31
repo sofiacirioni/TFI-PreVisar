@@ -139,7 +139,7 @@
   border-radius: var(--radius-xs);
   border: 1px dashed var(--border-default);
 
-  mat-icon {
+  > mat-icon {
     --icon-size: 40px;
     width: 40px;
     height: 40px;

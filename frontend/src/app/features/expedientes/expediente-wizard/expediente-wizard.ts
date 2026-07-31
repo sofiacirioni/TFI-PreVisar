@@ -101,7 +101,9 @@ export class ExpedienteWizard implements OnInit {
     barrio: ['', [Validators.maxLength(100)]],
     localidad: ['', [Validators.required, Validators.maxLength(100)]],
     provinciaId: [null as number | null, [Validators.required]],
-    codigoPostal: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{4,10}$/)]],
+    // El CPA se guarda en mayúsculas, pero se acepta como venga tipeado: exigir
+    // [A-Z] rechazaba "x5000abc", que es como se escribe en la práctica.
+    codigoPostal: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{4,10}$/)]],
     circunscripcion: ['', [Validators.pattern(/^\d{1,10}$/)]],
     seccion: ['', [Validators.pattern(/^\d{1,10}$/)]],
     manzana: ['', [Validators.pattern(/^\d{1,10}$/)]],
@@ -463,7 +465,7 @@ export class ExpedienteWizard implements OnInit {
       barrio: raw.barrio.trim() || undefined,
       localidad: raw.localidad.trim(),
       provinciaId: raw.provinciaId!,
-      codigoPostal: raw.codigoPostal.trim(),
+      codigoPostal: raw.codigoPostal.trim().toUpperCase(),
       circunscripcion: raw.circunscripcion.trim() || undefined,
       seccion: raw.seccion.trim() || undefined,
       manzana: raw.manzana.trim() || undefined,
