@@ -5,7 +5,7 @@
   </div>
 } @else if (errorCarga(); as error) {
   <div class="error-banner">
-    <mat-icon>error_outline</mat-icon>
+    <mat-icon svgIcon="error_outline"></mat-icon>
     <span>{{ error }}</span>
     <button mat-button (click)="volver()">Volver al listado</button>
   </div>
@@ -18,7 +18,7 @@
         matTooltip="Volver al listado"
         aria-label="Volver al listado"
       >
-        <mat-icon>arrow_back</mat-icon>
+        <mat-icon svgIcon="arrow_back"></mat-icon>
       </button>
       <div class="title-wrap">
         <h1>{{ c.nombreRazonSocial }}</h1>
@@ -30,7 +30,7 @@
         </mat-chip>
       </div>
       <button mat-flat-button class="cta-editar" (click)="irAEditar()">
-        <mat-icon>edit</mat-icon>
+        <mat-icon svgIcon="edit"></mat-icon>
         Editar
       </button>
     </header>
@@ -71,14 +71,14 @@
           <div class="section-header">
             <h3>Obras asociadas</h3>
             <button mat-stroked-button (click)="nuevaObra()">
-              <mat-icon>add</mat-icon>
+              <mat-icon svgIcon="add"></mat-icon>
               Nueva obra
             </button>
           </div>
 
           @if (obrasOrdenadas().length === 0) {
             <div class="empty-state">
-              <mat-icon>construction</mat-icon>
+              <mat-icon svgIcon="construction"></mat-icon>
               <h4>Este comitente todavía no tiene obras</h4>
               <p>Cuando cargues una obra para este comitente, vas a verla acá.</p>
             </div>
@@ -111,7 +111,7 @@
                       aria-label="Editar obra"
                       (click)="verObra(o)"
                     >
-                      <mat-icon>edit</mat-icon>
+                      <mat-icon svgIcon="edit"></mat-icon>
                     </button>
                   </td>
                 </ng-container>

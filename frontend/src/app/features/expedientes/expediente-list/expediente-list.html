@@ -84,12 +84,13 @@
           <ng-container matColumnDef="estado">
             <th mat-header-cell *matHeaderCellDef>Estado</th>
             <td mat-cell *matCellDef="let e">
-              <mat-chip
-                class="chip-estado"
-                [class.chip-proceso]="e.estado === 'EN_PROCESO'"
+              <span
+                class="status-chip"
+                [class.status-chip--process]="e.estado === 'EN_PROCESO'"
+                [class.status-chip--draft]="e.estado !== 'EN_PROCESO'"
               >
                 {{ e.estado === 'EN_PROCESO' ? 'En proceso' : 'Borrador' }}
-              </mat-chip>
+              </span>
             </td>
           </ng-container>
 

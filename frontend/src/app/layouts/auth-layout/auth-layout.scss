@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   padding: 32px 16px;
-  background: linear-gradient(180deg, #f5f7fa 0%, #e8eef3 100%);
+  background: linear-gradient(180deg, var(--surface-sunken) 0%, var(--surface-sunken) 100%);
 }
 
 .auth-brand {
@@ -13,7 +13,7 @@
   margin-bottom: 32px;
 
   h1 {
-    font-size: 2.5rem;
+    font-size: var(--text-5xl);
     font-weight: 500;
     margin: 0 0 8px 0;
     color: var(--accent); // cyan-800 aprox, alineado con el tema
@@ -22,8 +22,8 @@
 
   p {
     margin: 0;
-    color: #5a6b78;
-    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-size: var(--text-lg);
   }
 }
 
@@ -34,6 +34,6 @@
 
 .auth-footer {
   margin-top: 48px;
-  font-size: 0.8rem;
-  color: #8a99a8;
+  font-size: var(--text-sm);
+  color: var(--text-subtle);
 }

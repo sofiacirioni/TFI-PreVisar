@@ -11,7 +11,7 @@
   <header class="armado-header">
     <div class="armado-header__info">
       <a mat-button routerLink="/expedientes">
-        <mat-icon>arrow_back</mat-icon>
+        <mat-icon svgIcon="arrow_back"></mat-icon>
         Expedientes
       </a>
       <h1>{{ v.expediente.nombre ?? 'Expediente' }}</h1>
@@ -25,19 +25,19 @@
       @switch (v.expediente.estadoArancel) {
         @case ('APROBADO') {
           <span class="chip-arancel chip-arancel--pagado">
-            <mat-icon>check_circle</mat-icon>
+            <mat-icon svgIcon="check_circle"></mat-icon>
             Arancel pagado
           </span>
         }
         @case ('PENDIENTE') {
           <span class="chip-arancel chip-arancel--pendiente">
-            <mat-icon>schedule</mat-icon>
+            <mat-icon svgIcon="schedule"></mat-icon>
             Pago pendiente
           </span>
         }
         @default {
           <button mat-stroked-button color="primary" (click)="abrirPago()">
-            <mat-icon>payments</mat-icon>
+            <mat-icon svgIcon="payments"></mat-icon>
             Pagar arancel
           </button>
         }
@@ -51,7 +51,7 @@
         @if (generando()) {
           <mat-spinner diameter="20" />
         } @else {
-          <mat-icon>download</mat-icon>
+          <mat-icon svgIcon="download"></mat-icon>
         }
         {{ generando() ? 'Compilando…' : 'Descargar expediente' }}
       </button>
@@ -80,14 +80,15 @@
                 [class.activo]="doc.id === docActivo()?.id"
                 (click)="seleccionarDoc(doc.id)"
               >
-                <mat-icon [class.con-obs]="conObservacion(doc.id)">
-                  {{
+                <mat-icon
+                  [class.con-obs]="conObservacion(doc.id)"
+                  [svgIcon]="
                     conObservacion(doc.id)
                       ? 'warning'
                       : cargados().has(doc.id)
                         ? 'check_circle'
                         : 'radio_button_unchecked'
-                  }}
+                  ">
                 </mat-icon>
                 <span class="indice-doc__nombre">{{ doc.nombre }}</span>
                 @if (doc.desactivado) {
@@ -106,7 +107,7 @@
         <section class="hoja">
           @if (doc.desactivado) {
             <div class="hoja__aviso-desactivado">
-              <mat-icon>warning_amber</mat-icon>
+              <mat-icon svgIcon="warning_amber"></mat-icon>
               <span>
                 Este documento fue retirado de la estructura vigente. El archivo que cargaste se
                 conserva, pero revisá si sigue siendo necesario.
@@ -115,9 +116,12 @@
           }
           <div class="hoja__toolbar">
             <div class="hoja__titulo">
-              <mat-icon class="hoja__estado" [class.cargado]="cargados().has(doc.id)">
-                {{ cargados().has(doc.id) ? 'check_circle' : 'radio_button_unchecked' }}
-              </mat-icon>
+              <mat-icon
+                class="hoja__estado"
+                [class.cargado]="cargados().has(doc.id)"
+                [svgIcon]="
+                  cargados().has(doc.id) ? 'check_circle' : 'radio_button_unchecked'
+                "></mat-icon>
               <span class="hoja__nombre">{{ doc.nombre }}</span>
               <mat-chip-set>
                 <mat-chip>{{ doc.obligatorio ? 'Obligatorio' : 'Opcional' }}</mat-chip>
@@ -130,7 +134,7 @@
                 (click)="fileInput.click()"
                 [disabled]="subiendo() === doc.id"
               >
-                <mat-icon>upload</mat-icon>
+                <mat-icon svgIcon="upload"></mat-icon>
                 {{
                   archivosDe(doc.id).length
                     ? doc.permiteMultiples
@@ -149,10 +153,10 @@
 
               @if (archivoActivo(); as a) {
                 <button mat-icon-button (click)="descargar(a)" matTooltip="Descargar">
-                  <mat-icon>download</mat-icon>
+                  <mat-icon svgIcon="download"></mat-icon>
                 </button>
                 <button mat-icon-button (click)="eliminar(a)" matTooltip="Eliminar">
-                  <mat-icon>delete</mat-icon>
+                  <mat-icon svgIcon="delete"></mat-icon>
                 </button>
               }
 
@@ -166,7 +170,7 @@
                     (click)="regenerarPreview()"
                     [disabled]="generandoPreview()"
                   >
-                    <mat-icon>autorenew</mat-icon> Regenerar
+                    <mat-icon svgIcon="autorenew"></mat-icon> Regenerar
                   </button>
                 }
                 <button
@@ -174,7 +178,7 @@
                   (click)="descargarGenerada()"
                   [disabled]="generandoPreview()"
                 >
-                  <mat-icon>picture_as_pdf</mat-icon> Descargar
+                  <mat-icon svgIcon="picture_as_pdf"></mat-icon> Descargar
                 </button>
                 @if (generandoPreview()) {
                   <mat-spinner diameter="20" />
@@ -196,7 +200,7 @@
                   [class.activo]="a.id === archivoActivo()?.id"
                   (click)="seleccionarArchivo(a)"
                 >
-                  <mat-icon>description</mat-icon>
+                  <mat-icon svgIcon="description"></mat-icon>
                   <span class="hoja__archivo-nombre">{{ a.nombreOriginal }}</span>
                   <small>{{ a.tamanoBytes / 1024 | number: '1.0-0' }} KB</small>
                 </button>
@@ -220,7 +224,7 @@
               </div>
             } @else if (esGenerable()) {
               <div class="hoja__placeholder">
-                <mat-icon>picture_as_pdf</mat-icon>
+                <mat-icon svgIcon="picture_as_pdf"></mat-icon>
                 <h2>{{ doc.nombre }}</h2>
                 <!-- La previsualización se genera automáticamente: si se llega acá es
                      porque el pedido falló (faltan datos del expediente, o hubo un error). -->
@@ -231,7 +235,7 @@
               </div>
             } @else {
               <div class="hoja__placeholder">
-                <mat-icon>upload_file</mat-icon>
+                <mat-icon svgIcon="upload_file"></mat-icon>
                 <h2>{{ doc.nombre }}</h2>
                 <p class="hoja__hint">Subí el documento para previsualizarlo acá.</p>
               </div>
@@ -249,7 +253,7 @@
                 <mat-panel-title>Datos del expediente</mat-panel-title>
               </mat-expansion-panel-header>
               <button mat-stroked-button class="datos-editar" (click)="editarDatos(exp.id)">
-                <mat-icon>edit</mat-icon>
+                <mat-icon svgIcon="edit"></mat-icon>
                 Editar datos
               </button>
               <dl class="datos-lista">
@@ -345,7 +349,7 @@
                   @if (guardandoContrato()) {
                     <mat-spinner diameter="18" />
                   } @else {
-                    <mat-icon>save</mat-icon>
+                    <mat-icon svgIcon="save"></mat-icon>
                   }
                   Guardar y actualizar
                 </button>
@@ -359,7 +363,7 @@
             <h3>Observaciones</h3>
             <div class="obs-actions">
               <button mat-icon-button (click)="recargar()" matTooltip="Revalidar">
-                <mat-icon>refresh</mat-icon>
+                <mat-icon svgIcon="refresh"></mat-icon>
               </button>
               <button
                 mat-stroked-button
@@ -368,10 +372,13 @@
                 [matTooltip]="'Analiza solo: ' + (docActivo()?.nombre ?? 'el documento seleccionado')"
               >
                 @if (iaEstadoActivo() === 'EN_PROGRESO') {
-                  <mat-spinner diameter="16" /> Analizando…
+                  <mat-spinner diameter="16" />
                 } @else {
-                  <mat-icon>auto_awesome</mat-icon> Analizar este documento
+                  <mat-icon svgIcon="auto_awesome"></mat-icon>
                 }
+                <span>{{
+                  iaEstadoActivo() === 'EN_PROGRESO' ? 'Analizando…' : 'Analizar documento'
+                }}</span>
               </button>
             </div>
           </div>
@@ -383,26 +390,26 @@
                 [class.activo]="filtroOrigen().has(o.id)"
                 (click)="toggleOrigen(o.id)"
               >
-                <mat-icon>{{ o.icon }}</mat-icon> {{ o.label }}
+                <mat-icon [svgIcon]="o.icon"></mat-icon> {{ o.label }}
               </button>
             }
           </div>
 
           @if (generalesFiltradas().length === 0 && documentosConObsFiltrados().length === 0) {
             <div class="obs ok">
-              <mat-icon>check_circle</mat-icon><span>Sin observaciones.</span>
+              <mat-icon svgIcon="check_circle"></mat-icon><span>Sin observaciones.</span>
             </div>
           } @else {
             @if (generalesFiltradas().length) {
               <h4>Generales</h4>
               @for (o of generalesFiltradas(); track o.codigo + o.mensaje) {
                 <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
-                  <mat-icon class="sev">{{
-                    o.nivel === 'ADVERTENCIA' ? 'warning' : 'info'
-                  }}</mat-icon>
+                  <mat-icon
+                    class="sev"
+                    [svgIcon]="o.nivel === 'ADVERTENCIA' ? 'warning' : 'info'"></mat-icon>
                   <span class="obs-msg">{{ o.mensaje }}</span>
                   <span class="chip-origen mini"
-                    ><mat-icon>{{ origenInfo(o.origen).icon }}</mat-icon
+                    ><mat-icon [svgIcon]="origenInfo(o.origen).icon"></mat-icon
                     >{{ origenInfo(o.origen).label }}</span
                   >
                 </div>
@@ -412,12 +419,12 @@
               <h4>{{ d.nombreOriginal }}</h4>
               @for (o of d.observaciones; track o.codigo + o.mensaje) {
                 <div class="obs" [class.adv]="o.nivel === 'ADVERTENCIA'">
-                  <mat-icon class="sev">{{
-                    o.nivel === 'ADVERTENCIA' ? 'warning' : 'info'
-                  }}</mat-icon>
+                  <mat-icon
+                    class="sev"
+                    [svgIcon]="o.nivel === 'ADVERTENCIA' ? 'warning' : 'info'"></mat-icon>
                   <span class="obs-msg">{{ o.mensaje }}</span>
                   <span class="chip-origen mini"
-                    ><mat-icon>{{ origenInfo(o.origen).icon }}</mat-icon
+                    ><mat-icon [svgIcon]="origenInfo(o.origen).icon"></mat-icon
                     >{{ origenInfo(o.origen).label }}</span
                   >
                 </div>
@@ -435,7 +442,7 @@
                de uno que falló en silencio. -->
           @if (iaEstadoActivo() === 'COMPLETADO') {
             <p class="ia-ok">
-              <mat-icon>check_circle</mat-icon>
+              <mat-icon svgIcon="check_circle"></mat-icon>
               {{ iaDetalleActivo() || 'Análisis completado.' }}
             </p>
           }

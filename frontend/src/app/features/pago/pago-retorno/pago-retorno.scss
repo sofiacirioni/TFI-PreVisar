@@ -13,20 +13,20 @@
   max-width: 28rem;
   width: 100%;
   padding: 2.5rem 2rem;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
-  background: var(--mat-sys-surface, #fff);
+  background: var(--surface-card);
 
   &__icono {
     width: 64px;
     height: 64px;
-    font-size: 64px;
+    --icon-size: 64px;
     line-height: 64px;
   }
 
   &__titulo {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
   }
 
   &__mensaje {
@@ -36,7 +36,7 @@
 
   &__cerrar {
     margin: 0.5rem 0 0;
-    font-size: 0.9rem;
+    font-size: var(--text-md);
     color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
   }
 
@@ -50,7 +50,7 @@
       display: flex;
       justify-content: space-between;
       gap: 1rem;
-      font-size: 0.875rem;
+      font-size: var(--text-md);
     }
 
     dt {
@@ -67,11 +67,11 @@
 
 // Acento por estado (solo el ícono; el resto queda neutro y sobrio).
 .pago--exito .pago-card__icono {
-  color: var(--mat-sys-primary, #2e7d32);
+  color: var(--success-text);
 }
 .pago--pendiente .pago-card__icono {
-  color: #b26a00;
+  color: var(--warning-text);
 }
 .pago--error .pago-card__icono {
-  color: var(--mat-sys-error, #c62828);
+  color: var(--danger-text);
 }

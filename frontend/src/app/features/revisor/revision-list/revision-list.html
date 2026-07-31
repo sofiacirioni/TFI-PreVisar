@@ -64,18 +64,18 @@
         <ng-container matColumnDef="estado">
           <th mat-header-cell *matHeaderCellDef>Estado</th>
           <td mat-cell *matCellDef="let r">
-            <mat-chip
-              class="chip-estado"
-              [class.chip-progreso]="r.estado === 'EN_PROGRESO'"
-              [class.chip-ok]="r.estado === 'COMPLETADO'"
-              [class.chip-error]="r.estado === 'ERROR'"
+            <span
+              class="status-chip"
+              [class.status-chip--process]="r.estado === 'EN_PROGRESO'"
+              [class.status-chip--success]="r.estado === 'COMPLETADO'"
+              [class.status-chip--danger]="r.estado === 'ERROR'"
             >
               @switch (r.estado) {
                 @case ('EN_PROGRESO') { Analizando }
                 @case ('COMPLETADO') { Completado }
                 @case ('ERROR') { Error }
               }
-            </mat-chip>
+            </span>
           </td>
         </ng-container>
 

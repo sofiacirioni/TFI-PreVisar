@@ -5,26 +5,22 @@
   // ===== Variantes =====
 
   &[data-variant='destructive'] {
-    .dialog-icon { color: #c62828; }
+    .dialog-icon { color: var(--danger-text); }
     .btn-confirmar {
-      background-color: #c62828 !important;
-      color: #ffffff !important;
+      background-color: var(--danger) !important;
+      color: var(--text-on-accent) !important;
     }
   }
 
   &[data-variant='warning'] {
-    .dialog-icon { color: #ef6c00; }
+    .dialog-icon { color: var(--accent-text); }
     .btn-confirmar {
-      background-color: #ef6c00 !important;
-      color: #ffffff !important;
     }
   }
 
   &[data-variant='info'] {
     .dialog-icon { color: var(--accent); }
     .btn-confirmar {
-      background-color: var(--accent) !important;
-      color: #ffffff !important;
     }
   }
 }
@@ -37,14 +33,14 @@
 
   h2 {
     margin: 0;
-    font-size: 1.15rem;
+    font-size: var(--text-xl);
     font-weight: 500;
-    color: #1a2733;
+    color: var(--text-strong);
   }
 }
 
 .dialog-icon {
-  font-size: 28px;
+  --icon-size: 28px;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
@@ -52,15 +48,15 @@
 
 .mensaje {
   margin: 0 0 8px;
-  color: #1a2733;
-  font-size: 0.95rem;
+  color: var(--text-strong);
+  font-size: var(--text-lg);
   line-height: 1.5;
 }
 
 .detalle {
   margin: 0;
-  color: #5a6b78;
-  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-size: var(--text-md);
   line-height: 1.4;
 }
 

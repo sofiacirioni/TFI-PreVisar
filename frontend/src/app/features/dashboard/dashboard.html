@@ -53,7 +53,11 @@
               <mat-icon class="card-icon" svgIcon="description"></mat-icon>
               <span class="card-label">{{ exp.tipoTareaCodigo || 'Borrador' }}</span>
               <span class="card-meta">{{ exp.updatedAt | date: 'dd/MM/yyyy' }}</span>
-              <span class="card-estado" [class.estado-proceso]="exp.estado === 'EN_PROCESO'">
+              <span
+                class="status-chip"
+                [class.status-chip--process]="exp.estado === 'EN_PROCESO'"
+                [class.status-chip--draft]="exp.estado !== 'EN_PROCESO'"
+              >
                 {{ exp.estado === 'EN_PROCESO' ? 'En proceso' : 'Borrador' }}
               </span>
             </div>

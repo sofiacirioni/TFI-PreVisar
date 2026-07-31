@@ -20,16 +20,15 @@
     <nav class="sidebar-nav">
       @for (item of navItems(); track item.route) {
         <a
-          mat-list-item
           [routerLink]="item.route"
           routerLinkActive="activo"
           [matTooltip]="sidebarExpandido() ? '' : item.label"
           matTooltipPosition="right"
           class="nav-item"
         >
-          <mat-icon matListItemIcon [svgIcon]="item.icon"></mat-icon>
+          <mat-icon [svgIcon]="item.icon"></mat-icon>
           @if (sidebarExpandido()) {
-            <span matListItemTitle>{{ item.label }}</span>
+            <span class="nav-item__label">{{ item.label }}</span>
           }
         </a>
       }

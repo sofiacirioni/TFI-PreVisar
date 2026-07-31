@@ -192,7 +192,9 @@
   --sidebar-w:           248px;
   --sidebar-w-collapsed: 64px;
   --topbar-h:            60px;
-  --content-max:         1160px;
+  --content-max:         1160px;  /* listados, dashboard */
+  --content-medium:      920px;   /* vistas de detalle, perfil */
+  --content-narrow:      760px;   /* formularios, textos legales, ayuda */
   --container-pad:       32px;
 
   /* ---- Motion ---- */

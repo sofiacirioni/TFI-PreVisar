@@ -1,5 +1,5 @@
 .detail-page {
-  max-width: 1000px;
+  max-width: var(--content-medium);
   margin: 0 auto;
 }
 
@@ -18,9 +18,9 @@
 
     h1 {
       margin: 0;
-      font-size: 1.6rem;
+      font-size: var(--text-3xl);
       font-weight: 500;
-      color: #1a2733;
+      color: var(--text-strong);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -28,8 +28,6 @@
   }
 
   .cta-editar {
-    background-color: #ef6c00 !important;
-    color: #ffffff !important;
 
     mat-icon {
       margin-right: 4px;
@@ -38,15 +36,15 @@
 }
 
 .chip-tipo {
-  background-color: #e0f7fa !important;
-  color: #00838f !important;
-  font-size: 0.75rem !important;
+  background-color: var(--accent-soft) !important;
+  color: var(--accent-text) !important;
+  font-size: var(--text-xs) !important;
   height: 24px !important;
   font-weight: 500 !important;
 
   &.chip-juridica {
-    background-color: #fff3e0 !important;
-    color: #ef6c00 !important;
+    background-color: var(--warning-soft) !important;
+    color: var(--accent-text) !important;
   }
 }
 
@@ -57,8 +55,8 @@
 .info-section {
   h3 {
     margin: 0 0 16px;
-    color: #1a2733;
-    font-size: 1rem;
+    color: var(--text-strong);
+    font-size: var(--text-lg);
     font-weight: 500;
   }
 }
@@ -91,15 +89,15 @@
   }
 
   .label {
-    font-size: 0.78rem;
-    color: #5a6b78;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   .value {
-    color: #1a2733;
-    font-size: 0.95rem;
+    color: var(--text-strong);
+    font-size: var(--text-lg);
   }
 }
 
@@ -109,8 +107,8 @@
   align-items: center;
   gap: 12px;
   padding: 64px 16px;
-  color: #5a6b78;
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: var(--text-md);
 }
 
 .error-banner {
@@ -118,10 +116,10 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background-color: #fdecea;
-  color: #c62828;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  background-color: var(--danger-soft);
+  color: var(--danger-text);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-md);
   max-width: 1000px;
   margin: 24px auto;
 
@@ -137,35 +135,35 @@
 .empty-state {
   text-align: center;
   padding: 48px 24px;
-  background-color: #f7f9fb;
-  border-radius: 6px;
-  border: 1px dashed #d0d8e0;
+  background-color: var(--surface-sunken);
+  border-radius: var(--radius-xs);
+  border: 1px dashed var(--border-default);
 
   mat-icon {
-    font-size: 40px;
+    --icon-size: 40px;
     width: 40px;
     height: 40px;
-    color: #b0bac4;
+    color: var(--text-subtle);
     margin-bottom: 8px;
   }
 
   h4 {
     margin: 0 0 6px;
-    color: #1a2733;
+    color: var(--text-strong);
     font-weight: 500;
   }
 
   p {
     margin: 0;
-    color: #5a6b78;
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: var(--text-md);
   }
 }
 
 .tabla-wrap {
-  background-color: #ffffff;
-  border-radius: 6px;
-  border: 1px solid #e0e6eb;
+  background-color: var(--surface-card);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
   overflow: hidden;
 }
 
@@ -173,17 +171,17 @@
   width: 100%;
 
   th {
-    background-color: #f5f7fa;
-    color: #5a6b78;
+    background-color: var(--surface-sunken);
+    color: var(--text-muted);
     font-weight: 500;
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   td {
-    color: #1a2733;
-    font-size: 0.9rem;
+    color: var(--text-strong);
+    font-size: var(--text-md);
   }
 
   .col-acciones {
@@ -194,7 +192,7 @@
 
 .resumen-resultados {
   margin-top: 12px;
-  font-size: 0.85rem;
-  color: #5a6b78;
+  font-size: var(--text-md);
+  color: var(--text-muted);
   text-align: right;
 }

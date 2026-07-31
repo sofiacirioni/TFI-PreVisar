@@ -1,13 +1,13 @@
 .form-page {
-  max-width: 640px;
+  max-width: var(--content-narrow);
   margin: 0 auto;
 }
 
 .bloque-titulo {
   margin: 0 0 12px;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 500;
-  color: #1a2733;
+  color: var(--text-strong);
 }
 
 .page-header {
@@ -15,20 +15,20 @@
 
   h1 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: var(--text-3xl);
     font-weight: 500;
-    color: #1a2733;
+    color: var(--text-strong);
   }
 
   .subtitle {
     margin: 4px 0 0;
-    color: #5a6b78;
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: var(--text-md);
   }
 }
 
 .form-card {
-  background-color: #ffffff;
+  background-color: var(--surface-card);
 }
 
 .vigente {
@@ -37,33 +37,33 @@
   gap: 4px;
   padding: 16px;
   margin-bottom: 16px;
-  background-color: #f5f9fa;
-  border: 1px solid #cfe6ea;
-  border-radius: 8px;
+  background-color: var(--surface-sunken);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
 
   .vigente-label {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #5a6b78;
+    color: var(--text-muted);
   }
 
   .vigente-valor {
-    font-size: 1.6rem;
+    font-size: var(--text-3xl);
     font-weight: 600;
     color: var(--accent);
 
     &.sin-valor {
-      font-size: 1rem;
+      font-size: var(--text-lg);
       font-weight: 400;
       font-style: italic;
-      color: #5a6b78;
+      color: var(--text-muted);
     }
   }
 
   .vigente-desde {
-    font-size: 0.8rem;
-    color: #5a6b78;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
   }
 }
 
@@ -84,8 +84,6 @@
 }
 
 .submit-button {
-  background-color: #ef6c00 !important;
-  color: #ffffff !important;
   min-width: 140px;
   height: 40px;
 }
@@ -96,8 +94,8 @@
   align-items: center;
   gap: 12px;
   padding: 64px 16px;
-  color: #5a6b78;
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: var(--text-md);
 }
 
 .error-banner {
@@ -105,10 +103,10 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background-color: #fdecea;
-  color: #c62828;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  background-color: var(--danger-soft);
+  color: var(--danger-text);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-md);
 
   mat-icon {
     flex-shrink: 0;

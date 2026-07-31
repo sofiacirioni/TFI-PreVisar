@@ -42,23 +42,60 @@
   gap: var(--space-2);
 }
 
+// Anclas propias en vez de <a mat-list-item>: fuera de un <mat-nav-list> las
+// reglas internas de Material no aplican y el icono terminaba encima del texto.
 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 40px;
+  padding: 0 var(--space-4);
   border-radius: var(--radius-md);
-  margin: 0;
   color: var(--text-body);
+  font-size: var(--text-md);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  white-space: nowrap;
+
+  mat-icon {
+    color: var(--text-muted);
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &:hover:not(.activo) {
+    background-color: var(--surface-hover);
+    color: var(--text-strong);
+    text-decoration: none;
+
+    mat-icon {
+      color: var(--text-body);
+    }
+  }
 
   &.activo {
     background-color: var(--accent-soft);
     color: var(--accent-text);
+    font-weight: var(--fw-semibold);
 
     mat-icon {
       color: var(--accent);
     }
   }
 
-  &:hover:not(.activo) {
-    background-color: var(--surface-hover);
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
   }
+}
+
+// Colapsado: solo el icono, centrado.
+.sidebar.colapsado .nav-item {
+  justify-content: center;
+  padding: 0;
 }
 
 // ===== Topbar =====

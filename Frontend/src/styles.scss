@@ -4,6 +4,7 @@
 // ============================================================
 @use '@angular/material' as mat;
 @use './styles/tokens';
+@use './styles/components';
 
 // ---- Angular Material theme (structure + typography) --------
 // We keep the M3 engine for component structure and typography
@@ -174,36 +175,58 @@ a {
   &:hover { text-decoration: underline; }
 }
 
-// ---- Material Symbols (icon font kept from previous setup) ----
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'opsz' 24;
-}
-mat-icon {
-  font-family: 'Material Symbols Outlined' !important;
+// ---- Iconos: Lucide SVG (ver core/icons/lucide-icons.ts) ----
+// Todos los <mat-icon> usan svgIcon, así que no hay icon-font que cargar.
+// Fijamos la caja en 20px: el grid de Lucide es 24 y a tamaño completo los
+// iconos pesan demasiado al lado de un texto de 14px.
+// El tamaño sale de --icon-size para que un componente pueda agrandarlos
+// (ilustraciones de estado vacío) sin pelear con la especificidad.
+mat-icon.mat-icon {
+  --icon-size: 20px;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  font-size: var(--icon-size);
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 }
 
 // ============================================================
 // Material component polish (radii / shadows / accents per spec)
 // ============================================================
 
-// Buttons: 10px radius (design uses soft, not pill), accent fill
+// Buttons: 10px radius (design uses soft, not pill), accent fill.
+// Material 20 lee los tokens `--mat-button-*-container-shape`; los `--mdc-*`
+// que usábamos antes ya no se consultan, así que el radio caía al default
+// `--mat-sys-corner-full` (9999px) y los botones salían pill.
 .mat-mdc-button,
 .mat-mdc-outlined-button,
 .mat-mdc-unelevated-button,
-.mat-mdc-raised-button {
-  --mdc-filled-button-container-shape: var(--radius-md);
-  --mdc-outlined-button-container-shape: var(--radius-md);
-  --mdc-protected-button-container-shape: var(--radius-md);
-  --mdc-text-button-container-shape: var(--radius-md);
+.mat-mdc-raised-button,
+.mat-mdc-tonal-button {
+  --mat-button-filled-container-shape: var(--radius-md);
+  --mat-button-outlined-container-shape: var(--radius-md);
+  --mat-button-protected-container-shape: var(--radius-md);
+  --mat-button-text-container-shape: var(--radius-md);
+  --mat-button-tonal-container-shape: var(--radius-md);
   border-radius: var(--radius-md);
   letter-spacing: var(--tracking-snug);
   font-weight: var(--fw-semibold);
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
 }
 
 // Cards: white surface, subtle border + shadow, 14px radius
 .mat-mdc-card {
-  --mdc-elevated-card-container-shape: var(--radius-lg);
-  --mdc-outlined-card-container-shape: var(--radius-lg);
+  --mat-card-elevated-container-shape: var(--radius-lg);
+  --mat-card-outlined-container-shape: var(--radius-lg);
+  --mat-card-filled-container-shape: var(--radius-lg);
   border-radius: var(--radius-lg);
   background: var(--surface-card);
   border: var(--border-width) solid var(--border-subtle);
@@ -212,29 +235,59 @@ mat-icon {
 
 // Dialogs: large panel radius + soft xl shadow
 .mat-mdc-dialog-container {
-  --mdc-dialog-container-shape: var(--radius-xl);
+  --mat-dialog-container-shape: var(--radius-xl);
   .mdc-dialog__surface {
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl) !important;
   }
 }
 
-// Menus: medium radius, soft shadow
+// Menus / autocompletes / tooltips: medium radius, soft shadow
 .mat-mdc-menu-panel {
-  border-radius: var(--radius-md) !important;
+  --mat-menu-container-shape: var(--radius-md);
   box-shadow: var(--shadow-lg) !important;
   border: var(--border-width) solid var(--border-subtle);
+}
+.mat-mdc-autocomplete-panel {
+  --mat-autocomplete-container-shape: var(--radius-md);
+  box-shadow: var(--shadow-lg) !important;
+  border: var(--border-width) solid var(--border-subtle);
+}
+.mat-mdc-tooltip {
+  --mat-tooltip-container-shape: var(--radius-sm);
 }
 
 // Form fields: comfortable density, soft corners
 .mat-mdc-form-field {
-  --mdc-outlined-text-field-container-shape: var(--radius-md);
+  --mat-form-field-outlined-container-shape: var(--radius-md);
+  --mat-form-field-filled-container-shape: var(--radius-md);
   width: 100%;
 }
 
 // Pills / chips
 .mat-mdc-chip {
-  --mdc-chip-container-shape-radius: var(--radius-pill);
+  --mat-chip-container-shape-radius: var(--radius-pill);
+}
+
+// Icon buttons: cuadrado redondeado, no círculo (acompaña el radio de 10px)
+.mat-mdc-icon-button {
+  --mat-icon-button-container-shape: var(--radius-sm);
+}
+
+// Snackbars y bottom sheets
+.mat-mdc-snack-bar-container {
+  --mat-snack-bar-container-shape: var(--radius-md);
+}
+
+// Listas (sidebar): el indicador activo sigue el radio de los inputs
+.mat-mdc-list-item {
+  --mat-list-list-item-container-shape: var(--radius-md);
+  --mat-list-active-indicator-shape: var(--radius-md);
+}
+
+// Expansion panels
+.mat-expansion-panel {
+  --mat-expansion-container-shape: var(--radius-lg);
 }
 
 // Focus ring (accessible, always-on accent ring)
@@ -244,6 +297,59 @@ mat-icon {
 .mat-mdc-input-element:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
+}
+
+// ============================================================
+// Movimiento
+// La app tenía 3 transiciones en 27 hojas: cada hover y cada foco saltaba de
+// golpe, que es de dónde venía buena parte de la sensación de "tosco". Estas
+// reglas dan la respuesta base; los componentes solo agregan lo suyo.
+// ============================================================
+a,
+button,
+.mat-mdc-icon-button,
+.mat-mdc-list-item,
+.mat-mdc-chip,
+[role='button'] {
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out);
+}
+
+// Filas de tabla e ítems de lista: realce sutil al pasar por encima.
+tbody tr {
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+
+// Cards accionables: se levantan apenas.
+.mat-mdc-card {
+  transition:
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+// Los iconos siguen el color del texto sin parpadeos.
+mat-icon.mat-icon {
+  transition: color var(--dur-base) var(--ease-out);
+}
+
+// Quien pidió menos movimiento, no lo recibe.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 // ============================================================

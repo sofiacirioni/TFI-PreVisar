@@ -1,7 +1,7 @@
 .login-card {
   width: 100%;
   padding: 8px;
-  background-color: #ffffff;
+  background-color: var(--surface-card);
 }
 
 .login-form {
@@ -26,15 +26,15 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background-color: #fdecea;
-  color: #c62828;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  background-color: var(--danger-soft);
+  color: var(--danger-text);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-md);
   margin: 4px 0 8px;
 
   mat-icon {
     flex-shrink: 0;
-    font-size: 20px;
+    --icon-size: 20px;
     width: 20px;
     height: 20px;
   }
@@ -48,7 +48,7 @@
   padding: 8px 16px 16px;
 
   .register-prompt {
-    font-size: 0.875rem;
-    color: #5a6b78;
+    font-size: var(--text-md);
+    color: var(--text-muted);
   }
 }

@@ -17,7 +17,7 @@ section {
 }
 
 .section-title {
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 500;
   color: var(--accent);
   margin: 4px 0 12px;
@@ -55,8 +55,8 @@ section {
 .terminos-error {
   display: block;
   margin: -4px 0 4px 4px;
-  font-size: 0.75rem;
-  color: #c62828;
+  font-size: var(--text-xs);
+  color: var(--danger-text);
 }
 
 .loader-wrap {
@@ -65,8 +65,8 @@ section {
   align-items: center;
   gap: 12px;
   padding: 48px 16px;
-  color: #5a6b78;
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: var(--text-md);
 }
 
 .submit-button {
@@ -80,14 +80,14 @@ section {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background-color: #fdecea;
-  color: #c62828;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  background-color: var(--danger-soft);
+  color: var(--danger-text);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-md);
 
   mat-icon {
     flex-shrink: 0;
-    font-size: 20px;
+    --icon-size: 20px;
     width: 20px;
     height: 20px;
   }
@@ -101,7 +101,7 @@ section {
   padding: 8px 16px 16px;
 
   .login-prompt {
-    font-size: 0.875rem;
-    color: #5a6b78;
+    font-size: var(--text-md);
+    color: var(--text-muted);
   }
 }

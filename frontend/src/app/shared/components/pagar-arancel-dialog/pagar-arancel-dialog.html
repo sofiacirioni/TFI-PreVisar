@@ -8,11 +8,11 @@
 
     <div class="pagar__opciones">
       <button mat-stroked-button color="primary" [disabled]="cargando()" (click)="pagarAhora()">
-        <mat-icon>payments</mat-icon>
+        <mat-icon svgIcon="payments"></mat-icon>
         Pagar ahora
       </button>
       <button mat-stroked-button [disabled]="cargando()" (click)="compartir()">
-        <mat-icon>share</mat-icon>
+        <mat-icon svgIcon="share"></mat-icon>
         Compartir link
       </button>
     </div>
@@ -48,7 +48,7 @@
         (click)="copiar()"
         aria-label="Copiar link de pago"
       >
-        <mat-icon>{{ copiado() ? 'check' : 'content_copy' }}</mat-icon>
+        <mat-icon [svgIcon]="copiado() ? 'check' : 'content_copy'"></mat-icon>
       </button>
     </mat-form-field>
 
@@ -59,11 +59,11 @@
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Cerrar</button>
     <a mat-stroked-button [href]="mailtoUrl">
-      <mat-icon>mail</mat-icon>
+      <mat-icon svgIcon="mail"></mat-icon>
       Enviar por correo
     </a>
     <a mat-flat-button color="primary" [href]="whatsappUrl" target="_blank" rel="noopener">
-      <mat-icon>share</mat-icon>
+      <mat-icon svgIcon="share"></mat-icon>
       Compartir por WhatsApp
     </a>
   </mat-dialog-actions>

@@ -1,5 +1,5 @@
 .form-page {
-  max-width: 800px;
+  max-width: var(--content-narrow);
   margin: 0 auto;
 }
 
@@ -11,20 +11,20 @@
 
   h1 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: var(--text-3xl);
     font-weight: 500;
-    color: #1a2733;
+    color: var(--text-strong);
   }
 
   .subtitle {
     margin: 4px 0 0;
-    color: #5a6b78;
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: var(--text-md);
   }
 }
 
 .form-card {
-  background-color: #ffffff;
+  background-color: var(--surface-card);
 }
 
 .comitente-form {
@@ -40,8 +40,8 @@
   padding: 8px 0;
 
   .label-tipo {
-    font-size: 0.85rem;
-    color: #5a6b78;
+    font-size: var(--text-md);
+    color: var(--text-muted);
     font-weight: 500;
   }
 }
@@ -58,16 +58,16 @@
   gap: 6px;
 
   mat-icon {
-    font-size: 18px;
+    --icon-size: 18px;
     width: 18px;
     height: 18px;
-    color: #5a6b78;
+    color: var(--text-muted);
   }
 }
 
 .section-title {
   margin: 8px 0 12px;
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 500;
   color: var(--accent);
   letter-spacing: 0.2px;
@@ -105,8 +105,6 @@ section {
 }
 
 .submit-button {
-  background-color: #ef6c00 !important;
-  color: #ffffff !important;
   min-width: 160px;
   height: 40px;
 }
@@ -117,8 +115,8 @@ section {
   align-items: center;
   gap: 12px;
   padding: 64px 16px;
-  color: #5a6b78;
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: var(--text-md);
 }
 
 .error-banner {
@@ -126,10 +124,10 @@ section {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background-color: #fdecea;
-  color: #c62828;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  background-color: var(--danger-soft);
+  color: var(--danger-text);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-md);
 
   mat-icon {
     flex-shrink: 0;
@@ -145,14 +143,14 @@ section {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background-color: #fdecea;
-  color: #c62828;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  background-color: var(--danger-soft);
+  color: var(--danger-text);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-md);
 
   mat-icon {
     flex-shrink: 0;
-    font-size: 20px;
+    --icon-size: 20px;
     width: 20px;
     height: 20px;
   }

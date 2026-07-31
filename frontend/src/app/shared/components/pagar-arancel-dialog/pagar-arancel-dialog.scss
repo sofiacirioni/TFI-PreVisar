@@ -24,7 +24,7 @@
 
 .pagar__error {
   margin: 1rem 0 0;
-  color: var(--mat-sys-error, #c62828);
+  color: var(--danger-text);
 }
 
 .pagar__campo {
@@ -33,6 +33,6 @@
 
 .pagar__copiado {
   margin: 0.25rem 0 0;
-  font-size: 0.875rem;
-  color: var(--mat-sys-primary, #2e7d32);
+  font-size: var(--text-md);
+  color: var(--success-text);
 }
