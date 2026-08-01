@@ -1,3 +1,4 @@
+import { ErrorState } from '../../../shared/components/error-state/error-state';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ComitenteService } from '../../../core/services/comitente.service';
 import { Router } from '@angular/router';
@@ -22,6 +23,7 @@ import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 @Component({
   selector: 'app-comitente-list',
   imports: [
+    ErrorState,
     CommonModule,
     ReactiveFormsModule,
     MatTableModule,
@@ -45,6 +47,8 @@ export class ComitenteList implements OnInit {
   // Estado UI
   readonly cargando = signal(true);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
 
   // Datos
   readonly comitentes = signal<Comitente[]>([]);
@@ -90,7 +94,8 @@ export class ComitenteList implements OnInit {
         this.comitentes.set(datos);
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudieron cargar los comitentes. Intentá recargar.');
         this.cargando.set(false);
       },

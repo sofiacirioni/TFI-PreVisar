@@ -1,3 +1,4 @@
+import { ErrorState } from '../../../shared/components/error-state/error-state';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +20,7 @@ const POLL_MS = 3000;
 @Component({
   selector: 'app-revision-detalle',
   imports: [
+    ErrorState,
     CommonModule,
     MatButtonModule,
     MatIconModule,
@@ -37,6 +39,8 @@ export class RevisionDetalle implements OnInit {
 
   readonly revision = signal<RevisionDetalleModel | null>(null);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
 
   readonly enProgreso = computed(() => this.revision()?.estado === 'EN_PROGRESO');
   readonly conError = computed(() => this.revision()?.estado === 'ERROR');
@@ -61,6 +65,7 @@ export class RevisionDetalle implements OnInit {
           if (err.status === 404) {
             this.router.navigate(['/revisar']);
           } else {
+            this.sinConexion.set(err.status === 0);
             this.errorCarga.set('No se pudo cargar el resumen. Intentá recargar.');
           }
         },

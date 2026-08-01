@@ -1,3 +1,4 @@
+import { ErrorState } from '../../../shared/components/error-state/error-state';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -25,6 +26,7 @@ import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/con
 @Component({
   selector: 'app-expediente-list',
   imports: [
+    ErrorState,
     CommonModule,
     ReactiveFormsModule,
     MatTableModule,
@@ -48,6 +50,8 @@ export class ExpedienteList implements OnInit {
   // Estado UI
   readonly cargando = signal(true);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
 
   // Datos
   readonly expedientes = signal<ExpedienteResponse[]>([]);
@@ -95,7 +99,8 @@ export class ExpedienteList implements OnInit {
         this.expedientes.set(datos);
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudieron cargar los expedientes. Intentá recargar.');
         this.cargando.set(false);
       },

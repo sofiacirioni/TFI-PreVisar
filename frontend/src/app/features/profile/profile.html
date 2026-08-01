@@ -4,10 +4,10 @@
     <span>Cargando perfil...</span>
   </div>
 } @else if (errorCarga()) {
-  <div class="error-banner">
-    <mat-icon svgIcon="error_outline"></mat-icon>
-    <span>{{ errorCarga() }}</span>
-  </div>
+  <app-error-state
+    [mensaje]="errorCarga()!"
+    [sinConexion]="sinConexion()"
+  />
 } @else if (perfil(); as p) {
   <div class="profile-page">
     <header class="page-header">

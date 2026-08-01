@@ -1,3 +1,4 @@
+import { ErrorState } from '../../shared/components/error-state/error-state';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -33,6 +34,7 @@ import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 @Component({
   selector: 'app-profile',
   imports: [
+    ErrorState,
     CommonModule,
     ReactiveFormsModule,
     MatCardModule,
@@ -64,6 +66,8 @@ export class Profile implements OnInit {
   readonly editando = signal(false);
   readonly solicitandoRevisor = signal(false);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
   readonly errorGeneral = signal<string | null>(null);
 
   // Datos
@@ -128,7 +132,8 @@ export class Profile implements OnInit {
         this.titulos.set(titulos);
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudo cargar el perfil. Recargá la página.');
         this.cargando.set(false);
       },

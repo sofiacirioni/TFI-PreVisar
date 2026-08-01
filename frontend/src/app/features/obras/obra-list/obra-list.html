@@ -21,11 +21,11 @@
       <span>Cargando obras...</span>
     </div>
   } @else if (errorCarga()) {
-    <div class="error-banner">
-      <mat-icon svgIcon="error_outline"></mat-icon>
-      <span>{{ errorCarga() }}</span>
-      <button mat-button (click)="cargarObras()">Reintentar</button>
-    </div>
+    <app-error-state
+      [mensaje]="errorCarga()!"
+      [sinConexion]="sinConexion()"
+      (reintentar)="cargarObras()"
+    />
   } @else {
     <!-- Buscador: sin obras cargadas no hay nada que filtrar. -->
     @if (obras().length > 0) {
@@ -49,7 +49,7 @@
     @if (obrasFiltradas().length === 0) {
       @if (obras().length === 0) {
         <div class="empty-state">
-          <img class="empty-illustration" src="illustrations/onboarding.svg" alt="" />
+          <img class="empty-illustration" src="illustrations/empty-obras.svg" alt="" />
           <h3>Todavía no tenés obras cargadas</h3>
           <p>Una obra es el inmueble sobre el que realizás una tarea profesional.</p>
           <button mat-flat-button (click)="irANueva()">

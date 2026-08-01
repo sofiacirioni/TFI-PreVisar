@@ -1,3 +1,4 @@
+import { ErrorState } from '../../../shared/components/error-state/error-state';
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -32,6 +33,7 @@ import { DocumentoDialog, DocumentoDialogData } from './documento-dialog';
 @Component({
   selector: 'app-gestion-estructura',
   imports: [
+    ErrorState,
     CommonModule,
     ReactiveFormsModule,
     MatCardModule,
@@ -54,6 +56,8 @@ export class GestionEstructura implements OnInit {
 
   readonly cargando = signal(true);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
   readonly trabajando = signal(false); // bloquea acciones mientras hay una operación en curso
   readonly tiposTarea = signal<TipoTarea[]>([]);
   readonly secciones = signal<SeccionEstructura[]>([]);
@@ -95,7 +99,8 @@ export class GestionEstructura implements OnInit {
         this.secciones.set(est.secciones);
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudo cargar la estructura. Recargá la página.');
         this.cargando.set(false);
       },

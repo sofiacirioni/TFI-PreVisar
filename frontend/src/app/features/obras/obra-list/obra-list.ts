@@ -1,3 +1,4 @@
+import { ErrorState } from '../../../shared/components/error-state/error-state';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -22,6 +23,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   selector: 'app-obra-list',
   imports: [
+    ErrorState,
     CommonModule,
     ReactiveFormsModule,
     MatTableModule,
@@ -44,6 +46,8 @@ export class ObraList implements OnInit {
 
   readonly cargando = signal(true);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
   readonly obras = signal<Obra[]>([]);
 
   readonly filtroControl = this.fb.nonNullable.control('');
@@ -85,7 +89,8 @@ export class ObraList implements OnInit {
         this.obras.set(datos);
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudieron cargar las obras. Intentá recargar.');
         this.cargando.set(false);
       },

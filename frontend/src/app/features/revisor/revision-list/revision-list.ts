@@ -1,3 +1,4 @@
+import { ErrorState } from '../../../shared/components/error-state/error-state';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -23,6 +24,7 @@ const MAX_BYTES = 15 * 1024 * 1024;
 @Component({
   selector: 'app-revision-list',
   imports: [
+    ErrorState,
     CommonModule,
     MatTableModule,
     MatButtonModule,
@@ -41,6 +43,8 @@ export class RevisionList implements OnInit {
 
   readonly cargando = signal(true);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
   readonly subiendo = signal(false);
   readonly revisiones = signal<RevisionResumen[]>([]);
 
@@ -58,7 +62,8 @@ export class RevisionList implements OnInit {
         this.revisiones.set(datos);
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudieron cargar las revisiones. Intentá recargar.');
         this.cargando.set(false);
       },

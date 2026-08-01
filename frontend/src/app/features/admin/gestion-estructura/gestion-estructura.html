@@ -26,11 +26,11 @@
       <span>Cargando estructura...</span>
     </div>
   } @else if (errorCarga()) {
-    <div class="error-banner">
-      <mat-icon svgIcon="error_outline"></mat-icon>
-      <span>{{ errorCarga() }}</span>
-      <button mat-button (click)="cargarEstructura()">Reintentar</button>
-    </div>
+    <app-error-state
+      [mensaje]="errorCarga()!"
+      [sinConexion]="sinConexion()"
+      (reintentar)="cargarEstructura()"
+    />
   } @else if (!secciones().length) {
     <div class="empty-state">
       <mat-icon svgIcon="search_off"></mat-icon>

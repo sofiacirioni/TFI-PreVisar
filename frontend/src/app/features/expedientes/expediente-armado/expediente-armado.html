@@ -3,9 +3,22 @@
 @if (v.status === 'loading') {
   <mat-progress-bar mode="indeterminate" />
 } @else if (v.status === 'error') {
-  <div class="estado-vacio">
-    <!-- SCRUM-119: ilustración plana acá -->
-    <p>No pudimos cargar la estructura del expediente.</p>
+  <div class="pv-error-state">
+    @if (esErrorDeRed()) {
+      <img src="illustrations/sin-conexion.svg" alt="" />
+      <h3>Sin conexión</h3>
+      <p>No pudimos comunicarnos con el servidor. Revisá tu conexión y volvé a intentar.</p>
+    } @else {
+      <img src="illustrations/error.svg" alt="" />
+      <h3>No pudimos cargar el expediente</h3>
+      <p>Hubo un problema al traer la estructura documental. Probá de nuevo en un momento.</p>
+    }
+    <div class="pv-error-state__acciones">
+      <button mat-flat-button (click)="recargar()">
+        <mat-icon svgIcon="refresh"></mat-icon>
+        Reintentar
+      </button>
+    </div>
   </div>
 } @else {
   <header class="armado-header">

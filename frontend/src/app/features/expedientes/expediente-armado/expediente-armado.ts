@@ -411,6 +411,16 @@ export class ExpedienteArmado {
     { initialValue: { status: 'loading' } as Vm },
   );
 
+  /**
+   * Un status 0 es la forma en que el navegador reporta que la request nunca
+   * llegó a destino: sin red, servidor caído o CORS. Se distingue del resto
+   * para poder decirle al usuario algo accionable en vez de "hubo un error".
+   */
+  readonly esErrorDeRed = computed(() => {
+    const v = this.vm();
+    return v.status === 'error' && v.error instanceof HttpErrorResponse && v.error.status === 0;
+  });
+
   // Expediente cargado (para el panel de datos); null mientras carga o si falla.
   readonly expediente = computed<ExpedienteResponse | null>(() => {
     const v = this.vm();

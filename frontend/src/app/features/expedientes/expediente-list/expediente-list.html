@@ -21,11 +21,11 @@
       <span>Cargando expedientes...</span>
     </div>
   } @else if (errorCarga()) {
-    <div class="error-banner">
-      <mat-icon svgIcon="error_outline"></mat-icon>
-      <span>{{ errorCarga() }}</span>
-      <button mat-button (click)="cargarExpedientes()">Reintentar</button>
-    </div>
+    <app-error-state
+      [mensaje]="errorCarga()!"
+      [sinConexion]="sinConexion()"
+      (reintentar)="cargarExpedientes()"
+    />
   } @else {
     <!-- Buscador: sin expedientes cargados no hay nada que filtrar. -->
     @if (expedientes().length > 0) {

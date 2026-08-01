@@ -21,11 +21,11 @@
       <span>Cargando comitentes...</span>
     </div>
   } @else if (errorCarga()) {
-    <div class="error-banner">
-      <mat-icon svgIcon="error_outline"></mat-icon>
-      <span>{{ errorCarga() }}</span>
-      <button mat-button (click)="cargarComitentes()">Reintentar</button>
-    </div>
+    <app-error-state
+      [mensaje]="errorCarga()!"
+      [sinConexion]="sinConexion()"
+      (reintentar)="cargarComitentes()"
+    />
   } @else {
     <!-- Buscador: sin comitentes cargados no hay nada que filtrar. -->
     @if (comitentes().length > 0) {
@@ -50,7 +50,7 @@
     @if (comitentesFiltrados().length === 0) {
       @if (comitentes().length === 0) {
         <div class="empty-state">
-          <img class="empty-illustration" src="illustrations/onboarding.svg" alt="" />
+          <img class="empty-illustration" src="illustrations/empty-comitentes.svg" alt="" />
           <h3>Todavía no tenés comitentes</h3>
           <p>Cargá tu primer comitente para usarlo en futuros expedientes.</p>
           <button mat-flat-button (click)="irANuevo()">

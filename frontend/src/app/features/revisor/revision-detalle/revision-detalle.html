@@ -5,10 +5,10 @@
   </button>
 
   @if (errorCarga()) {
-    <div class="error-banner">
-      <mat-icon svgIcon="error_outline"></mat-icon>
-      <span>{{ errorCarga() }}</span>
-    </div>
+    <app-error-state
+      [mensaje]="errorCarga()!"
+      [sinConexion]="sinConexion()"
+    />
   } @else if (!revision()) {
     <div class="loader-wrap">
       <mat-spinner diameter="40" />

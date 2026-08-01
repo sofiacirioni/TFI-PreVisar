@@ -133,45 +133,38 @@
   }
 }
 
-/* Volver: un solo patrón de navegación hacia atrás (antes había dos). */
-.pv-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
-  color: var(--text-muted);
-  font-size: var(--text-md);
-  font-weight: var(--fw-medium);
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-
-  &:hover {
-    color: var(--accent-text);
-    text-decoration: none;
-  }
-}
-
-/* ---------- Estado vacío ----------
-   El bloque `padding: 64px 16px` estaba copiado en once archivos. */
-.pv-empty-state {
+/* ---------- Estado de error a página completa ----------
+   Distinto del `.error-banner` en línea de los listados: esto es para cuando
+   la pantalla entera no pudo cargar y no hay nada más que mostrar. */
+.pv-error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: var(--space-4);
   padding: var(--space-12) var(--space-6);
-  color: var(--text-muted);
+
+  /* Se acota por alto y no solo por ancho: las piezas verticales (el documento
+     con alerta) quedaban bastante más grandes que las horizontales. */
+  img {
+    width: auto;
+    max-width: min(260px, 60%);
+    max-height: 180px;
+    height: auto;
+    margin-bottom: var(--space-2);
+    user-select: none;
+  }
 
   h3 {
     margin: 0;
     font-size: var(--text-xl);
+    color: var(--text-strong);
   }
 
   p {
     margin: 0;
     max-width: 46ch;
+    color: var(--text-muted);
     font-size: var(--text-md);
   }
 
@@ -180,42 +173,56 @@
   }
 }
 
-/* ---------- Superficie de tarjeta ----------
-   Misma caja para los paneles que no son <mat-card>. */
-.pv-surface {
-  background: var(--surface-card);
-  border: var(--border-width) solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+/* ---------- Páginas legales ----------
+   La ilustración vive en el fondo de la página, detrás del soporte donde se
+   apoya el texto: así aporta identidad sin pasar por debajo de la lectura,
+   que es lo que arruinaría el contraste de un documento que hay que leer. */
+.legal-page {
+  min-height: 100vh;
+  background: var(--surface-sunken);
+  padding: var(--space-8) var(--space-5) var(--space-12);
+  position: relative;
+  overflow: hidden;
+
+  /* Anclada abajo a la derecha y bien atenuada: acompaña, no compite. */
+  &::before {
+    content: '';
+    position: fixed;
+    right: -40px;
+    bottom: -20px;
+    width: min(420px, 38vw);
+    height: min(420px, 38vw);
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: contain;
+    opacity: 0.16;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &--terminos::before {
+    background-image: url('/illustrations/legal-terminos.svg');
+  }
+
+  &--privacidad::before {
+    background-image: url('/illustrations/legal-privacidad.svg');
+  }
+
+  /* En pantalla chica no hay lugar: sacarla antes que encimarla al texto. */
+  @media (max-width: 700px) {
+    &::before {
+      display: none;
+    }
+  }
+
+  /* El soporte: el texto se apoya acá, siempre por encima del fondo. */
+  > article {
+    position: relative;
+    z-index: 1;
+    background: var(--surface-card);
+    border: var(--border-width) solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
-/* ---------- Tabla de datos ----------
-   Encabezado, filas y separadores unificados. */
-.pv-data-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th {
-    background: var(--surface-sunken);
-    color: var(--text-muted);
-    font-size: var(--text-xs);
-    font-weight: var(--fw-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    text-align: left;
-    padding: var(--space-4) var(--space-5);
-    border-bottom: var(--border-width) solid var(--border-subtle);
-    white-space: nowrap;
-  }
-
-  td {
-    padding: var(--space-5);
-    color: var(--text-body);
-    font-size: var(--text-md);
-    border-bottom: var(--border-width) solid var(--border-subtle);
-  }
-
-  tbody tr:last-child td {
-    border-bottom: 0;
-  }
-}

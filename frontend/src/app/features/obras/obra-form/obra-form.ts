@@ -51,6 +51,8 @@ export class ObraForm implements OnInit {
   readonly cargando = signal(true);
   readonly guardando = signal(false);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
   readonly errorGeneral = signal<string | null>(null);
 
   // Modo: alta o edición
@@ -123,7 +125,8 @@ export class ObraForm implements OnInit {
           this.errorCarga.set('Necesitás tener al menos un comitente antes de crear una obra.');
         }
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudieron cargar los datos del formulario.');
         this.cargando.set(false);
       },

@@ -27,9 +27,46 @@
   }
 }
 
+// Dos columnas solo en el login y solo si hay ancho: ilustración a la
+// izquierda, formulario a la derecha.
+.auth-split {
+  width: 100%;
+  max-width: 720px;
+  display: grid;
+  gap: var(--space-8);
+
+  &--con-ilustracion {
+    max-width: 1040px;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 900px) {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: var(--space-10);
+    }
+  }
+}
+
+.auth-ilustracion {
+  display: none; // en pantalla chica se oculta, no se encoge
+
+  @media (min-width: 900px) {
+    display: block;
+  }
+
+  img {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    display: block;
+    margin-inline: auto;
+    user-select: none;
+  }
+}
+
 .auth-content {
   width: 100%;
-  max-width: 720px;  // antes era 420px
+  min-width: 0;
 }
 
 .auth-footer {

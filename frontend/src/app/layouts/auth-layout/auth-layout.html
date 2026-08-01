@@ -4,8 +4,17 @@
     <p>Asistente de armado de expedientes técnicos</p>
   </div>
 
-  <div class="auth-content">
-    <router-outlet />
+  <div class="auth-split" [class.auth-split--con-ilustracion]="esLogin()">
+    @if (esLogin()) {
+      <!-- Decorativa: no aporta información que el texto no dé, por eso alt="". -->
+      <div class="auth-ilustracion">
+        <img src="illustrations/login.svg" alt="" />
+      </div>
+    }
+
+    <div class="auth-content">
+      <router-outlet />
+    </div>
   </div>
 
   <footer class="auth-footer">

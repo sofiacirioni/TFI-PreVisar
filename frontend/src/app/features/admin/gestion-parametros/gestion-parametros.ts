@@ -1,3 +1,4 @@
+import { ErrorState } from '../../../shared/components/error-state/error-state';
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -5,7 +6,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -16,13 +16,13 @@ import { GestionEstructura } from '../gestion-estructura/gestion-estructura';
 @Component({
   selector: 'app-gestion-parametros',
   imports: [
+    ErrorState,
     CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
     MatProgressSpinnerModule,
     GestionEstructura,
   ],
@@ -37,6 +37,8 @@ export class GestionParametros implements OnInit {
   readonly cargando = signal(true);
   readonly guardando = signal(false);
   readonly errorCarga = signal<string | null>(null);
+  /** La request no llegó al backend (status 0): sin red o servidor caído. */
+  readonly sinConexion = signal(false);
   readonly arancelVigente = signal<ArancelVigente | null>(null);
 
   readonly form = this.fb.nonNullable.group({
@@ -56,7 +58,8 @@ export class GestionParametros implements OnInit {
         this.arancelVigente.set(arancel);
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.sinConexion.set(err.status === 0);
         this.errorCarga.set('No se pudo cargar el arancel vigente. Recargá la página.');
         this.cargando.set(false);
       },
