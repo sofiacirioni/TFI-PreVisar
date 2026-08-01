@@ -38,7 +38,7 @@
       acceso a la aplicación.
     </p>
 
-    <mat-form-field appearance="outline" class="pagar__campo">
+    <mat-form-field appearance="fill" class="pagar__campo">
       <mat-label>Link de pago</mat-label>
       <input matInput readonly [value]="initPoint()" (focus)="$any($event.target).select()" />
       <button

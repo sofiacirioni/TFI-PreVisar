@@ -51,7 +51,7 @@
                 <span class="comitente-nota">No editable</span>
               </div>
             } @else {
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Comitente</mat-label>
                 <mat-select formControlName="comitenteId">
                   @for (c of comitentes(); track c.id) {
@@ -61,12 +61,14 @@
                   }
                 </mat-select>
                 <mat-hint>La obra quedará asociada a este comitente.</mat-hint>
-                @if (
-                  form.controls.comitenteId.touched &&
-                  form.controls.comitenteId.errors?.['required']
-                ) {
-                  <mat-error>Seleccioná un comitente</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    form.controls.comitenteId.touched &&
+                    form.controls.comitenteId.errors?.['required']
+                  ) {
+                    Seleccioná un comitente
+                  }
+                </mat-error>
               </mat-form-field>
             }
           </section>
@@ -77,7 +79,7 @@
           <section>
             <h3 class="section-title">Identificación de la obra</h3>
 
-            <mat-form-field appearance="outline" class="full-width">
+            <mat-form-field appearance="fill" class="full-width">
               <mat-label>Designación</mat-label>
               <input
                 matInput
@@ -85,13 +87,15 @@
                 placeholder="Ej: Edificio Myconos, Casa Pérez"
               />
               <mat-hint>Nombre con el que vas a reconocer esta obra.</mat-hint>
-              @if (form.controls.designacion.touched && form.controls.designacion.errors; as e) {
-                @if (e['required']) {
-                  <mat-error>Obligatorio</mat-error>
-                } @else if (e['backend']) {
-                  <mat-error>{{ e['backend'] }}</mat-error>
+              <mat-error>
+                @if (form.controls.designacion.touched && form.controls.designacion.errors; as e) {
+                  @if (e['required']) {
+                    Obligatorio
+                  } @else if (e['backend']) {
+                    {{ e['backend'] }}
+                  }
                 }
-              }
+              </mat-error>
             </mat-form-field>
           </section>
 
@@ -102,70 +106,80 @@
             <h3 class="section-title">Dirección</h3>
 
             <div class="row-calle">
-              <mat-form-field appearance="outline" class="calle">
+              <mat-form-field appearance="fill" class="calle">
                 <mat-label>Calle</mat-label>
                 <input matInput formControlName="calle" autocomplete="address-line1" />
-                @if (form.controls.calle.touched && form.controls.calle.errors; as e) {
-                  @if (e['required']) {
-                    <mat-error>Obligatoria</mat-error>
-                  } @else if (e['backend']) {
-                    <mat-error>{{ e['backend'] }}</mat-error>
+                <mat-error>
+                  @if (form.controls.calle.touched && form.controls.calle.errors; as e) {
+                    @if (e['required']) {
+                      Obligatoria
+                    } @else if (e['backend']) {
+                      {{ e['backend'] }}
+                    }
                   }
-                }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="numero">
+              <mat-form-field appearance="fill" class="numero">
                 <mat-label>Número</mat-label>
                 <input matInput formControlName="numero" />
-                @if (form.controls.numero.touched && form.controls.numero.errors; as e) {
-                  @if (e['required']) {
-                    <mat-error>Obligatorio</mat-error>
-                  } @else if (e['backend']) {
-                    <mat-error>{{ e['backend'] }}</mat-error>
+                <mat-error>
+                  @if (form.controls.numero.touched && form.controls.numero.errors; as e) {
+                    @if (e['required']) {
+                      Obligatorio
+                    } @else if (e['backend']) {
+                      {{ e['backend'] }}
+                    }
                   }
-                }
+                </mat-error>
               </mat-form-field>
             </div>
 
             <div class="row-2">
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Barrio (opcional)</mat-label>
                 <input matInput formControlName="barrio" />
-                @if (form.controls.barrio.touched && form.controls.barrio.errors?.['backend']) {
-                  <mat-error>{{ form.controls.barrio.errors?.['backend'] }}</mat-error>
-                }
+                <mat-error>
+                  @if (form.controls.barrio.touched && form.controls.barrio.errors?.['backend']) {
+                    {{ form.controls.barrio.errors?.['backend'] }}
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Localidad</mat-label>
                 <input matInput formControlName="localidad" />
-                @if (form.controls.localidad.touched && form.controls.localidad.errors; as e) {
-                  @if (e['required']) {
-                    <mat-error>Obligatoria</mat-error>
-                  } @else if (e['backend']) {
-                    <mat-error>{{ e['backend'] }}</mat-error>
+                <mat-error>
+                  @if (form.controls.localidad.touched && form.controls.localidad.errors; as e) {
+                    @if (e['required']) {
+                      Obligatoria
+                    } @else if (e['backend']) {
+                      {{ e['backend'] }}
+                    }
                   }
-                }
+                </mat-error>
               </mat-form-field>
             </div>
 
             <div class="row-2">
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Provincia</mat-label>
                 <mat-select formControlName="provinciaId">
                   @for (p of provincias(); track p.id) {
                     <mat-option [value]="p.id">{{ p.nombre }}</mat-option>
                   }
                 </mat-select>
-                @if (
-                  form.controls.provinciaId.touched &&
-                  form.controls.provinciaId.errors?.['required']
-                ) {
-                  <mat-error>Seleccioná una provincia</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    form.controls.provinciaId.touched &&
+                    form.controls.provinciaId.errors?.['required']
+                  ) {
+                    Seleccioná una provincia
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Código postal</mat-label>
                 <input
                   matInput
@@ -174,18 +188,20 @@
                   placeholder="X5000HCD"
                 />
                 <mat-hint>4 a 10 letras o números</mat-hint>
-                @if (
-                  form.controls.codigoPostal.touched && form.controls.codigoPostal.errors;
-                  as e
-                ) {
-                  @if (e['required']) {
-                    <mat-error>Obligatorio</mat-error>
-                  } @else if (e['pattern']) {
-                    <mat-error>Formato inválido (ej: X5000HCD)</mat-error>
-                  } @else if (e['backend']) {
-                    <mat-error>{{ e['backend'] }}</mat-error>
+                <mat-error>
+                  @if (
+                    form.controls.codigoPostal.touched && form.controls.codigoPostal.errors;
+                    as e
+                  ) {
+                    @if (e['required']) {
+                      Obligatorio
+                    } @else if (e['pattern']) {
+                      Formato inválido (ej: X5000HCD)
+                    } @else if (e['backend']) {
+                      {{ e['backend'] }}
+                    }
                   }
-                }
+                </mat-error>
               </mat-form-field>
             </div>
           </section>
@@ -198,39 +214,47 @@
             <p class="seccion-hint">Opcionales. Si los completás, todos deben ser numéricos.</p>
 
             <div class="row-4">
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Circunscripción</mat-label>
                 <input matInput formControlName="circunscripcion" />
-                @if (
-                  form.controls.circunscripcion.touched &&
-                  form.controls.circunscripcion.errors?.['pattern']
-                ) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    form.controls.circunscripcion.touched &&
+                    form.controls.circunscripcion.errors?.['pattern']
+                  ) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Sección</mat-label>
                 <input matInput formControlName="seccion" />
-                @if (form.controls.seccion.touched && form.controls.seccion.errors?.['pattern']) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (form.controls.seccion.touched && form.controls.seccion.errors?.['pattern']) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Manzana</mat-label>
                 <input matInput formControlName="manzana" />
-                @if (form.controls.manzana.touched && form.controls.manzana.errors?.['pattern']) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (form.controls.manzana.touched && form.controls.manzana.errors?.['pattern']) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Parcela</mat-label>
                 <input matInput formControlName="parcela" />
-                @if (form.controls.parcela.touched && form.controls.parcela.errors?.['pattern']) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (form.controls.parcela.touched && form.controls.parcela.errors?.['pattern']) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
             </div>
           </section>

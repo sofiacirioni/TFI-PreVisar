@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { filter, map, startWith } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
@@ -44,6 +45,27 @@ export class MainLayout implements OnInit {
 
   // Estado del sidebar: expandido (texto + íconos) o colapsado (solo íconos)
   readonly sidebarExpandido = signal(true);
+
+  /**
+   * En pantallas chicas el sidebar no puede quedarse fijo: con `mode="side"`
+   * empujaba el contenido fuera del viewport y la app quedaba inutilizable.
+   * Debajo de 900px pasa a ser un cajón superpuesto, cerrado por defecto.
+   */
+  readonly esMovil = toSignal(
+    inject(BreakpointObserver)
+      .observe('(max-width: 900px)')
+      .pipe(map((r) => r.matches)),
+    { initialValue: false },
+  );
+
+  /** Solo aplica en móvil: en escritorio el sidebar está siempre visible. */
+  readonly cajonAbierto = signal(false);
+
+  /**
+   * El cajón superpuesto se muestra siempre completo: colapsarlo a solo íconos
+   * no tiene sentido cuando ya tapa la pantalla.
+   */
+  readonly mostrarEtiquetas = computed(() => this.esMovil() || this.sidebarExpandido());
 
   // El armado de expediente es la vista compleja: usa todo el ancho (sin el cap
   // de --content-max), el resto de las vistas quedan centradas y legibles.
@@ -95,8 +117,21 @@ export class MainLayout implements OnInit {
     }
   }
 
+  constructor() {
+    // Al navegar en móvil el cajón se cierra solo: si no, tapa la pantalla a la
+    // que acabás de entrar.
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe(() => this.cajonAbierto.set(false));
+  }
+
+  /**
+   * En escritorio alterna expandido/colapsado; en móvil abre y cierra el cajón,
+   * donde "colapsado" no tiene sentido porque se muestra superpuesto.
+   */
   toggleSidebar(): void {
-    this.sidebarExpandido.update((v) => !v);
+    if (this.esMovil()) this.cajonAbierto.update((v) => !v);
+    else this.sidebarExpandido.update((v) => !v);
   }
 
   logout(): void {

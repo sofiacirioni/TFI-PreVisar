@@ -3,50 +3,9 @@
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+// .page-header está definido en styles/_components.scss.
 
-  .title-wrap {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-
-    h1 {
-      margin: 0;
-      font-size: var(--text-3xl);
-      font-weight: 500;
-      color: var(--text-strong);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  .cta-editar {
-
-    mat-icon {
-      margin-right: 4px;
-    }
-  }
-}
-
-.chip-tipo {
-  background-color: var(--accent-soft) !important;
-  color: var(--accent-text) !important;
-  font-size: var(--text-xs) !important;
-  height: 24px !important;
-  font-weight: 500 !important;
-
-  &.chip-juridica {
-    background-color: var(--warning-soft) !important;
-    color: var(--accent-text) !important;
-  }
-}
+// El chip de tipo de persona usa la primitiva .status-chip (styles/_components.scss).
 
 .detail-card {
   margin-bottom: 16px;
@@ -160,29 +119,11 @@
   }
 }
 
-.tabla-wrap {
-  background-color: var(--surface-card);
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--border-subtle);
-  overflow: hidden;
-}
 
 .obras-table {
   width: 100%;
 
-  th {
-    background-color: var(--surface-sunken);
-    color: var(--text-muted);
-    font-weight: 500;
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
 
-  td {
-    color: var(--text-strong);
-    font-size: var(--text-md);
-  }
 
   .col-acciones {
     width: 80px;

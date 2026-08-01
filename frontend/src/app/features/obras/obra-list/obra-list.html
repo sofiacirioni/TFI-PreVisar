@@ -29,7 +29,7 @@
   } @else {
     <!-- Buscador: sin obras cargadas no hay nada que filtrar. -->
     @if (obras().length > 0) {
-      <mat-form-field appearance="outline" class="buscador">
+      <mat-form-field appearance="fill" class="buscador">
         <mat-label>Buscar por designación, comitente, dirección o localidad</mat-label>
         <mat-icon matPrefix svgIcon="search"></mat-icon>
         <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />

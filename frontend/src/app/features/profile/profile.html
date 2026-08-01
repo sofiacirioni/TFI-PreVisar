@@ -193,49 +193,57 @@
               <h3>Datos personales</h3>
 
               <div class="row-2">
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Nombre</mat-label>
                   <input matInput formControlName="nombre" />
-                  @if (form.controls.nombre.touched && form.controls.nombre.errors; as e) {
-                    @if (e['required']) {
-                      <mat-error>Obligatorio</mat-error>
-                    } @else if (e['backend']) {
-                      <mat-error>{{ e['backend'] }}</mat-error>
+                  <mat-error>
+                    @if (form.controls.nombre.touched && form.controls.nombre.errors; as e) {
+                      @if (e['required']) {
+                        Obligatorio
+                      } @else if (e['backend']) {
+                        {{ e['backend'] }}
+                      }
                     }
-                  }
+                  </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Apellido</mat-label>
                   <input matInput formControlName="apellido" />
-                  @if (form.controls.apellido.touched && form.controls.apellido.errors; as e) {
-                    @if (e['required']) {
-                      <mat-error>Obligatorio</mat-error>
-                    } @else if (e['backend']) {
-                      <mat-error>{{ e['backend'] }}</mat-error>
+                  <mat-error>
+                    @if (form.controls.apellido.touched && form.controls.apellido.errors; as e) {
+                      @if (e['required']) {
+                        Obligatorio
+                      } @else if (e['backend']) {
+                        {{ e['backend'] }}
+                      }
                     }
-                  }
+                  </mat-error>
                 </mat-form-field>
               </div>
 
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Domicilio</mat-label>
                 <input matInput formControlName="domicilio" />
-                @if (form.controls.domicilio.touched && form.controls.domicilio.errors; as e) {
-                  @if (e['required']) {
-                    <mat-error>Obligatorio</mat-error>
-                  } @else if (e['backend']) {
-                    <mat-error>{{ e['backend'] }}</mat-error>
+                <mat-error>
+                  @if (form.controls.domicilio.touched && form.controls.domicilio.errors; as e) {
+                    @if (e['required']) {
+                      Obligatorio
+                    } @else if (e['backend']) {
+                      {{ e['backend'] }}
+                    }
                   }
-                }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Teléfono (opcional)</mat-label>
                 <input matInput formControlName="telefono" />
-                @if (form.controls.telefono.touched && form.controls.telefono.errors?.['backend']) {
-                  <mat-error>{{ form.controls.telefono.errors?.['backend'] }}</mat-error>
-                }
+                <mat-error>
+                  @if (form.controls.telefono.touched && form.controls.telefono.errors?.['backend']) {
+                    {{ form.controls.telefono.errors?.['backend'] }}
+                  }
+                </mat-error>
               </mat-form-field>
             </section>
 
@@ -244,7 +252,7 @@
             <section>
               <h3>Datos profesionales</h3>
 
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field appearance="fill" class="full-width">
                 <mat-label>Título</mat-label>
                 <mat-select formControlName="tituloId">
                   <mat-option>
@@ -258,62 +266,70 @@
                     <mat-option [value]="t.id">{{ t.nombre }}</mat-option>
                   }
                 </mat-select>
-                @if (
-                  form.controls.tituloId.touched && form.controls.tituloId.errors?.['required']
-                ) {
-                  <mat-error>Seleccioná un título</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    form.controls.tituloId.touched && form.controls.tituloId.errors?.['required']
+                  ) {
+                    Seleccioná un título
+                  }
+                </mat-error>
               </mat-form-field>
               @if (tituloRequiereDescripcion()) {
-                <mat-form-field appearance="outline" class="full-width">
+                <mat-form-field appearance="fill" class="full-width">
                   <mat-label>Especificá tu título</mat-label>
                   <input matInput formControlName="tituloOtroDescripcion" maxlength="150" />
                   <mat-hint align="end"
                     >{{ form.controls.tituloOtroDescripcion.value.length }}/150</mat-hint
                   >
-                  @if (
-                    form.controls.tituloOtroDescripcion.touched &&
-                      form.controls.tituloOtroDescripcion.errors;
-                    as e
-                  ) {
-                    @if (e['requeridoSiOtro']) {
-                      <mat-error>Indicá tu título exacto</mat-error>
-                    } @else if (e['backend']) {
-                      <mat-error>{{ e['backend'] }}</mat-error>
+                  <mat-error>
+                    @if (
+                      form.controls.tituloOtroDescripcion.touched &&
+                        form.controls.tituloOtroDescripcion.errors;
+                      as e
+                    ) {
+                      @if (e['requeridoSiOtro']) {
+                        Indicá tu título exacto
+                      } @else if (e['backend']) {
+                        {{ e['backend'] }}
+                      }
                     }
-                  }
+                  </mat-error>
                 </mat-form-field>
               }
 
               <div class="row-2">
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Regional</mat-label>
                   <mat-select formControlName="regionalId">
                     @for (r of regionales(); track r.id) {
                       <mat-option [value]="r.id">{{ r.nombre }}</mat-option>
                     }
                   </mat-select>
-                  @if (
-                    form.controls.regionalId.touched &&
-                    form.controls.regionalId.errors?.['required']
-                  ) {
-                    <mat-error>Seleccioná una regional</mat-error>
-                  }
+                  <mat-error>
+                    @if (
+                      form.controls.regionalId.touched &&
+                      form.controls.regionalId.errors?.['required']
+                    ) {
+                      Seleccioná una regional
+                    }
+                  </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Condición frente al IVA</mat-label>
                   <mat-select formControlName="condicionIvaId">
                     @for (c of condicionesIva(); track c.id) {
                       <mat-option [value]="c.id">{{ c.descripcion }}</mat-option>
                     }
                   </mat-select>
-                  @if (
-                    form.controls.condicionIvaId.touched &&
-                    form.controls.condicionIvaId.errors?.['required']
-                  ) {
-                    <mat-error>Seleccioná una opción</mat-error>
-                  }
+                  <mat-error>
+                    @if (
+                      form.controls.condicionIvaId.touched &&
+                      form.controls.condicionIvaId.errors?.['required']
+                    ) {
+                      Seleccioná una opción
+                    }
+                  </mat-error>
                 </mat-form-field>
               </div>
 

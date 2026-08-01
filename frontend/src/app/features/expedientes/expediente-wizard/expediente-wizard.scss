@@ -17,11 +17,15 @@
 .comitente-busqueda {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
 
   .campo-busqueda {
-    flex: 1;
+    flex: 1 1 220px;
+    // Sin esto el campo no baja de su ancho intrínseco y desborda el viewport
+    // en móvil (min-width:auto es el default de los ítems flex).
+    min-width: 0;
   }
 
   button {
@@ -428,3 +432,7 @@
     }
   }
 }
+
+// El estilo móvil del stepper vive en styles.scss: el DOM interno de
+// MatStepper no lleva el atributo de encapsulación del componente, así que
+// desde acá las reglas nunca lo alcanzan.

@@ -8,7 +8,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
 
       <!-- Email -->
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="fill" class="full-width">
         <mat-label>Email</mat-label>
         <input
           matInput
@@ -18,17 +18,19 @@
           [readonly]="cargando()"
         />
         <mat-icon matSuffix svgIcon="mail"></mat-icon>
-        @if (form.controls.email.touched && form.controls.email.errors; as errors) {
-          @if (errors['required']) {
-            <mat-error>El email es obligatorio</mat-error>
-          } @else if (errors['email']) {
-            <mat-error>Ingresá un email válido</mat-error>
+        <mat-error>
+          @if (form.controls.email.touched && form.controls.email.errors; as errors) {
+            @if (errors['required']) {
+              El email es obligatorio
+            } @else if (errors['email']) {
+              Ingresá un email válido
+            }
           }
-        }
+        </mat-error>
       </mat-form-field>
 
       <!-- Password -->
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="fill" class="full-width">
         <mat-label>Contraseña</mat-label>
         <input
           matInput
@@ -46,13 +48,15 @@
         >
           <mat-icon [svgIcon]="mostrarPassword() ? 'visibility_off' : 'visibility'"></mat-icon>
         </button>
-        @if (form.controls.password.touched && form.controls.password.errors; as errors) {
-          @if (errors['required']) {
-            <mat-error>La contraseña es obligatoria</mat-error>
-          } @else if (errors['minlength']) {
-            <mat-error>Mínimo 8 caracteres</mat-error>
+        <mat-error>
+          @if (form.controls.password.touched && form.controls.password.errors; as errors) {
+            @if (errors['required']) {
+              La contraseña es obligatoria
+            } @else if (errors['minlength']) {
+              Mínimo 8 caracteres
+            }
           }
-        }
+        </mat-error>
       </mat-form-field>
 
       <!-- Error general (credenciales incorrectas, red caída, etc) -->

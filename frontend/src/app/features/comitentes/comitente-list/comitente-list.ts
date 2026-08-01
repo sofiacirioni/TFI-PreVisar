@@ -15,7 +15,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog';
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
@@ -32,7 +31,6 @@ import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
     MatInputModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatChipsModule,
   ],
   templateUrl: './comitente-list.html',
   styleUrl: './comitente-list.scss',

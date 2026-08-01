@@ -2,13 +2,14 @@
 
   <!-- ===== Sidebar ===== -->
   <mat-sidenav
-    mode="side"
-    opened
-    [class.colapsado]="!sidebarExpandido()"
+    [mode]="esMovil() ? 'over' : 'side'"
+    [opened]="esMovil() ? cajonAbierto() : true"
+    (closedStart)="cajonAbierto.set(false)"
+    [class.colapsado]="!esMovil() && !mostrarEtiquetas()"
     class="sidebar"
   >
     <div class="sidebar-brand">
-      @if (sidebarExpandido()) {
+      @if (mostrarEtiquetas()) {
         <img class="brand-wordmark" src="logo/previsar-wordmark.svg" alt="PreVisar" />
       } @else {
         <img class="brand-mark" src="logo/previsar-mark.svg" alt="PreVisar" />
@@ -22,12 +23,12 @@
         <a
           [routerLink]="item.route"
           routerLinkActive="activo"
-          [matTooltip]="sidebarExpandido() ? '' : item.label"
+          [matTooltip]="mostrarEtiquetas() ? '' : item.label"
           matTooltipPosition="right"
           class="nav-item"
         >
           <mat-icon [svgIcon]="item.icon"></mat-icon>
-          @if (sidebarExpandido()) {
+          @if (mostrarEtiquetas()) {
             <span class="nav-item__label">{{ item.label }}</span>
           }
         </a>
@@ -42,7 +43,16 @@
       <button
         mat-icon-button
         (click)="toggleSidebar()"
-        [matTooltip]="sidebarExpandido() ? 'Colapsar menú' : 'Expandir menú'"
+        [matTooltip]="
+          esMovil()
+            ? cajonAbierto()
+              ? 'Cerrar menú'
+              : 'Abrir menú'
+            : sidebarExpandido()
+              ? 'Colapsar menú'
+              : 'Expandir menú'
+        "
+        [attr.aria-label]="esMovil() && !cajonAbierto() ? 'Abrir menú' : 'Cerrar menú'"
       >
         <mat-icon svgIcon="menu"></mat-icon>
       </button>

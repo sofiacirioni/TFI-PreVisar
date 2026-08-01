@@ -10,22 +10,7 @@
   color: var(--text-strong);
 }
 
-.page-header {
-  margin-bottom: 24px;
-
-  h1 {
-    margin: 0;
-    font-size: var(--text-3xl);
-    font-weight: 500;
-    color: var(--text-strong);
-  }
-
-  .subtitle {
-    margin: 4px 0 0;
-    color: var(--text-muted);
-    font-size: var(--text-md);
-  }
-}
+// .page-header está definido en styles/_components.scss.
 
 .form-card {
   background-color: var(--surface-card);

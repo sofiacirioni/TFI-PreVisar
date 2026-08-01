@@ -16,7 +16,7 @@
         <a routerLink="/privacidad" target="_blank" rel="noopener">Política de Privacidad</a>.
       </p>
 
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="fill" class="full-width">
         <mat-label>Ingresá tu contraseña para confirmar</mat-label>
         <input
           matInput
@@ -33,13 +33,15 @@
         >
           <mat-icon [svgIcon]="mostrarPassword() ? 'visibility_off' : 'visibility'"></mat-icon>
         </button>
-        @if (form.controls.password.touched && form.controls.password.errors; as e) {
-          @if (e['required']) {
-            <mat-error>Ingresá tu contraseña</mat-error>
-          } @else if (e['backend']) {
-            <mat-error>{{ e['backend'] }}</mat-error>
+        <mat-error>
+          @if (form.controls.password.touched && form.controls.password.errors; as e) {
+            @if (e['required']) {
+              Ingresá tu contraseña
+            } @else if (e['backend']) {
+              {{ e['backend'] }}
+            }
           }
-        }
+        </mat-error>
       </mat-form-field>
 
       @if (errorGeneral(); as error) {

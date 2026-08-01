@@ -2,7 +2,7 @@
   <mat-progress-bar mode="indeterminate" />
 }
 
-<mat-form-field appearance="outline" class="campo-full">
+<mat-form-field appearance="fill" class="campo-full">
   <mat-label>Nombre del expediente</mat-label>
   <input
     matInput
@@ -23,22 +23,24 @@
     <form [formGroup]="tareaForm">
       <p>Elegí primero la especialidad y luego el tipo de tarea a presentar.</p>
 
-      <mat-form-field appearance="outline" class="campo-full">
+      <mat-form-field appearance="fill" class="campo-full">
         <mat-label>Especialidad</mat-label>
         <mat-select formControlName="especialidadId">
           @for (esp of especialidades(); track esp.id) {
             <mat-option [value]="esp.id">{{ esp.nombre }}</mat-option>
           }
         </mat-select>
-        @if (
-          tareaForm.controls.especialidadId.hasError('required') &&
-          tareaForm.controls.especialidadId.touched
-        ) {
-          <mat-error>Seleccioná una especialidad</mat-error>
-        }
+        <mat-error>
+          @if (
+            tareaForm.controls.especialidadId.hasError('required') &&
+            tareaForm.controls.especialidadId.touched
+          ) {
+            Seleccioná una especialidad
+          }
+        </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="campo-full">
+      <mat-form-field appearance="fill" class="campo-full">
         <mat-label>Tipo de tarea</mat-label>
         <mat-select
           formControlName="tipoTareaId"
@@ -55,12 +57,14 @@
         } @else if (tiposTarea().length === 0) {
           <mat-hint>No hay tipos de tarea cargados para esta especialidad</mat-hint>
         }
-        @if (
-          tareaForm.controls.tipoTareaId.hasError('required') &&
-          tareaForm.controls.tipoTareaId.touched
-        ) {
-          <mat-error>Seleccioná un tipo de tarea</mat-error>
-        }
+        <mat-error>
+          @if (
+            tareaForm.controls.tipoTareaId.hasError('required') &&
+            tareaForm.controls.tipoTareaId.touched
+          ) {
+            Seleccioná un tipo de tarea
+          }
+        </mat-error>
       </mat-form-field>
     </form>
 
@@ -77,7 +81,7 @@
 
     <!-- Búsqueda -->
     <div class="comitente-busqueda">
-      <mat-form-field appearance="outline" class="campo-busqueda">
+      <mat-form-field appearance="fill" class="campo-busqueda">
         <mat-label>DNI o CUIT</mat-label>
         <input
           matInput
@@ -85,13 +89,15 @@
           placeholder="40123456 o 27-40123456-5"
           (keydown.enter)="$event.preventDefault(); buscarComitente()"
         />
-        @if (dniCuitBusqueda.touched && dniCuitBusqueda.errors; as e) {
-          @if (e['required']) {
-            <mat-error>Ingresá un DNI o CUIT</mat-error>
-          } @else if (e['pattern']) {
-            <mat-error>Formato inválido (DNI 7-8 dígitos o CUIT XX-XXXXXXXX-X)</mat-error>
+        <mat-error>
+          @if (dniCuitBusqueda.touched && dniCuitBusqueda.errors; as e) {
+            @if (e['required']) {
+              Ingresá un DNI o CUIT
+            } @else if (e['pattern']) {
+              Formato inválido (DNI 7-8 dígitos o CUIT XX-XXXXXXXX-X)
+            }
           }
-        }
+        </mat-error>
       </mat-form-field>
       <button
         mat-stroked-button
@@ -141,41 +147,47 @@
             <mat-radio-button value="JURIDICA">Persona jurídica</mat-radio-button>
           </mat-radio-group>
 
-          <mat-form-field appearance="outline" class="campo-full">
+          <mat-form-field appearance="fill" class="campo-full">
             <mat-label>Nombre / Razón social</mat-label>
             <input matInput formControlName="nombreRazonSocial" maxlength="200" />
-            @if (
-              nuevoComitenteForm.controls.nombreRazonSocial.touched &&
-              nuevoComitenteForm.controls.nombreRazonSocial.errors?.['required']
-            ) {
-              <mat-error>Obligatorio</mat-error>
-            }
+            <mat-error>
+              @if (
+                nuevoComitenteForm.controls.nombreRazonSocial.touched &&
+                nuevoComitenteForm.controls.nombreRazonSocial.errors?.['required']
+              ) {
+                Obligatorio
+              }
+            </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="campo-full">
+          <mat-form-field appearance="fill" class="campo-full">
             <mat-label>Domicilio</mat-label>
             <input matInput formControlName="domicilio" maxlength="255" />
-            @if (
-              nuevoComitenteForm.controls.domicilio.touched &&
-              nuevoComitenteForm.controls.domicilio.errors?.['required']
-            ) {
-              <mat-error>Obligatorio</mat-error>
-            }
+            <mat-error>
+              @if (
+                nuevoComitenteForm.controls.domicilio.touched &&
+                nuevoComitenteForm.controls.domicilio.errors?.['required']
+              ) {
+                Obligatorio
+              }
+            </mat-error>
           </mat-form-field>
 
           <div class="dos-columnas">
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Email</mat-label>
               <input matInput formControlName="email" type="email" maxlength="255" />
-              @if (
-                nuevoComitenteForm.controls.email.touched &&
-                nuevoComitenteForm.controls.email.errors?.['email']
-              ) {
-                <mat-error>Email inválido</mat-error>
-              }
+              <mat-error>
+                @if (
+                  nuevoComitenteForm.controls.email.touched &&
+                  nuevoComitenteForm.controls.email.errors?.['email']
+                ) {
+                  Email inválido
+                }
+              </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Teléfono (opcional)</mat-label>
               <input matInput formControlName="telefono" maxlength="30" />
             </mat-form-field>
@@ -257,77 +269,87 @@
         </div>
 
         <form [formGroup]="nuevaObraForm" class="form-nueva-obra">
-          <mat-form-field appearance="outline" class="campo-full">
+          <mat-form-field appearance="fill" class="campo-full">
             <mat-label>Designación</mat-label>
             <input matInput formControlName="designacion" maxlength="255" />
             <mat-hint>Ej: Edificio Mykonos — Instalación BT</mat-hint>
-            @if (
-              nuevaObraForm.controls.designacion.touched &&
-              nuevaObraForm.controls.designacion.errors?.['required']
-            ) {
-              <mat-error>Obligatorio</mat-error>
-            }
+            <mat-error>
+              @if (
+                nuevaObraForm.controls.designacion.touched &&
+                nuevaObraForm.controls.designacion.errors?.['required']
+              ) {
+                Obligatorio
+              }
+            </mat-error>
           </mat-form-field>
 
           <div class="dos-columnas">
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Calle</mat-label>
               <input matInput formControlName="calle" maxlength="150" />
-              @if (
-                nuevaObraForm.controls.calle.touched &&
-                nuevaObraForm.controls.calle.errors?.['required']
-              ) {
-                <mat-error>Obligatorio</mat-error>
-              }
+              <mat-error>
+                @if (
+                  nuevaObraForm.controls.calle.touched &&
+                  nuevaObraForm.controls.calle.errors?.['required']
+                ) {
+                  Obligatorio
+                }
+              </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Número</mat-label>
               <input matInput formControlName="numero" maxlength="20" />
-              @if (
-                nuevaObraForm.controls.numero.touched &&
-                nuevaObraForm.controls.numero.errors?.['required']
-              ) {
-                <mat-error>Obligatorio</mat-error>
-              }
+              <mat-error>
+                @if (
+                  nuevaObraForm.controls.numero.touched &&
+                  nuevaObraForm.controls.numero.errors?.['required']
+                ) {
+                  Obligatorio
+                }
+              </mat-error>
             </mat-form-field>
           </div>
 
           <div class="dos-columnas">
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Barrio (opcional)</mat-label>
               <input matInput formControlName="barrio" maxlength="100" />
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Localidad</mat-label>
               <input matInput formControlName="localidad" maxlength="100" />
-              @if (
-                nuevaObraForm.controls.localidad.touched &&
-                nuevaObraForm.controls.localidad.errors?.['required']
-              ) {
-                <mat-error>Obligatorio</mat-error>
-              }
+              <mat-error>
+                @if (
+                  nuevaObraForm.controls.localidad.touched &&
+                  nuevaObraForm.controls.localidad.errors?.['required']
+                ) {
+                  Obligatorio
+                }
+              </mat-error>
             </mat-form-field>
           </div>
 
           <div class="dos-columnas">
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Provincia</mat-label>
               <mat-select formControlName="provinciaId">
                 @for (p of provincias(); track p.id) {
                   <mat-option [value]="p.id">{{ p.nombre }}</mat-option>
                 }
               </mat-select>
-              @if (
-                nuevaObraForm.controls.provinciaId.touched &&
-                nuevaObraForm.controls.provinciaId.errors?.['required']
-              ) {
-                <mat-error>Seleccioná una provincia</mat-error>
-              }
+              <mat-error>
+                @if (
+                  nuevaObraForm.controls.provinciaId.touched &&
+                  nuevaObraForm.controls.provinciaId.errors?.['required']
+                ) {
+                  Seleccioná una provincia
+                }
+              </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Código postal</mat-label>
               <input
                 matInput
@@ -336,65 +358,75 @@
                 maxlength="10"
                 placeholder="X5000HCD"
               />
-              @if (
-                nuevaObraForm.controls.codigoPostal.touched &&
-                  nuevaObraForm.controls.codigoPostal.errors;
-                as e
-              ) {
-                @if (e['required']) {
-                  <mat-error>Obligatorio</mat-error>
-                } @else if (e['pattern']) {
-                  <mat-error>Solo letras y números, sin espacios (ej: X5000HCD)</mat-error>
+              <mat-error>
+                @if (
+                  nuevaObraForm.controls.codigoPostal.touched &&
+                    nuevaObraForm.controls.codigoPostal.errors;
+                  as e
+                ) {
+                  @if (e['required']) {
+                    Obligatorio
+                  } @else if (e['pattern']) {
+                    Solo letras y números, sin espacios (ej: X5000HCD)
+                  }
                 }
-              }
+              </mat-error>
             </mat-form-field>
           </div>
 
           <details class="catastrales">
             <summary>Datos catastrales (opcionales)</summary>
             <div class="catastrales-grid">
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Circunscripción</mat-label>
                 <input matInput formControlName="circunscripcion" />
-                @if (
-                  nuevaObraForm.controls.circunscripcion.touched &&
-                  nuevaObraForm.controls.circunscripcion.errors?.['pattern']
-                ) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    nuevaObraForm.controls.circunscripcion.touched &&
+                    nuevaObraForm.controls.circunscripcion.errors?.['pattern']
+                  ) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Sección</mat-label>
                 <input matInput formControlName="seccion" />
-                @if (
-                  nuevaObraForm.controls.seccion.touched &&
-                  nuevaObraForm.controls.seccion.errors?.['pattern']
-                ) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    nuevaObraForm.controls.seccion.touched &&
+                    nuevaObraForm.controls.seccion.errors?.['pattern']
+                  ) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Manzana</mat-label>
                 <input matInput formControlName="manzana" />
-                @if (
-                  nuevaObraForm.controls.manzana.touched &&
-                  nuevaObraForm.controls.manzana.errors?.['pattern']
-                ) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    nuevaObraForm.controls.manzana.touched &&
+                    nuevaObraForm.controls.manzana.errors?.['pattern']
+                  ) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Parcela</mat-label>
                 <input matInput formControlName="parcela" />
-                @if (
-                  nuevaObraForm.controls.parcela.touched &&
-                  nuevaObraForm.controls.parcela.errors?.['pattern']
-                ) {
-                  <mat-error>Solo números</mat-error>
-                }
+                <mat-error>
+                  @if (
+                    nuevaObraForm.controls.parcela.touched &&
+                    nuevaObraForm.controls.parcela.errors?.['pattern']
+                  ) {
+                    Solo números
+                  }
+                </mat-error>
               </mat-form-field>
             </div>
           </details>
@@ -426,7 +458,7 @@
         compares con tus recibos y planillas.
       </p>
 
-      <mat-form-field appearance="outline" class="campo-full">
+      <mat-form-field appearance="fill" class="campo-full">
         <mat-label>Honorarios referenciales</mat-label>
         <span matTextPrefix>$&nbsp;</span>
         <input
@@ -436,15 +468,19 @@
           step="0.01"
           formControlName="honorariosReferenciales"
         />
-        @if (
-          economicoForm.controls.honorariosReferenciales.hasError('required') &&
-          economicoForm.controls.honorariosReferenciales.touched
-        ) {
-          <mat-error>Ingresá los honorarios</mat-error>
-        }
-        @if (economicoForm.controls.honorariosReferenciales.hasError('min')) {
-          <mat-error>Debe ser un valor positivo</mat-error>
-        }
+        <mat-error>
+          @if (
+            economicoForm.controls.honorariosReferenciales.hasError('required') &&
+            economicoForm.controls.honorariosReferenciales.touched
+          ) {
+            Ingresá los honorarios
+          }
+        </mat-error>
+        <mat-error>
+          @if (economicoForm.controls.honorariosReferenciales.hasError('min')) {
+            Debe ser un valor positivo
+          }
+        </mat-error>
       </mat-form-field>
 
       @if (tareaForm.controls.tipoTareaId.value == null) {

@@ -86,43 +86,50 @@
 }
 
 /* ---------- Encabezado de página ----------
-   Diez features tenían su propio `page-header`; de ahí que el título arrancara
-   en una x distinta en cada pantalla. */
-.pv-page-header {
+   Los diez features tenían su propia copia de esto, con el mismo h1/.subtitle
+   y solo el contenedor distinto; por eso el título arrancaba en una x diferente
+   en cada pantalla. Una sola definición que soporta las dos formas que existen:
+
+     listas:       <div>título+subtítulo</div>  <button CTA>
+     formularios:  <a volver>  <div>título+subtítulo</div>
+
+   El CTA se manda al extremo con margin-left:auto en vez de space-between, que
+   en la forma de formulario empujaba el título contra el borde derecho. */
+.page-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-6);
+  align-items: center;
+  gap: var(--space-5);
   flex-wrap: wrap;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-7);
 
-  &__texto {
-    flex: 1 1 320px;
-    min-width: 0;
-  }
-
-  &__titulo {
+  h1 {
     margin: 0;
     font-size: var(--text-3xl);
-    font-weight: var(--fw-extra);
+    font-weight: var(--fw-bold);
     letter-spacing: var(--tracking-tight);
     color: var(--text-strong);
     line-height: var(--leading-tight);
   }
 
-  &__subtitulo {
-    margin: var(--space-3) 0 0;
+  .subtitle {
+    margin: var(--space-2) 0 0;
     color: var(--text-muted);
-    font-size: var(--text-lg);
+    font-size: var(--text-md);
     line-height: var(--leading-normal);
-    max-width: 65ch;
+    max-width: 70ch;
+  }
+
+  /* Solo un botón/acción al final se separa; la flecha de volver, que va
+     primero, no matchea y queda pegada al título. */
+  > button:last-child,
+  > .page-header__acciones {
+    margin-left: auto;
   }
 
   &__acciones {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    flex: 0 0 auto;
   }
 }
 

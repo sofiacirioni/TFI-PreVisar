@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -35,7 +34,6 @@ import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/con
     MatInputModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatChipsModule,
   ],
   templateUrl: './expediente-list.html',
   styleUrl: './expediente-list.scss',

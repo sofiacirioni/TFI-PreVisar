@@ -3,26 +3,7 @@
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 16px;
-
-  h1 {
-    margin: 0;
-    font-size: var(--text-3xl);
-    font-weight: 500;
-    color: var(--text-strong);
-  }
-
-  .subtitle {
-    margin: 4px 0 0;
-    color: var(--text-muted);
-    font-size: var(--text-md);
-  }
-}
+// .page-header está definido en styles/_components.scss.
 
 .cta-button {
 
@@ -93,29 +74,11 @@
   }
 }
 
-.tabla-wrap {
-  background-color: var(--surface-card);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
-  overflow: hidden;
-}
 
 .comitentes-table {
   width: 100%;
 
-  th {
-    background-color: var(--surface-sunken);
-    color: var(--text-muted);
-    font-weight: 500;
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
 
-  td {
-    color: var(--text-strong);
-    font-size: var(--text-md);
-  }
 
   .col-acciones {
     /* Ancho al contenido y en una sola línea: con 4 acciones a 40px no entraban
@@ -138,18 +101,7 @@
   }
 }
 
-.chip-tipo {
-  background-color: var(--accent-soft) !important;
-  color: var(--accent) !important;
-  font-size: var(--text-xs) !important;
-  height: 22px !important;
-  font-weight: 500 !important;
-
-  &.chip-juridica {
-    background-color: var(--warning-soft) !important;
-    color: var(--accent-text) !important;
-  }
-}
+// El chip de tipo de persona usa la primitiva .status-chip (styles/_components.scss).
 
 .resumen-resultados {
   margin-top: 12px;

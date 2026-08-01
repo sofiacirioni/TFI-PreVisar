@@ -293,7 +293,7 @@
                 <mat-panel-title>Campos del contrato</mat-panel-title>
               </mat-expansion-panel-header>
               <div class="campos-contrato">
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Honorarios pactados</mat-label>
                   <input
                     matInput
@@ -302,7 +302,7 @@
                     (ngModelChange)="honorariosPactados.set($event)"
                   />
                 </mat-form-field>
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Documentación a confeccionar</mat-label>
                   <textarea
                     matInput
@@ -311,7 +311,7 @@
                     (ngModelChange)="documentacionConfeccion.set($event)"
                   ></textarea>
                 </mat-form-field>
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Tareas especiales</mat-label>
                   <textarea
                     matInput
@@ -320,11 +320,11 @@
                     (ngModelChange)="tareasEspeciales.set($event)"
                   ></textarea>
                 </mat-form-field>
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Forma de pago</mat-label>
                   <input matInput [ngModel]="formaPago()" (ngModelChange)="formaPago.set($event)" />
                 </mat-form-field>
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Plazo de entrega</mat-label>
                   <input
                     matInput
@@ -332,7 +332,7 @@
                     (ngModelChange)="plazoEntrega.set($event)"
                   />
                 </mat-form-field>
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="fill">
                   <mat-label>Gastos especiales</mat-label>
                   <input
                     matInput

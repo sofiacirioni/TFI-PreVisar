@@ -144,4 +144,30 @@
   &--full {
     max-width: none;
   }
+
+  // En móvil los 32px de padding se comen un sexto del ancho útil.
+  @media (max-width: 600px) {
+    padding: var(--space-6) var(--space-5);
+  }
+}
+
+// ===== Móvil =====
+
+@media (max-width: 900px) {
+  // El cajón superpuesto no debe ocupar toda la pantalla: deja ver que hay
+  // contenido detrás y se cierra tocando afuera.
+  .sidebar {
+    width: min(280px, 82vw);
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding-inline: var(--space-2);
+  }
+
+  // Con poco ancho el email compite con el resto: se muestra solo el ícono.
+  .user-menu-trigger .user-email {
+    display: none;
+  }
 }

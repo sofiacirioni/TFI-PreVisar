@@ -22,12 +22,13 @@
       </button>
       <div class="title-wrap">
         <h1>{{ c.nombreRazonSocial }}</h1>
-        <mat-chip
-          class="chip-tipo"
-          [class.chip-juridica]="c.tipoPersona === 'JURIDICA'"
+        <span
+          class="status-chip status-chip--sin-punto"
+          [class.status-chip--info]="c.tipoPersona === 'FISICA'"
+          [class.status-chip--warning]="c.tipoPersona === 'JURIDICA'"
         >
           {{ c.tipoPersona === 'FISICA' ? 'Persona física' : 'Persona jurídica' }}
-        </mat-chip>
+        </span>
       </div>
       <button mat-flat-button class="cta-editar" (click)="irAEditar()">
         <mat-icon svgIcon="edit"></mat-icon>

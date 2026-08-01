@@ -37,7 +37,7 @@
 
         <!-- Nuevo valor -->
         <form [formGroup]="form" (ngSubmit)="guardar()" class="arancel-form">
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="fill" class="full-width">
             <mat-label>Nuevo valor del arancel</mat-label>
             <span matTextPrefix>$&nbsp;</span>
             <input
@@ -49,13 +49,15 @@
               placeholder="0,00"
             />
             <mat-hint>Se registra como nuevo valor vigente desde hoy.</mat-hint>
-            @if (form.controls.valor.touched && form.controls.valor.errors; as e) {
-              @if (e['required']) {
-                <mat-error>Ingresá un valor</mat-error>
-              } @else if (e['min']) {
-                <mat-error>El valor debe ser mayor a cero</mat-error>
+            <mat-error>
+              @if (form.controls.valor.touched && form.controls.valor.errors; as e) {
+                @if (e['required']) {
+                  Ingresá un valor
+                } @else if (e['min']) {
+                  El valor debe ser mayor a cero
+                }
               }
-            }
+            </mat-error>
           </mat-form-field>
 
           <div class="form-actions">

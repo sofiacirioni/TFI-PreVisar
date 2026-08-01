@@ -55,26 +55,28 @@
           <section>
             <h3 class="section-title">Identificación</h3>
 
-            <mat-form-field appearance="outline" class="full-width">
+            <mat-form-field appearance="fill" class="full-width">
               <mat-label>{{
                 form.controls.tipoPersona.value === 'JURIDICA' ? 'Razón social' : 'Nombre completo'
               }}</mat-label>
               <input matInput formControlName="nombreRazonSocial" />
-              @if (
-                form.controls.nombreRazonSocial.touched && form.controls.nombreRazonSocial.errors;
-                as e
-              ) {
-                @if (e['required']) {
-                  <mat-error>Obligatorio</mat-error>
-                } @else if (e['maxlength']) {
-                  <mat-error>Máximo 200 caracteres</mat-error>
-                } @else if (e['backend']) {
-                  <mat-error>{{ e['backend'] }}</mat-error>
+              <mat-error>
+                @if (
+                  form.controls.nombreRazonSocial.touched && form.controls.nombreRazonSocial.errors;
+                  as e
+                ) {
+                  @if (e['required']) {
+                    Obligatorio
+                  } @else if (e['maxlength']) {
+                    Máximo 200 caracteres
+                  } @else if (e['backend']) {
+                    {{ e['backend'] }}
+                  }
                 }
-              }
+              </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
+            <mat-form-field appearance="fill" class="full-width">
               <mat-label>{{ etiquetaDniCuit() }}</mat-label>
               <input
                 matInput
@@ -86,27 +88,27 @@
                 "
               />
               <mat-hint>{{ hintDniCuit() }}</mat-hint>
-              @if (form.controls.dniCuit.touched && form.controls.dniCuit.errors; as e) {
-                @if (e['required']) {
-                  <mat-error>Obligatorio</mat-error>
-                } @else if (e['dniInvalido']) {
-                  <mat-error>DNI inválido (7-8 dígitos sin puntos)</mat-error>
-                } @else if (e['cuitInvalido']) {
-                  <mat-error>CUIT inválido (formato XX-XXXXXXXX-X)</mat-error>
-                } @else if (e['cuitPrefijoInvalido']) {
-                  <mat-error>
+              <mat-error>
+                @if (form.controls.dniCuit.touched && form.controls.dniCuit.errors; as e) {
+                  @if (e['required']) {
+                    Obligatorio
+                  } @else if (e['dniInvalido']) {
+                    DNI inválido (7-8 dígitos sin puntos)
+                  } @else if (e['cuitInvalido']) {
+                    CUIT inválido (formato XX-XXXXXXXX-X)
+                  } @else if (e['cuitPrefijoInvalido']) {
                     @if (form.controls.tipoPersona.value === 'JURIDICA') {
-                      El CUIT de una persona jurídica debe empezar con 30, 33 o 34
-                    } @else {
-                      El CUIT de una persona física debe empezar con 20, 23 o 27
-                    }
-                  </mat-error>
-                } @else if (e['cuitVerificadorInvalido']) {
-                  <mat-error>El dígito verificador del CUIT es incorrecto</mat-error>
-                } @else if (e['backend']) {
-                  <mat-error>{{ e['backend'] }}</mat-error>
+                        El CUIT de una persona jurídica debe empezar con 30, 33 o 34
+                      } @else {
+                        El CUIT de una persona física debe empezar con 20, 23 o 27
+                      }
+                  } @else if (e['cuitVerificadorInvalido']) {
+                    El dígito verificador del CUIT es incorrecto
+                  } @else if (e['backend']) {
+                    {{ e['backend'] }}
+                  }
                 }
-              }
+              </mat-error>
             </mat-form-field>
           </section>
 
@@ -116,37 +118,43 @@
           <section>
             <h3 class="section-title">Contacto</h3>
 
-            <mat-form-field appearance="outline" class="full-width">
+            <mat-form-field appearance="fill" class="full-width">
               <mat-label>Domicilio</mat-label>
               <input matInput formControlName="domicilio" autocomplete="street-address" />
-              @if (form.controls.domicilio.touched && form.controls.domicilio.errors; as e) {
-                @if (e['required']) {
-                  <mat-error>Obligatorio</mat-error>
-                } @else if (e['backend']) {
-                  <mat-error>{{ e['backend'] }}</mat-error>
+              <mat-error>
+                @if (form.controls.domicilio.touched && form.controls.domicilio.errors; as e) {
+                  @if (e['required']) {
+                    Obligatorio
+                  } @else if (e['backend']) {
+                    {{ e['backend'] }}
+                  }
                 }
-              }
+              </mat-error>
             </mat-form-field>
 
             <div class="row-2">
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Email (opcional)</mat-label>
                 <input matInput type="email" formControlName="email" autocomplete="email" />
-                @if (form.controls.email.touched && form.controls.email.errors; as e) {
-                  @if (e['email']) {
-                    <mat-error>Email inválido</mat-error>
-                  } @else if (e['backend']) {
-                    <mat-error>{{ e['backend'] }}</mat-error>
+                <mat-error>
+                  @if (form.controls.email.touched && form.controls.email.errors; as e) {
+                    @if (e['email']) {
+                      Email inválido
+                    } @else if (e['backend']) {
+                      {{ e['backend'] }}
+                    }
                   }
-                }
+                </mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline">
+              <mat-form-field appearance="fill">
                 <mat-label>Teléfono (opcional)</mat-label>
                 <input matInput formControlName="telefono" autocomplete="tel" />
-                @if (form.controls.telefono.touched && form.controls.telefono.errors?.['backend']) {
-                  <mat-error>{{ form.controls.telefono.errors?.['backend'] }}</mat-error>
-                }
+                <mat-error>
+                  @if (form.controls.telefono.touched && form.controls.telefono.errors?.['backend']) {
+                    {{ form.controls.telefono.errors?.['backend'] }}
+                  }
+                </mat-error>
               </mat-form-field>
             </div>
           </section>

@@ -29,7 +29,7 @@
   } @else {
     <!-- Buscador: sin comitentes cargados no hay nada que filtrar. -->
     @if (comitentes().length > 0) {
-      <mat-form-field appearance="outline" class="buscador">
+      <mat-form-field appearance="fill" class="buscador">
       <mat-label>Buscar por nombre, DNI/CUIT o email</mat-label>
       <mat-icon matPrefix svgIcon="search"></mat-icon>
       <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
@@ -72,9 +72,13 @@
           <ng-container matColumnDef="tipo">
             <th mat-header-cell *matHeaderCellDef>Tipo</th>
             <td mat-cell *matCellDef="let c">
-              <mat-chip class="chip-tipo" [class.chip-juridica]="c.tipoPersona === 'JURIDICA'">
+              <span
+                class="status-chip status-chip--sin-punto"
+                [class.status-chip--info]="c.tipoPersona === 'FISICA'"
+                [class.status-chip--warning]="c.tipoPersona === 'JURIDICA'"
+              >
                 {{ c.tipoPersona === 'FISICA' ? 'Física' : 'Jurídica' }}
-              </mat-chip>
+              </span>
             </td>
           </ng-container>
 

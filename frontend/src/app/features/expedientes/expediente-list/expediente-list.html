@@ -29,7 +29,7 @@
   } @else {
     <!-- Buscador: sin expedientes cargados no hay nada que filtrar. -->
     @if (expedientes().length > 0) {
-      <mat-form-field appearance="outline" class="buscador">
+      <mat-form-field appearance="fill" class="buscador">
         <mat-label>Buscar por nombre, comitente, obra o tarea</mat-label>
         <mat-icon matPrefix svgIcon="search"></mat-icon>
         <input matInput [formControl]="filtroControl" placeholder="Empezá a escribir..." />
