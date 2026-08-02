@@ -50,8 +50,8 @@ public class PagoMpService {
                 .items(List.of(item))
                 .backUrls(backUrls)
                 // notificationUrl va en la preferencia, NO en back_urls: es a donde MP
-                // manda el webhook (SCRUM-187) que confirma el pago. Usa webhookUrlBase
-                // (backend, publico) y NO backUrlBase (frontend): son destinos distintos.
+                // manda el webhook que confirma el pago. Usa webhookUrlBase (backend,
+                // publico) y NO backUrlBase (frontend): son destinos distintos.
                 .notificationUrl(notificationUrl())
                 .externalReference(String.valueOf(expedienteId)); // CLAVE: el webhook resuelve el
                                                                   // expediente por aca

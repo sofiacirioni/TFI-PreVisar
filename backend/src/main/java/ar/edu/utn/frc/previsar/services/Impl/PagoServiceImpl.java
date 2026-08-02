@@ -125,9 +125,19 @@ public class PagoServiceImpl implements PagoService {
         return estado;
     }
 
-    /** Idempotente: upsert por mp_payment_id. Notifica al profesional solo en la transición a APROBADO. */
-    private void acreditar(String paymentId, Payment mpPago) {
-        Long expedienteId = Long.valueOf(mpPago.getExternalReference());
+    /**
+     * Idempotente: upsert por mp_payment_id. Notifica al profesional solo en la transición a APROBADO.
+     * package-private para poder testearlo sin llamar a la API de Mercado Pago.
+     */
+    void acreditar(String paymentId, Payment mpPago) {
+        Long expedienteId = expedienteDe(mpPago);
+        if (expedienteId == null) {
+            // No es un pago de PreVisar (o no lo podemos atribuir). Se descarta sin
+            // error: la notificación ya se ACK-ea con 200 y MP deja de reintentar.
+            log.warn("Pago {} sin external_reference utilizable ({}): no corresponde a "
+                    + "ningún expediente, se ignora", paymentId, mpPago.getExternalReference());
+            return;
+        }
         EstadoPago estado = mapearEstado(mpPago.getStatus());
 
         pagoRepository.findByMpPaymentId(paymentId).ifPresentOrElse(
@@ -160,7 +170,28 @@ public class PagoServiceImpl implements PagoService {
         emailService.notificarPagoAcreditado(pago.getExpediente().getId(), email, pago.getMonto());
     }
 
-    private EstadoPago mapearEstado(String status) {
+    /**
+     * Expediente al que pertenece el pago, leído de {@code external_reference} (que
+     * es donde {@link PagoMpService} lo graba al crear la preferencia).
+     *
+     * <p>Devuelve null si el campo viene vacío o no es numérico. Pasa con pagos de la
+     * misma cuenta de MP originados fuera de PreVisar: antes esto era un
+     * {@code Long.valueOf(null)} → NPE → 500, y como MP reintenta ante 5xx, la misma
+     * notificación quedaba rebotando indefinidamente.
+     */
+    Long expedienteDe(Payment mpPago) {
+        String referencia = mpPago.getExternalReference();
+        if (referencia == null || referencia.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(referencia.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    EstadoPago mapearEstado(String status) {
         return switch (status) {
             case "approved" -> EstadoPago.APROBADO;
             case "pending", "in_process", "authorized" -> EstadoPago.PENDIENTE;
@@ -215,7 +246,6 @@ public class PagoServiceImpl implements PagoService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private String extraerDataId(Map<String, Object> body) {
         if (body == null)
             return null;

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ExpedienteRequest, ExpedienteResponse } from '../models/expediente.model';
 import { DatosContrato } from '../models/datos-contrato.model';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable } from 'rxjs';
 import { API } from '../constants/api.constants';
 import { AportesResponse, CalcularAportesRequest } from '../models/aportes.model';
 import { EstadoArancelResponse, PreferenciaPago } from '../models/pago.model';

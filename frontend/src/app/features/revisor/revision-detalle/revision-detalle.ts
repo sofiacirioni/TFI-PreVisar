@@ -8,9 +8,7 @@ import { DestroyRef } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { timer } from 'rxjs/internal/observable/timer';
-import { switchMap } from 'rxjs/internal/operators/switchMap';
-import { takeWhile } from 'rxjs/internal/operators/takeWhile';
+import { switchMap, takeWhile, timer } from 'rxjs';
 import { RevisionExternaService } from '../../../core/services/revision-externa.service';
 import { RevisionDetalle as RevisionDetalleModel } from '../../../core/models/revision-externa.model';
 

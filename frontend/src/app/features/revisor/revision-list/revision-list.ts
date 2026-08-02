@@ -10,7 +10,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { firstValueFrom } from 'rxjs';
 import { RevisionExternaService } from '../../../core/services/revision-externa.service';
 import {
   RevisionMetricas,

@@ -3,9 +3,8 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { AuthResponse, LoginRequest, RegisterRequest, RolUsuario } from '@core/models';
 import { TokenService } from './token.service';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable, tap } from 'rxjs';
 import { API } from '@core/constants/api.constants';
-import { tap } from 'rxjs/internal/operators/tap';
 import { ProfesionalService } from './profesional.service';
 
 

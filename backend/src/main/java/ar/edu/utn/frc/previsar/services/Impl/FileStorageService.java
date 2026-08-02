@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,10 +65,16 @@ public class FileStorageService {
         }
     }
 
-    /** Carga el contenido completo del archivo en memoria. */
+    /**
+     * Carga el contenido completo del archivo en memoria.
+     *
+     * El stream va en try-with-resources: sin cerrarlo se filtraba un descriptor en
+     * cada lectura (validación, compilado, análisis con IA), y en Windows además
+     * dejaba el archivo bloqueado, con lo que {@link #eliminar} fallaba en silencio.
+     */
     public byte[] leerBytes(String rutaRelativa) {
-        try {
-            return cargar(rutaRelativa).getInputStream().readAllBytes();
+        try (InputStream in = cargar(rutaRelativa).getInputStream()) {
+            return in.readAllBytes();
         } catch (IOException e) {
             throw new StorageException("No se pudo leer el archivo", e);
         }

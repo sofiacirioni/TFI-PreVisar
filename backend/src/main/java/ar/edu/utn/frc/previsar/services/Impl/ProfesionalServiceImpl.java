@@ -155,8 +155,8 @@ public class ProfesionalServiceImpl implements ProfesionalService {
     // -------------------------- Mappers --------------------------
 
     /**
-     * Mapper manual de entidad a DTO.
-     * En la próxima sesión refactorizamos esto con MapStruct.
+     * Delega en MapStruct y completa {@code esRevisor}, que el mapper no puede
+     * resolver: no sale de la entidad sino de consultar RolRevisorRepository.
      */
     private ProfesionalResponseDto mapearAResponse(Profesional p, boolean esRevisor) {
         ProfesionalResponseDto response = profesionalMapper.toResponse(p);

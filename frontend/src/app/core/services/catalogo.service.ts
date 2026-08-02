@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { CondicionIva, Especialidad, Provincia, Regional, TipoTarea, Titulo } from '../models';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable } from 'rxjs';
 import { API } from '../constants/api.constants';
 
 @Injectable({

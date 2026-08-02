@@ -15,9 +15,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { Obra } from '../../../core/models';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { debounceTime } from 'rxjs/internal/operators/debounceTime';
+import { debounceTime, firstValueFrom } from 'rxjs';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({

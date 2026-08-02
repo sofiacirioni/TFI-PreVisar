@@ -18,7 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConfirmDialog, ConfirmDialogData } from '../../../shared/components/confirm-dialog/confirm-dialog';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-comitente-list',

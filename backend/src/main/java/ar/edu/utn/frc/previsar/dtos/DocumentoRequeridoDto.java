@@ -8,6 +8,8 @@ public record DocumentoRequeridoDto(
         int orden,
         boolean permiteMultiples,
         boolean generable,
+        /** Se espera A4. En false para los de gran formato (planos): el nivel 1 omite el chequeo. */
+        boolean validaA4,
         /**
          * true cuando el documento fue retirado de la estructura vigente (activo=false)
          * pero este expediente ya tiene un archivo cargado en esa ranura. Solo se marca

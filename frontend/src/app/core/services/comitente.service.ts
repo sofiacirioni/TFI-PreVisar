@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Comitente, ComitenteRequest } from '../models';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable } from 'rxjs';
 import { API } from '../constants/api.constants';
 
 @Injectable({

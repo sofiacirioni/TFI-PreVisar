@@ -1,0 +1,27 @@
+# Lo que NO tiene que viajar al contexto de build de Docker.
+# Menos contexto = build más rápido y menos invalidación de capas.
+
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# El wrapper no se usa dentro de la imagen (ver Dockerfile)
+mvnw
+mvnw.cmd
+.mvn/
+
+# Archivos subidos en desarrollo: nunca van a la imagen
+data/
+
+# IDE y sistema operativo
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.DS_Store
+
+# Secretos: las variables se inyectan por compose, no se hornean en la imagen
+.env
+*.env
+!.env.example

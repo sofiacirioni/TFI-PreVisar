@@ -1,21 +1,133 @@
+# =============================================================================
+# PreVisar — stack completo (base de datos + API + SPA)
+# =============================================================================
+#   docker compose up -d --build     levanta todo
+#   docker compose logs -f backend   sigue los logs de la API
+#   docker compose down              baja todo (los datos sobreviven)
+#   docker compose down -v           baja todo Y BORRA la base y los archivos
+#
+# Único requisito previo: un archivo .env en esta carpeta (copiar .env.example).
+# La app queda en http://localhost:4200
+# =============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # Base de datos
+  # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
     container_name: previsar-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: previsar
-      POSTGRES_USER: previsar
-      POSTGRES_PASSWORD: previsar_dev
+      POSTGRES_DB: ${POSTGRES_DB:-previsar}
+      POSTGRES_USER: ${POSTGRES_USER:-previsar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-previsar_dev}
     ports:
-      - "5432:5432"
+      # Expuesto para poder conectarse con DBeaver/psql desde el host.
+      # En un despliegue real esta línea se saca: solo el backend necesita la base.
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U previsar -d previsar"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-previsar} -d ${POSTGRES_DB:-previsar}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
+  # ---------------------------------------------------------------------------
+  # API (Spring Boot) — Flyway aplica las migraciones al arrancar
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+    container_name: previsar-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        # No alcanza con que el contenedor exista: Flyway necesita la base
+        # aceptando conexiones o el arranque falla.
+        condition: service_healthy
+    environment:
+      # Perfil propio de contenedor: el perfil "dev" apunta a localhost:5432,
+      # que acá sería el propio contenedor del backend.
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-previsar}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-previsar}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-previsar_dev}
+
+      # Sin JWT_SECRET la app no arranca (intencional).
+      JWT_SECRET: ${JWT_SECRET:?falta JWT_SECRET en el .env — generalo con "openssl rand -base64 64"}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-10800000}
+      JWT_ISSUER: ${JWT_ISSUER:-previsar-api}
+
+      # El navegador habla siempre con nginx (mismo origen), así que CORS no
+      # entra en juego en este stack. Queda configurable por si se consume la
+      # API desde otro lado.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200}
+
+      # Carpeta de archivos subidos, dentro del volumen previsar_storage.
+      PREVISAR_STORAGE_PATH: /data/expedientes
+
+      # --- Integraciones externas ---
+      # Vacías por default para que el stack levante sin credenciales: la app
+      # arranca igual y solo falla la función puntual que las necesita.
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-}
+      MP_BACK_URL_BASE: ${MP_BACK_URL_BASE:-http://localhost:4200}
+      MP_WEBHOOK_URL_BASE: ${MP_WEBHOOK_URL_BASE:-}
+      MP_WEBHOOK_SECRET: ${MP_WEBHOOK_SECRET:-}
+
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_COLEGIO: ${MAIL_COLEGIO:-}
+      # Sin credenciales SMTP el envío se apaga solo, así no se llena de warnings.
+      MAIL_HABILITADO: ${MAIL_HABILITADO:-false}
+
+      LOG_LEVEL_APP: ${LOG_LEVEL_APP:-INFO}
+    volumes:
+      # Los documentos subidos viven en un volumen, no en el contenedor: si se
+      # recrea la imagen, los archivos siguen ahí (y las rutas guardadas en la
+      # base siguen resolviendo).
+      - previsar_storage:/data/expedientes
+    ports:
+      # Útil para pegarle directo a la API o abrir Swagger sin pasar por nginx.
+      - "${BACKEND_PORT:-8080}:8080"
+    healthcheck:
+      # /api-docs es público (ver SecurityConfig) y solo responde cuando el
+      # contexto de Spring terminó de levantar.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/api-docs > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      # Compilar el contexto + aplicar migraciones tarda: sin este margen el
+      # contenedor se marcaría unhealthy antes de haber terminado de arrancar.
+      start_period: 60s
+
+  # ---------------------------------------------------------------------------
+  # SPA (Angular servida por nginx, que además hace de proxy a la API)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+    container_name: previsar-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        # Con service_started nginx podía atender antes de que la API existiera
+        # y el primer login moría con 502.
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
+  previsar_storage:

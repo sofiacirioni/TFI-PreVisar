@@ -6,12 +6,12 @@ import { EstadoPagoRetorno } from '../../../core/models/pago.model';
 import { TokenService } from '../../../core/services/token.service';
 
 /**
- * Vista de retorno del checkout de Mercado Pago (SCRUM-182).
+ * Vista de retorno del checkout de Mercado Pago.
  *
  * IMPORTANTE: el retorno del navegador NO es la fuente de verdad del pago. Los
  * query params (status, payment_id, external_reference) son solo feedback visual;
  * el usuario puede cerrar la pestaña o manipular la URL. La acreditación real y el
- * registro del Pago llegan por el webhook server-to-server (SCRUM-187).
+ * registro del Pago llegan por el webhook server-to-server.
  * Por eso acá NO se persiste nada ni se cambia el estado del expediente.
  */
 @Component({

@@ -7,12 +7,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.naming.AuthenticationException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -94,7 +94,14 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Otras fallas de autenticación. Devuelve HTTP 401.
+     * Otras fallas de autenticación de Spring Security lanzadas desde el login
+     * (cuenta deshabilitada tras darse de baja, cuenta bloqueada, credenciales
+     * expiradas). {@code BadCredentialsException} también hereda de esta, pero
+     * tiene su propio handler más específico y Spring lo prefiere.
+     *
+     * Es {@code org.springframework.security.core.AuthenticationException}: antes
+     * acá se importaba la homónima de {@code javax.naming} (JNDI), que nunca se
+     * lanza, y estos casos caían en el catch-all devolviendo 500 en vez de 401.
      */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponseDto> manejarAuth(

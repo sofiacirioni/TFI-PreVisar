@@ -152,8 +152,15 @@ public class EstructuraServiceImpl implements EstructuraService {
                 .seccion(seccion)
                 .codigo(request.getCodigo())
                 .nombre(request.getNombre())
-                .obligatorio(request.isObligatorio())
+                .obligatorio(orDefault(request.getObligatorio(), true))
                 .orden(orden)
+                // Flags de comportamiento de la ranura. Antes no se seteaban: todo
+                // documento creado desde la pantalla del revisor quedaba con un solo
+                // archivo, sin generación automática de PDF y exigiendo A4, sin forma
+                // de cambiarlo salvo tocando la base a mano.
+                .permiteMultiples(orDefault(request.getPermiteMultiples(), false))
+                .generable(orDefault(request.getGenerable(), false))
+                .validaA4(orDefault(request.getValidaA4(), true))
                 .activo(true)
                 .build();
 
@@ -167,7 +174,11 @@ public class EstructuraServiceImpl implements EstructuraService {
         assertRevisorDeProvincia(documento.getSeccion().getProvincia());
 
         documento.setNombre(request.getNombre());
-        documento.setObligatorio(request.isObligatorio());
+        // Lo ausente se conserva: un cliente que no conoce un flag no debe apagarlo.
+        documento.setObligatorio(orDefault(request.getObligatorio(), documento.isObligatorio()));
+        documento.setPermiteMultiples(orDefault(request.getPermiteMultiples(), documento.isPermiteMultiples()));
+        documento.setGenerable(orDefault(request.getGenerable(), documento.isGenerable()));
+        documento.setValidaA4(orDefault(request.getValidaA4(), documento.isValidaA4()));
         if (request.getOrden() != null) {
             documento.setOrden(request.getOrden());
         }
@@ -214,12 +225,18 @@ public class EstructuraServiceImpl implements EstructuraService {
                     .activo(true)
                     .build());
 
+            // La copia tiene que ser fiel: sin los flags, clonar producía una
+            // estructura degradada (ranuras de un solo archivo, sin generación
+            // automática y exigiendo A4 hasta en los planos).
             s.getDocumentos().forEach(d -> documentoRepository.save(DocumentoRequerido.builder()
                     .seccion(copia)
                     .codigo(d.getCodigo())
                     .nombre(d.getNombre())
                     .obligatorio(d.isObligatorio())
                     .orden(d.getOrden())
+                    .permiteMultiples(d.isPermiteMultiples())
+                    .generable(d.isGenerable())
+                    .validaA4(d.isValidaA4())
                     .activo(true)
                     .build()));
         }
@@ -229,6 +246,11 @@ public class EstructuraServiceImpl implements EstructuraService {
     // ------------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------------
+
+    /** Valor enviado por el cliente, o el default indicado si vino ausente (null). */
+    private static boolean orDefault(Boolean valor, boolean porDefecto) {
+        return valor != null ? valor : porDefecto;
+    }
 
     private Provincia provinciaDelRevisorActual() {
         Profesional actual = securityUtils.getProfesionalActual();

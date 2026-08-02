@@ -15,7 +15,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ProfesionalService } from '../../core/services/profesional.service';
 import { CondicionIva, Regional, Titulo } from '../../core/models/catalogos.model';
-import { forkJoin } from 'rxjs/internal/observable/forkJoin';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import { ProfesionalUpdateRequest } from '../../core/models/profesional.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CatalogoService } from '../../core/services/catalogo.service';
@@ -29,7 +29,6 @@ import {
   ConfirmDialogData,
 } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { AuthService } from '../../core/services/auth.service';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 
 @Component({
   selector: 'app-profile',

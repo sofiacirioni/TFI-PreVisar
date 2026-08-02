@@ -10,7 +10,14 @@ import { DocumentoRequeridoRequest } from '../../../core/models/estructura.model
 export interface DocumentoDialogData {
   modo: 'crear' | 'editar';
   seccionNombre: string;
-  documento?: { codigo: string; nombre: string; obligatorio: boolean };
+  documento?: {
+    codigo: string;
+    nombre: string;
+    obligatorio: boolean;
+    permiteMultiples: boolean;
+    generable: boolean;
+    validaA4: boolean;
+  };
 }
 
 /** Alta/edición de un documento requerido. El código es clave estable: al editar no se cambia. */
@@ -52,7 +59,24 @@ export interface DocumentoDialogData {
           }
         </mat-form-field>
 
-        <mat-checkbox formControlName="obligatorio">Documento obligatorio</mat-checkbox>
+        <div class="dlg__flags">
+          <mat-checkbox formControlName="obligatorio">Documento obligatorio</mat-checkbox>
+
+          <mat-checkbox formControlName="permiteMultiples">
+            Admite varios archivos
+            <span class="dlg__ayuda">— comprobantes, planos, anexos.</span>
+          </mat-checkbox>
+
+          <mat-checkbox formControlName="generable">
+            El sistema genera el PDF
+            <span class="dlg__ayuda">— solo para ranuras con plantilla propia (carátula, contrato).</span>
+          </mat-checkbox>
+
+          <mat-checkbox formControlName="validaA4">
+            Se espera en A4
+            <span class="dlg__ayuda">— desmarcalo en planos de gran formato (A1/A3).</span>
+          </mat-checkbox>
+        </div>
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -78,6 +102,16 @@ export interface DocumentoDialogData {
       .dlg__campo {
         width: 100%;
       }
+      .dlg__flags {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 4px;
+      }
+      .dlg__ayuda {
+        color: #5a6b78;
+        font-size: 0.8rem;
+      }
     `,
   ],
 })
@@ -93,6 +127,10 @@ export class DocumentoDialog {
     ],
     nombre: [this.data.documento?.nombre ?? '', [Validators.required, Validators.maxLength(160)]],
     obligatorio: [this.data.documento?.obligatorio ?? true],
+    // Defaults del alta espejados del backend (ver DocumentoRequeridoRequestDto).
+    permiteMultiples: [this.data.documento?.permiteMultiples ?? false],
+    generable: [this.data.documento?.generable ?? false],
+    validaA4: [this.data.documento?.validaA4 ?? true],
   });
 
   guardar(): void {
@@ -101,7 +139,15 @@ export class DocumentoDialog {
       return;
     }
     // getRawValue incluye el código aunque esté disabled (en edición).
-    const { codigo, nombre, obligatorio } = this.form.getRawValue();
-    this.ref.close({ codigo: codigo.trim(), nombre: nombre.trim(), obligatorio });
+    const { codigo, nombre, obligatorio, permiteMultiples, generable, validaA4 } =
+      this.form.getRawValue();
+    this.ref.close({
+      codigo: codigo.trim(),
+      nombre: nombre.trim(),
+      obligatorio,
+      permiteMultiples,
+      generable,
+      validaA4,
+    });
   }
 }

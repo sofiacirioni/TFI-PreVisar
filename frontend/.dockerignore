@@ -1,0 +1,16 @@
+# Lo que NO tiene que viajar al contexto de build de Docker.
+# node_modules es lo importante acá: son cientos de MB que además se reinstalan
+# dentro de la imagen con npm ci (y los binarios de Windows no sirven en Linux).
+
+node_modules/
+dist/
+.angular/
+
+# IDE y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+
+# Secretos
+.env
+*.env

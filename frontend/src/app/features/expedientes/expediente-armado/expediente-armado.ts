@@ -565,7 +565,7 @@ export class ExpedienteArmado {
     });
   }
 
-  // ── Pago del arancel (SCRUM-182) ─────────────────────────────────────────
+  // ── Pago del arancel ─────────────────────────────────────────────────────
   // Un solo botón abre el diálogo, que resuelve "pagar ahora" vs "compartir link".
   abrirPago(): void {
     const vm = this.vm();

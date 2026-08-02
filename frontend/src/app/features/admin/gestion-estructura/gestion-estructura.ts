@@ -13,9 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs/internal/Observable';
-import { forkJoin } from 'rxjs/internal/observable/forkJoin';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { Observable, firstValueFrom, forkJoin } from 'rxjs';
 import { EstructuraService } from '../../../core/services/estructura.service';
 import { CatalogoService } from '../../../core/services/catalogo.service';
 import {
@@ -118,7 +116,14 @@ export class GestionEstructura implements OnInit {
     const data: DocumentoDialogData = {
       modo: 'editar',
       seccionNombre: seccion.nombre,
-      documento: { codigo: doc.codigo, nombre: doc.nombre, obligatorio: doc.obligatorio },
+      documento: {
+        codigo: doc.codigo,
+        nombre: doc.nombre,
+        obligatorio: doc.obligatorio,
+        permiteMultiples: doc.permiteMultiples,
+        generable: doc.generable,
+        validaA4: doc.validaA4,
+      },
     };
     const body = await this.abrirDialogoDocumento(data);
     if (!body) return;

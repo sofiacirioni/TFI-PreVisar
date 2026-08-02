@@ -21,7 +21,7 @@ export const routes: Routes = [
       import('@features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
 
-  // Retorno del checkout de MP (SCRUM-182). Público y sin layout: lo ve el comitente,
+  // Retorno del checkout de MP. Público y sin layout: lo ve el comitente,
   // que paga desde MP y NO tiene acceso a la app. :estado = exito | pendiente | error.
   {
     path: 'pago/:estado',

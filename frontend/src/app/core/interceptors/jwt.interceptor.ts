@@ -1,7 +1,12 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { TokenService } from '@core/services/token.service';
-import { environment } from '@env/environment.development';
+// Sin alias de entorno: '@env/environment' es el archivo que `fileReplacements`
+// sustituye por environment.development.ts en los builds de desarrollo. Importar
+// environment.development directamente saltea ese reemplazo y en el build de
+// producción deja el guard comparando contra http://localhost:8080, con lo que
+// NINGUNA request lleva el header Authorization.
+import { environment } from '@env/environment';
 
 /**
  * Agrega el header Authorization: Bearer <token> a las requests dirigidas

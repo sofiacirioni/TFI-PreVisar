@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable } from 'rxjs';
 import { API } from '@core/constants/api.constants';
 import { ActualizarArancelRequest, ArancelVigente } from '@core/models/aportes.model';
 

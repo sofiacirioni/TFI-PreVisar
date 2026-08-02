@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs/internal/Observable';
+import { Observable } from 'rxjs';
 import {
   DocumentoRequerido,
   DocumentoRequeridoRequest,

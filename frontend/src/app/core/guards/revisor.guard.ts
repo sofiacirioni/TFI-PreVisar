@@ -1,9 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { ProfesionalService } from '@core/services/profesional.service';
-import { of } from 'rxjs/internal/observable/of';
-import { map } from 'rxjs/internal/operators/map';
-import { catchError } from 'rxjs/internal/operators/catchError';
+import { catchError, map, of } from 'rxjs';
 
 /**
  * Permite el acceso solo a profesionales con rol de revisor.

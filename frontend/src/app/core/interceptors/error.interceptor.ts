@@ -2,8 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { TokenService } from '@core/services/token.service';
 import { Router } from '@angular/router';
-import { catchError } from 'rxjs/internal/operators/catchError';
-import { throwError } from 'rxjs/internal/observable/throwError';
+import { catchError, throwError } from 'rxjs';
 
 /**
  * Maneja errores HTTP de forma centralizada.

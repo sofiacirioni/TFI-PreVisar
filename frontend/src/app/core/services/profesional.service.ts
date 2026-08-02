@@ -1,6 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { Observable } from 'rxjs/internal/Observable';
-import { tap } from 'rxjs/internal/operators/tap';
+import { Observable, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { API } from '../constants/api.constants';
 import { Profesional, ProfesionalUpdateRequest } from '../models/profesional.model';

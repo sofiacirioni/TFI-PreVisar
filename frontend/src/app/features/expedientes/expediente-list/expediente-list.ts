@@ -13,8 +13,7 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { debounceTime } from 'rxjs/internal/operators/debounceTime';
-import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
+import { debounceTime, firstValueFrom } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ExpedienteService } from '../../../core/services/expediente.service';
 import {
