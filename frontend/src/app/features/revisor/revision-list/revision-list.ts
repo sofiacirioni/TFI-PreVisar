@@ -1,5 +1,5 @@
 import { ErrorState } from '../../../shared/components/error-state/error-state';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -12,7 +12,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 import { RevisionExternaService } from '../../../core/services/revision-externa.service';
-import { RevisionResumen } from '../../../core/models/revision-externa.model';
+import {
+  RevisionMetricas,
+  RevisionResumen,
+} from '../../../core/models/revision-externa.model';
 import {
   ConfirmDialog,
   ConfirmDialogData,
@@ -50,6 +53,81 @@ export class RevisionList implements OnInit {
 
   readonly columnas = ['archivo', 'estado', 'fecha', 'acciones'];
 
+  // ── Métricas ────────────────────────────────────────────────────────────
+  // Se derivan del listado que ya está cargado: no hay requests adicionales.
+  // Lo que falta acá (qué problemas detectó la IA y con qué frecuencia) vive
+  // dentro del `resultado` de cada revisión, que el listado no devuelve.
+
+  readonly totalAnalizados = computed(() => this.revisiones().length);
+
+  readonly hayMetricas = computed(() => this.totalAnalizados() > 0);
+
+  /** Analizados dentro del mes calendario en curso. */
+  readonly analizadosEsteMes = computed(() => {
+    const hoy = new Date();
+    return this.revisiones().filter((r) => {
+      const d = new Date(r.createdAt);
+      return (
+        !Number.isNaN(d.getTime()) &&
+        d.getFullYear() === hoy.getFullYear() &&
+        d.getMonth() === hoy.getMonth()
+      );
+    }).length;
+  });
+
+  readonly completados = computed(
+    () => this.revisiones().filter((r) => r.estado === 'COMPLETADO').length,
+  );
+
+  readonly conError = computed(
+    () => this.revisiones().filter((r) => r.estado === 'ERROR').length,
+  );
+
+  readonly enProgreso = computed(
+    () => this.revisiones().filter((r) => r.estado === 'EN_PROGRESO').length,
+  );
+
+  /**
+   * Proporción de análisis que terminaron bien. Solo tiene sentido si ya
+   * terminó alguno: mientras todos están en progreso no hay nada que medir.
+   */
+  readonly tasaExito = computed(() => {
+    const terminados = this.completados() + this.conError();
+    return terminados > 0 ? Math.round((this.completados() / terminados) * 100) : null;
+  });
+
+  /**
+   * Agregados que solo el backend puede calcular. Se piden aparte del listado
+   * a propósito: si esta llamada falla se pierde el gráfico, no las tarjetas
+   * ni el historial.
+   */
+  readonly metricas = signal<RevisionMetricas | null>(null);
+
+  /** Problemas por tipo, ya normalizados contra el más frecuente. */
+  readonly problemasPorTipo = computed(() => {
+    const lista = this.metricas()?.problemasPorTipo ?? [];
+    const max = Math.max(...lista.map((p) => p.cantidad), 0);
+    return lista.map((p) => ({
+      etiqueta: this.nombrarProblema(p.etiqueta),
+      cantidad: p.cantidad,
+      porcentaje: max > 0 ? Math.round((p.cantidad / max) * 100) : 0,
+    }));
+  });
+
+  /** El backend devuelve el enum crudo; acá se muestra en lenguaje del usuario. */
+  private nombrarProblema(codigo: string): string {
+    const nombres: Record<string, string> = {
+      ILEGIBLE: 'Ilegible',
+      CORTADO: 'Cortado',
+      PIXELADO: 'Pixelado',
+      TORCIDO: 'Torcido',
+      TAPADO: 'Tapado',
+      ROTULO: 'Rótulo',
+      FIRMA_SELLO: 'Firma o sello',
+    };
+    return nombres[codigo] ?? codigo;
+  }
+
   ngOnInit(): void {
     this.cargar();
   }
@@ -57,6 +135,13 @@ export class RevisionList implements OnInit {
   cargar(): void {
     this.cargando.set(true);
     this.errorCarga.set(null);
+
+    // Silenciosa: si falla, el panel sigue funcionando sin el gráfico.
+    this.service.metricas().subscribe({
+      next: (m) => this.metricas.set(m),
+      error: () => this.metricas.set(null),
+    });
+
     this.service.listar().subscribe({
       next: (datos) => {
         this.revisiones.set(datos);

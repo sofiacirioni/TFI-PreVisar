@@ -2,6 +2,7 @@ package ar.edu.utn.frc.previsar.controllers;
 
 import ar.edu.utn.frc.previsar.dtos.response.RevisionExternaDetalleDto;
 import ar.edu.utn.frc.previsar.dtos.response.RevisionExternaResumenDto;
+import ar.edu.utn.frc.previsar.dtos.response.RevisionMetricasDto;
 import ar.edu.utn.frc.previsar.services.RevisionExternaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,15 @@ public class RevisorController {
     @GetMapping
     public List<RevisionExternaResumenDto> listar() {
         return service.listar();
+    }
+
+    /**
+     * Métricas del historial propio. Va antes de /{id} para dejar explícito que
+     * "metricas" es un recurso y no un identificador.
+     */
+    @GetMapping("/metricas")
+    public RevisionMetricasDto metricas() {
+        return service.metricas();
     }
 
     @GetMapping("/{id}")

@@ -1,10 +1,8 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Comitente, ComitenteRequest } from '../models';
 import { Observable } from 'rxjs/internal/Observable';
 import { API } from '../constants/api.constants';
-import { catchError } from 'rxjs/internal/operators/catchError';
-import { of, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -23,18 +21,12 @@ export class ComitenteService {
   }
 
   /**
-   * Busca un comitente por DNI/CUIT.
+   * Búsqueda incremental por DNI/CUIT. El backend ignora guiones y demás
+   * separadores, y devuelve lista vacía con menos de 3 dígitos.
    */
-  buscarPorDniCuit(dniCuit: string): Observable<Comitente | null> {
-    const params = new HttpParams().set('dniCuit', dniCuit);
-    return this.http.get<Comitente>(API.COMITENTE_BUSCAR, { params }).pipe(
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 404) {
-          return of(null);
-        }
-        return throwError(() => err);
-      })
-    );
+  buscarIncremental(fragmento: string): Observable<Comitente[]> {
+    const params = new HttpParams().set('q', fragmento);
+    return this.http.get<Comitente[]>(API.COMITENTE_BUSCAR_INCREMENTAL, { params });
   }
 
   crear(request: ComitenteRequest): Observable<Comitente> {

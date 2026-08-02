@@ -67,4 +67,102 @@
       }
     </div>
   </section>
+
+  <!-- ===== Tu actividad ===== -->
+  @if (!cargandoExpedientes() && hayMetricas()) {
+    <section class="metricas-section">
+      <h2 class="section-title">Tu actividad</h2>
+
+      <div class="kpi-fila">
+        <!-- Accionable: no es una estadística, es algo que resolver. -->
+        <a class="kpi-card" routerLink="/expedientes" [class.kpi-card--accion]="borradores() > 0">
+          <span class="kpi-card__valor">{{ borradores() }}</span>
+          <span class="kpi-card__etiqueta">
+            @if (borradores() === 1) {
+              expediente en borrador
+            } @else {
+              expedientes en borrador
+            }
+          </span>
+          @if (borradores() > 0) {
+            <span class="kpi-card__pie">Retomá donde quedaste</span>
+          }
+        </a>
+
+        <div class="kpi-card">
+          <span class="kpi-card__valor">{{ totalExpedientes() }}</span>
+          <span class="kpi-card__etiqueta">
+            @if (totalExpedientes() === 1) {
+              expediente en total
+            } @else {
+              expedientes en total
+            }
+          </span>
+        </div>
+
+        @if (comitenteFrecuente(); as c) {
+          <div class="kpi-card kpi-card--texto">
+            <span class="kpi-card__valor kpi-card__valor--texto">{{ c.nombre }}</span>
+            <span class="kpi-card__etiqueta">comitente más frecuente</span>
+            <span class="kpi-card__pie">
+              {{ c.cantidad }}
+              @if (c.cantidad === 1) {
+                expediente
+              } @else {
+                expedientes
+              }
+            </span>
+          </div>
+        }
+      </div>
+
+      @if (hayDatosParaGraficos()) {
+        <div class="graficos-fila">
+          <!-- Actividad por mes -->
+          <div class="grafico-card">
+            <h3 class="grafico-card__titulo">Expedientes por mes</h3>
+            <div class="barras" role="img" aria-label="Expedientes creados en los últimos seis meses">
+              @for (m of porMes(); track m.etiqueta; let i = $index) {
+                <div class="barra">
+                  <div class="barra__pista">
+                    <div
+                      class="barra__valor"
+                      [style.height.%]="m.porcentaje"
+                      [style.animation-delay.ms]="i * 60"
+                    ></div>
+                  </div>
+                  <span class="barra__cantidad">{{ m.cantidad }}</span>
+                  <span class="barra__etiqueta">{{ m.etiqueta }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Distribución por tipo de tarea -->
+          <div class="grafico-card">
+            <h3 class="grafico-card__titulo">Por tipo de tarea</h3>
+            <ul class="distribucion">
+              @for (t of porTipoTarea(); track t.etiqueta; let i = $index) {
+                <li class="distribucion__item">
+                  <span class="distribucion__etiqueta" [title]="t.etiqueta">{{ t.etiqueta }}</span>
+                  <span class="distribucion__pista">
+                    <span
+                      class="distribucion__valor"
+                      [style.width.%]="t.porcentaje"
+                      [style.animation-delay.ms]="i * 60"
+                    ></span>
+                  </span>
+                  <span class="distribucion__cantidad">{{ t.cantidad }}</span>
+                </li>
+              } @empty {
+                <li class="distribucion__vacio">
+                  Todavía no hay expedientes con un tipo de tarea definido.
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+    </section>
+  }
 </div>

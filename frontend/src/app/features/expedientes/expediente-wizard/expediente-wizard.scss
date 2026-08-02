@@ -33,6 +33,70 @@
   }
 }
 
+// Resultados de la búsqueda incremental: un fragmento puede matchear varios
+// comitentes, así que se listan para elegir en vez de asumir el primero.
+.resultados-busqueda {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  .resultado {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: 100%;
+    padding: var(--space-4) var(--space-5);
+    background: var(--surface-card);
+    border: var(--border-width) solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+
+    &:hover {
+      background: var(--surface-hover);
+      border-color: var(--accent-border);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    &__info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    mat-icon {
+      color: var(--text-subtle);
+      flex-shrink: 0;
+    }
+  }
+}
+
+.sin-resultados {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  padding: var(--space-5);
+  background: var(--surface-sunken);
+  border: var(--border-width) dashed var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: var(--text-md);
+}
+
 .comitente-card {
   display: flex;
   align-items: flex-start;

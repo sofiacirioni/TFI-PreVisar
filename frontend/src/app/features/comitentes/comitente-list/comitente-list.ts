@@ -65,10 +65,19 @@ export class ComitenteList implements OnInit {
     const filtro = this.filtroSignal().toLowerCase().trim();
     const todos = this.comitentes();
     if (!filtro) return todos;
-    return todos.filter((c) =>
-      c.nombreRazonSocial.toLowerCase().includes(filtro) ||
-      c.dniCuit.toLowerCase().includes(filtro) ||
-      (c.email?.toLowerCase().includes(filtro) ?? false)
+
+    // Los DNI se guardan sin separadores y los CUIT con guiones, así que el
+    // número se compara normalizado de los dos lados: buscar "30712345678"
+    // tiene que encontrar "30-71234567-8", igual que en el wizard.
+    const soloDigitos = (v: string) => v.replace(/\D/g, '');
+    const filtroDigitos = soloDigitos(filtro);
+
+    return todos.filter(
+      (c) =>
+        c.nombreRazonSocial.toLowerCase().includes(filtro) ||
+        c.dniCuit.toLowerCase().includes(filtro) ||
+        (filtroDigitos.length > 0 && soloDigitos(c.dniCuit).includes(filtroDigitos)) ||
+        (c.email?.toLowerCase().includes(filtro) ?? false),
     );
   });
 

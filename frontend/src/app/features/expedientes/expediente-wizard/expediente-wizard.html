@@ -79,39 +79,54 @@
       no, vas a poder darlo de alta acá mismo.
     </p>
 
-    <!-- Búsqueda -->
+    <!-- Búsqueda incremental: arranca sola a partir del tercer dígito -->
     <div class="comitente-busqueda">
       <mat-form-field appearance="fill" class="campo-busqueda">
         <mat-label>DNI o CUIT</mat-label>
+        <mat-icon matPrefix svgIcon="search"></mat-icon>
         <input
           matInput
           [formControl]="dniCuitBusqueda"
           placeholder="40123456 o 27-40123456-5"
-          (keydown.enter)="$event.preventDefault(); buscarComitente()"
+          autocomplete="off"
+          (keydown.enter)="$event.preventDefault()"
         />
-        <mat-error>
-          @if (dniCuitBusqueda.touched && dniCuitBusqueda.errors; as e) {
-            @if (e['required']) {
-              Ingresá un DNI o CUIT
-            } @else if (e['pattern']) {
-              Formato inválido (DNI 7-8 dígitos o CUIT XX-XXXXXXXX-X)
-            }
-          }
-        </mat-error>
+        @if (buscandoComitente()) {
+          <mat-spinner matSuffix diameter="18" />
+        }
+        <mat-hint>Buscá por número; los guiones no hacen falta</mat-hint>
       </mat-form-field>
-      <button
-        mat-stroked-button
-        type="button"
-        (click)="buscarComitente()"
-        [disabled]="buscandoComitente()"
-      >
-        <mat-icon svgIcon="search"></mat-icon>
-        Buscar
-      </button>
     </div>
 
-    @if (buscandoComitente()) {
-      <mat-progress-bar mode="indeterminate" />
+    <!-- Coincidencias: se listan para elegir, porque un fragmento puede
+         matchear más de un comitente de la cartera. -->
+    @if (resultadosBusqueda().length) {
+      <ul class="resultados-busqueda">
+        @for (r of resultadosBusqueda(); track r.id) {
+          <li>
+            <button type="button" class="resultado" (click)="seleccionarComitente(r)">
+              <div class="resultado__info">
+                <strong>{{ r.nombreRazonSocial }}</strong>
+                <span class="muted">
+                  {{ r.tipoPersona === 'FISICA' ? 'Persona física' : 'Persona jurídica' }}
+                  · {{ r.dniCuit }}
+                </span>
+              </div>
+              <mat-icon svgIcon="arrow_forward"></mat-icon>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (sinResultados() && !modoNuevoComitente() && !comitenteEncontrado()) {
+      <div class="sin-resultados">
+        <span>No hay comitentes con ese DNI/CUIT en tu cartera.</span>
+        <button mat-stroked-button type="button" (click)="crearComitenteNuevo()">
+          <mat-icon svgIcon="person_add"></mat-icon>
+          Dar de alta uno nuevo
+        </button>
+      </div>
     }
 
     <!-- Caso 1: existe en la cartera -->

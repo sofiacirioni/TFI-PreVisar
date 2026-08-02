@@ -2,6 +2,7 @@ package ar.edu.utn.frc.previsar.services.Impl;
 
 import ar.edu.utn.frc.previsar.dtos.response.RevisionExternaDetalleDto;
 import ar.edu.utn.frc.previsar.dtos.response.RevisionExternaResumenDto;
+import ar.edu.utn.frc.previsar.dtos.response.RevisionMetricasDto;
 import ar.edu.utn.frc.previsar.entities.Profesional;
 import ar.edu.utn.frc.previsar.entities.RevisionExterna;
 import ar.edu.utn.frc.previsar.entities.Usuario;
@@ -22,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -87,6 +90,51 @@ public class RevisionExternaServiceImpl implements RevisionExternaService {
                 .map(r -> new RevisionExternaResumenDto(
                         r.getId(), r.getNombreArchivo(), r.getEstado().name(), r.getCreatedAt()))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RevisionMetricasDto metricas() {
+        Usuario usuario = revisorActual();
+        List<RevisionExterna> revisiones = repo.findByUsuarioIdOrderByCreatedAtDesc(usuario.getId());
+
+        long completados = revisiones.stream().filter(r -> r.getEstado() == EstadoRevision.COMPLETADO).count();
+        long conError = revisiones.stream().filter(r -> r.getEstado() == EstadoRevision.ERROR).count();
+        long enProgreso = revisiones.stream().filter(r -> r.getEstado() == EstadoRevision.EN_PROGRESO).count();
+
+        // Se agrega en Java y no con una query jsonb nativa: el historial de un
+        // revisor es de decenas de filas, ya existe el parseo con ObjectMapper
+        // en esta clase, y así la lógica queda testeable sin levantar Postgres.
+        Map<String, Long> porTipo = new HashMap<>();
+        long totalProblemas = 0;
+
+        for (RevisionExterna r : revisiones) {
+            JsonNode resultado = parsear(r.getResultado());
+            if (resultado == null) continue;
+
+            JsonNode problemas = resultado.path("problemas");
+            if (!problemas.isArray()) continue;
+
+            for (JsonNode p : problemas) {
+                String tipo = p.path("tipo").asText("");
+                if (tipo.isBlank()) continue;
+                porTipo.merge(tipo, 1L, Long::sum);
+                totalProblemas++;
+            }
+        }
+
+        List<RevisionMetricasDto.ConteoDto> problemasPorTipo = porTipo.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .map(e -> new RevisionMetricasDto.ConteoDto(e.getKey(), e.getValue()))
+                .toList();
+
+        // Null y no 0: sin análisis completados no hay promedio que reportar.
+        Double promedio = completados > 0
+                ? Math.round((double) totalProblemas / completados * 10) / 10.0
+                : null;
+
+        return new RevisionMetricasDto(
+                revisiones.size(), completados, conError, enProgreso, problemasPorTipo, promedio);
     }
 
     @Override

@@ -33,6 +33,27 @@ export interface ResumenRevision {
   problemas?: ProblemaDetectado[];
 }
 
+/** Un par etiqueta/cantidad ya agregado por el backend. */
+export interface ConteoMetrica {
+  etiqueta: string;
+  cantidad: number;
+}
+
+/**
+ * Métricas del historial del revisor. Los conteos por estado se podrían sacar
+ * del listado, pero `problemasPorTipo` no: vive dentro del `resultado` de cada
+ * revisión, que el listado no devuelve.
+ */
+export interface RevisionMetricas {
+  totalAnalizados: number;
+  completados: number;
+  conError: number;
+  enProgreso: number;
+  problemasPorTipo: ConteoMetrica[];
+  /** Null si todavía no hay ningún análisis completado. */
+  promedioProblemas: number | null;
+}
+
 /** Detalle de una revisión. `resultado` es null mientras EN_PROGRESO o si hubo ERROR. */
 export interface RevisionDetalle {
   readonly id: number;

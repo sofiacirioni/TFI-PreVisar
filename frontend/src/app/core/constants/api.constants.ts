@@ -22,7 +22,6 @@ export const API = {
   // --- Comitentes ---
   COMITENTES: `${environment.apiBaseUrl}/comitentes`,
   COMITENTE_BY_ID: (id: number) => `${environment.apiBaseUrl}/comitentes/${id}`,
-  COMITENTE_BUSCAR: `${environment.apiBaseUrl}/comitentes/buscar`, // ?dniCuit=XXX
 
   // --- Obras anidadas bajo comitente ---
   COMITENTE_OBRAS: (comitenteId: number) =>
@@ -61,7 +60,9 @@ export const API = {
     `${environment.apiBaseUrl}/expedientes/${id}/documentos/compilado`,
 
   // --- Revisor: análisis de expedientes completos (PDF) ---
+  COMITENTE_BUSCAR_INCREMENTAL: `${environment.apiBaseUrl}/comitentes/buscar-incremental`,
   REVISOR_REVISIONES: `${environment.apiBaseUrl}/revisor/revisiones`,
+  REVISOR_METRICAS: `${environment.apiBaseUrl}/revisor/revisiones/metricas`,
   REVISOR_REVISION_BY_ID: (id: number) =>
     `${environment.apiBaseUrl}/revisor/revisiones/${id}`,
 

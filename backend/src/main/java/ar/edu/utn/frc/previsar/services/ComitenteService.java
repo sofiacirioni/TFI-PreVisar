@@ -34,6 +34,16 @@ public interface ComitenteService {
     Optional<ComitenteResponseDto> buscarPorDniCuit(String dniCuit);
 
     /**
+     * Búsqueda incremental por DNI/CUIT dentro de la cartera propia.
+     *
+     * Normaliza el fragmento (ignora guiones, puntos y espacios) y lo compara
+     * contra el DNI/CUIT también normalizado, porque los DNI se guardan sin
+     * separadores y los CUIT con ellos. Devuelve lista vacía con menos de 3
+     * dígitos, para no traer media cartera en cada tecla.
+     */
+    List<ComitenteResponseDto> buscarPorFragmentoDniCuit(String fragmento);
+
+    /**
      * Crea un nuevo comitente en la cartera del profesional actual.
      */
     ComitenteResponseDto crear(ComitenteRequestDto request);

@@ -3,6 +3,13 @@
   margin: 0 auto;
 }
 
+// Este contenedor no usa gap (a diferencia de .metricas-section del dashboard),
+// así que la fila de métricas necesita su propio margen: sin él quedaba pegada
+// a la tabla del historial.
+.kpi-fila {
+  margin-bottom: var(--space-8);
+}
+
 // .page-header está definido en styles/_components.scss.
 
 .cta-button {

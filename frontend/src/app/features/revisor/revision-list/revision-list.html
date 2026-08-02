@@ -31,6 +31,84 @@
     </button>
   </header>
 
+  <!-- Métricas antes del historial: dan contexto de la actividad propia. -->
+  @if (!cargando() && !errorCarga() && hayMetricas()) {
+    <div class="kpi-fila">
+      <div class="kpi-card">
+        <span class="kpi-card__valor">{{ totalAnalizados() }}</span>
+        <span class="kpi-card__etiqueta">
+          @if (totalAnalizados() === 1) {
+            expediente analizado
+          } @else {
+            expedientes analizados
+          }
+        </span>
+        @if (analizadosEsteMes() > 0) {
+          <span class="kpi-card__pie">{{ analizadosEsteMes() }} este mes</span>
+        }
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-card__valor">{{ completados() }}</span>
+        <span class="kpi-card__etiqueta">
+          @if (completados() === 1) {
+            análisis completado
+          } @else {
+            análisis completados
+          }
+        </span>
+        @if (enProgreso() > 0) {
+          <span class="kpi-card__pie">{{ enProgreso() }} en curso</span>
+        }
+      </div>
+
+      @if (tasaExito(); as tasa) {
+        <div class="kpi-card">
+          <span class="kpi-card__valor">{{ tasa }}%</span>
+          <span class="kpi-card__etiqueta">se procesaron sin fallar</span>
+          @if (conError() > 0) {
+            <span class="kpi-card__pie">
+              {{ conError() }}
+              @if (conError() === 1) {
+                no se pudo procesar
+              } @else {
+                no se pudieron procesar
+              }
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Lo que solo el backend puede agregar: qué falla y con qué frecuencia.
+         Si la llamada de métricas falló, esta sección simplemente no aparece. -->
+    @if (problemasPorTipo().length) {
+      <div class="grafico-card grafico-card--suelto">
+        <h3 class="grafico-card__titulo">Problemas más detectados</h3>
+        <ul class="distribucion">
+          @for (p of problemasPorTipo(); track p.etiqueta; let i = $index) {
+            <li class="distribucion__item">
+              <span class="distribucion__etiqueta" [title]="p.etiqueta">{{ p.etiqueta }}</span>
+              <span class="distribucion__pista">
+                <span
+                  class="distribucion__valor"
+                  [style.width.%]="p.porcentaje"
+                  [style.animation-delay.ms]="i * 60"
+                ></span>
+              </span>
+              <span class="distribucion__cantidad">{{ p.cantidad }}</span>
+            </li>
+          }
+        </ul>
+        @if (metricas()?.promedioProblemas; as prom) {
+          <p class="grafico-card__pie">
+            {{ prom }} problemas por expediente en promedio
+          </p>
+        }
+      </div>
+    }
+  }
+
   @if (cargando()) {
     <div class="loader-wrap">
       <mat-spinner diameter="40" />

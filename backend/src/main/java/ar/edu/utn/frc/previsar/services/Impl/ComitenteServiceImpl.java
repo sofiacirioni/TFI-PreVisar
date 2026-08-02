@@ -25,6 +25,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ComitenteServiceImpl implements ComitenteService {
 
+    /**
+     * Mínimo de dígitos para que la búsqueda incremental devuelva algo. Con uno
+     * o dos el resultado sería casi toda la cartera y no ayuda a elegir.
+     */
+    private static final int MIN_DIGITOS_BUSQUEDA = 3;
+
     private final ComitenteRepository comitenteRepository;
     private final SecurityUtils securityUtils;
     private final ComitenteMapper comitenteMapper;
@@ -55,6 +61,29 @@ public class ComitenteServiceImpl implements ComitenteService {
                 .findByProfesionalIdAndDniCuitAndDeletedAtIsNull(
                         profesional.getId(), dniCuit)
                 .map(comitenteMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ComitenteResponseDto> buscarPorFragmentoDniCuit(String fragmento) {
+        String normalizado = soloDigitos(fragmento);
+
+        // Con menos de 3 dígitos el resultado sería medio padrón: no se busca.
+        if (normalizado.length() < MIN_DIGITOS_BUSQUEDA) {
+            return List.of();
+        }
+
+        Profesional profesional = securityUtils.getProfesionalActual();
+        return comitenteRepository
+                .buscarPorFragmentoDniCuit(profesional.getId(), normalizado)
+                .stream()
+                .map(comitenteMapper::toResponse)
+                .toList();
+    }
+
+    /** Deja solo los dígitos: el usuario puede tipear con guiones, puntos o espacios. */
+    private static String soloDigitos(String valor) {
+        return valor == null ? "" : valor.replaceAll("\\D", "");
     }
 
     @Override

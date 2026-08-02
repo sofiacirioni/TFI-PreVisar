@@ -45,6 +45,16 @@ public class ComitenteController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /**
+     * Búsqueda incremental por DNI/CUIT: devuelve las coincidencias parciales
+     * de la cartera propia. Ignora guiones y demás separadores. Lista vacía si
+     * el fragmento tiene menos de 3 dígitos (no es un error: es "seguí escribiendo").
+     */
+    @GetMapping("/buscar-incremental")
+    public List<ComitenteResponseDto> buscarIncremental(@RequestParam("q") String q) {
+        return comitenteService.buscarPorFragmentoDniCuit(q);
+    }
+
     @PostMapping
     public ResponseEntity<ComitenteResponseDto> crear(
             @Valid @RequestBody ComitenteRequestDto request) {

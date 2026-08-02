@@ -226,3 +226,163 @@
   }
 }
 
+/* ---------- Tarjeta de métrica ----------
+   Un número grande con su etiqueta. La usan el dashboard del profesional y el
+   panel de revisar, por eso vive acá y no en el SCSS de una feature. */
+.kpi-fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-5);
+}
+
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-6);
+  background: var(--surface-card);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+
+  &__valor {
+    font-size: var(--text-4xl);
+    font-weight: var(--fw-extra);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-strong);
+    line-height: 1.1;
+
+    // El nombre de un comitente no es un número: no puede usar la misma escala.
+    &--texto {
+      font-size: var(--text-xl);
+      font-weight: var(--fw-bold);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__etiqueta {
+    font-size: var(--text-md);
+    color: var(--text-muted);
+  }
+
+  &__pie {
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-subtle);
+  }
+
+  // Solo la tarjeta accionable se comporta como algo clickeable.
+  &--accion {
+    border-color: var(--accent-border);
+
+    .kpi-card__valor,
+    .kpi-card__pie {
+      color: var(--accent-text);
+    }
+
+    &:hover {
+      background: var(--accent-soft);
+      text-decoration: none;
+    }
+  }
+}
+
+/* ---------- Tarjeta de gráfico ---------- */
+.grafico-card {
+  padding: var(--space-6);
+  background: var(--surface-card);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+
+  &__titulo {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-md);
+    font-weight: var(--fw-semibold);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-caps);
+  }
+
+  &__pie {
+    margin: var(--space-6) 0 0;
+    padding-top: var(--space-4);
+    border-top: var(--border-width) solid var(--border-subtle);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  /* Cuando no está dentro de una grilla de gráficos necesita su propio margen. */
+  &--suelto {
+    margin-top: var(--space-5);
+  }
+}
+
+/* ---------- Barras horizontales ----------
+   Distribución de una categoría. Las usan el dashboard (tipo de tarea) y el
+   panel de revisar (problemas por tipo). */
+// ---- Barras horizontales (distribución por tipo de tarea) ----
+.distribucion {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  &__item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2fr auto;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  &__etiqueta {
+    font-size: var(--text-md);
+    color: var(--text-body);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__pista {
+    height: 10px;
+    background: var(--surface-sunken);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+
+  &__valor {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: var(--radius-pill);
+    transform-origin: left;
+    animation: barra-crece-h var(--dur-slow) var(--ease-out) both;
+  }
+
+  &__cantidad {
+    font-size: var(--text-md);
+    font-weight: var(--fw-semibold);
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__vacio {
+    font-size: var(--text-md);
+    color: var(--text-muted);
+  }
+}
+
+@keyframes barra-crece-h {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

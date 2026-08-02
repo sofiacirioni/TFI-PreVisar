@@ -7,8 +7,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { tap } from 'rxjs/operators';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { ExpedienteRequest, ExpedienteResponse } from '../../../core/models/expediente.model';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,9 +32,17 @@ import { ObraService } from '../../../core/services/obra.service';
 import { Obra, ObraRequest } from '../../../core/models/obra.model';
 import { MatInputModule } from '@angular/material/input';
 import { HttpErrorResponse } from '@angular/common/http';
-import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { CurrencyPipe } from '@angular/common';
 import { AportesResponse } from '../../../core/models/aportes.model';
+
+/**
+ * Mínimo de dígitos para disparar la búsqueda de comitente. Coincide con el que
+ * aplica el backend: con menos, devolvería casi toda la cartera.
+ */
+const MIN_DIGITOS_BUSQUEDA = 3;
+
+/** Formato que exige el backend para guardar: DNI de 7-8 dígitos o CUIT con guiones. */
+const FORMATO_DNI_CUIT = /^(\d{7,8}|\d{2}-\d{8}-\d{1})$/;
 
 @Component({
   selector: 'app-expediente-wizard',
@@ -37,10 +54,10 @@ import { AportesResponse } from '../../../core/models/aportes.model';
     MatStepperModule,
     MatButtonModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatIconModule,
     MatInputModule,
     CurrencyPipe,
-    MatProgressBarModule,
   ],
   templateUrl: './expediente-wizard.html',
   styleUrl: './expediente-wizard.scss',
@@ -67,14 +84,22 @@ export class ExpedienteWizard implements OnInit {
   readonly calculandoAportes = signal(false);
 
   // ===== Estado del paso "Comitente" =====
-  readonly dniCuitBusqueda = this.fb.control<string>('', {
-    nonNullable: true,
-    validators: [Validators.required, Validators.pattern(/^(\d{7,8}|\d{2}-\d{8}-\d{1})$/)],
-  });
+  /**
+   * Campo de búsqueda, no un dato a guardar: va sin validador de formato.
+   * Antes exigía un DNI/CUIT completo, lo que dejaba el control en estado
+   * inválido mientras se tipea y bloqueaba la búsqueda incremental.
+   */
+  readonly dniCuitBusqueda = this.fb.control<string>('', { nonNullable: true });
+
   readonly buscandoComitente = signal(false);
   readonly creandoComitente = signal(false);
   readonly comitenteEncontrado = signal<Comitente | null>(null);
   readonly modoNuevoComitente = signal(false);
+
+  /** Coincidencias parciales de la última búsqueda. */
+  readonly resultadosBusqueda = signal<Comitente[]>([]);
+  /** True cuando se buscó con al menos 3 dígitos y no hubo ninguna coincidencia. */
+  readonly sinResultados = signal(false);
 
   // Form inline para dar de alta un comitente nuevo (no incluye dniCuit:
   // ese se toma del campo de búsqueda).
@@ -138,6 +163,8 @@ export class ExpedienteWizard implements OnInit {
   });
 
   ngOnInit(): void {
+    this.escucharBusquedaComitente();
+
     this.catalogoService.listarEspecialidades().subscribe({
       next: (esps) => this.especialidades.set(esps),
       error: () =>
@@ -185,6 +212,19 @@ export class ExpedienteWizard implements OnInit {
         }
       });
 
+    // Recalcular los aportes al cambiar los honorarios. Va ANTES del return de
+    // abajo: estaba después, así que en un expediente nuevo la suscripción
+    // nunca llegaba a registrarse y el desglose no aparecía nunca. Solo
+    // funcionaba al retomar un borrador, que es el camino que no corta acá.
+    this.economicoForm.controls.honorariosReferenciales.valueChanges
+      .pipe(
+        debounceTime(600),
+        distinctUntilChanged(),
+        filter((v) => v != null && v >= 0),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.calcularAportes());
+
     const idParam = this.route.snapshot.paramMap.get('id');
     if (!idParam) return; // modo "nuevo": el borrador se crea recien al primer guardado
 
@@ -225,14 +265,6 @@ export class ExpedienteWizard implements OnInit {
       },
     });
 
-    this.economicoForm.controls.honorariosReferenciales.valueChanges
-      .pipe(
-        debounceTime(600),
-        distinctUntilChanged(),
-        filter((v) => v != null && v >= 0),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => this.calcularAportes());
   }
 
   private calcularAportes(): void {
@@ -282,44 +314,69 @@ export class ExpedienteWizard implements OnInit {
     });
   }
 
-  /** Busca un comitente por DNI/CUIT en la cartera del profesional. */
-  buscarComitente(): void {
-    if (this.dniCuitBusqueda.invalid) {
-      this.dniCuitBusqueda.markAsTouched();
-      return;
-    }
+  /**
+   * Búsqueda incremental: arranca sola a partir del tercer dígito. El debounce
+   * evita una request por tecla y switchMap descarta las respuestas viejas, que
+   * si no podrían pisar a una más nueva por llegar fuera de orden.
+   */
+  private escucharBusquedaComitente(): void {
+    this.dniCuitBusqueda.valueChanges
+      .pipe(
+        map((v) => (v ?? '').replace(/\D/g, '')),
+        tap((digitos) => {
+          // Mientras no alcance el mínimo se limpia todo, sin pedir nada.
+          if (digitos.length < MIN_DIGITOS_BUSQUEDA) {
+            this.resultadosBusqueda.set([]);
+            this.sinResultados.set(false);
+            this.buscandoComitente.set(false);
+          }
+        }),
+        filter((digitos) => digitos.length >= MIN_DIGITOS_BUSQUEDA),
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => this.buscandoComitente.set(true)),
+        switchMap((digitos) =>
+          this.comitenteService.buscarIncremental(digitos).pipe(
+            catchError(() => {
+              this.snackBar.open('No se pudo buscar el comitente', 'Cerrar', { duration: 4000 });
+              return of([] as Comitente[]);
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((resultados) => {
+        this.buscandoComitente.set(false);
+        this.resultadosBusqueda.set(resultados);
+        this.sinResultados.set(resultados.length === 0);
+      });
+  }
 
-    const dniCuit = this.dniCuitBusqueda.value.trim();
-    this.buscandoComitente.set(true);
-    this.comitenteEncontrado.set(null);
+  /** Elige uno de los resultados y lo fija como comitente del expediente. */
+  seleccionarComitente(c: Comitente): void {
+    this.comitenteEncontrado.set(c);
+    this.comitenteForm.controls.comitenteId.setValue(c.id);
+    this.resultadosBusqueda.set([]);
+    this.sinResultados.set(false);
     this.modoNuevoComitente.set(false);
-    this.comitenteForm.controls.comitenteId.setValue(null);
+  }
 
-    this.comitenteService.buscarPorDniCuit(dniCuit).subscribe({
-      next: (c) => {
-        this.buscandoComitente.set(false);
-        if (c) {
-          // Encontrado en la cartera: lo seleccionamos automáticamente
-          this.comitenteEncontrado.set(c);
-          this.comitenteForm.controls.comitenteId.setValue(c.id);
-        } else {
-          // No existe: habilitamos el form inline para crearlo
-          this.modoNuevoComitente.set(true);
-        }
-      },
-      error: () => {
-        this.buscandoComitente.set(false);
-        this.snackBar.open('No se pudo buscar el comitente', 'Cerrar', { duration: 4000 });
-      },
-    });
+  /** Abre el alta inline con lo tipeado como DNI/CUIT de partida. */
+  crearComitenteNuevo(): void {
+    this.resultadosBusqueda.set([]);
+    this.sinResultados.set(false);
+    this.modoNuevoComitente.set(true);
   }
 
   /** Resetea la búsqueda para volver a empezar con otro DNI/CUIT. */
   cambiarBusqueda(): void {
     this.comitenteEncontrado.set(null);
     this.modoNuevoComitente.set(false);
+    this.resultadosBusqueda.set([]);
+    this.sinResultados.set(false);
     this.comitenteForm.controls.comitenteId.setValue(null);
     this.nuevoComitenteForm.reset({ tipoPersona: 'FISICA' });
+    this.dniCuitBusqueda.setValue('');
   }
 
   /**
@@ -351,11 +408,24 @@ export class ExpedienteWizard implements OnInit {
       return false;
     }
 
+    // El buscador acepta fragmentos para poder buscar mientras se tipea, pero
+    // el DNI/CUIT que se va a guardar sí tiene que estar completo. Se valida
+    // acá, al crear, y no mientras se escribe.
+    const dniCuit = this.dniCuitBusqueda.value.trim();
+    if (!FORMATO_DNI_CUIT.test(dniCuit)) {
+      this.snackBar.open(
+        'Para dar de alta un comitente, ingresá el DNI o CUIT completo (7-8 dígitos o XX-XXXXXXXX-X)',
+        'Cerrar',
+        { duration: 6000 },
+      );
+      return false;
+    }
+
     const raw = this.nuevoComitenteForm.getRawValue();
     const request: ComitenteRequest = {
       tipoPersona: raw.tipoPersona,
       nombreRazonSocial: raw.nombreRazonSocial.trim(),
-      dniCuit: this.dniCuitBusqueda.value.trim(),
+      dniCuit,
       domicilio: raw.domicilio.trim(),
       email: raw.email.trim(),
       telefono: raw.telefono.trim() || undefined,

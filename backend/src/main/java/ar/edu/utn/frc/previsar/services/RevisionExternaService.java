@@ -2,6 +2,7 @@ package ar.edu.utn.frc.previsar.services;
 
 import ar.edu.utn.frc.previsar.dtos.response.RevisionExternaDetalleDto;
 import ar.edu.utn.frc.previsar.dtos.response.RevisionExternaResumenDto;
+import ar.edu.utn.frc.previsar.dtos.response.RevisionMetricasDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,6 +31,14 @@ public interface RevisionExternaService {
 
     /** Historial del revisor: sus revisiones, más nueva primero. */
     List<RevisionExternaResumenDto> listar();
+
+    /**
+     * Métricas agregadas del historial propio. Existe como endpoint aparte
+     * porque los problemas detectados viven dentro del `resultado` de cada
+     * revisión, que el listado no devuelve: sin esto el front tendría que pedir
+     * el detalle de cada una para poder contarlos.
+     */
+    RevisionMetricasDto metricas();
 
     /** Detalle de una revisión propia (con el resumen). 404 ante revisiones ajenas. */
     RevisionExternaDetalleDto obtener(Long id);
