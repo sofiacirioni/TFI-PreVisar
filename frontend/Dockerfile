@@ -30,6 +30,17 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # El builder de Angular deja los estáticos en dist/<proyecto>/browser.
 COPY --from=build /build/dist/frontend/browser /usr/share/nginx/html
 
+# Renueva la fecha de modificación de todo lo publicado.
+#
+# nginx deriva el ETag del mtime + tamaño. Los assets del visor de PDF conservan
+# el nombre entre versiones de la imagen (viewer-6.0.1165.mjs), así que sin esto
+# un navegador con el archivo cacheado revalida, recibe 304 y se queda con la
+# copia vieja Y con sus headers viejos: un 304 no reenvía Content-Type. Fue
+# exactamente el problema al corregir el MIME de los .mjs — el arreglo no llegaba
+# a quien ya había abierto la app. Tocando los archivos, cada build produce un
+# ETag nuevo y la primera revalidación devuelve un 200 completo.
+RUN find /usr/share/nginx/html -type f -exec touch {} +
+
 EXPOSE 80
 
 # La imagen de nginx ya trae su propio ENTRYPOINT/CMD.
