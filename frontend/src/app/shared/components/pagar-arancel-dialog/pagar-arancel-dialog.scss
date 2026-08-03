@@ -38,6 +38,15 @@
   width: 100%;
 }
 
+/* mat-dialog-actions apilaba los botones sin separación: los tres labels no
+   entran en una fila de 480px y "Compartir por WhatsApp" caía solo en una
+   segunda línea, pegado al de arriba. Ahora las dos acciones de compartir viven
+   en el contenido (reusando .pagar__opciones) y acá queda solo "Cerrar". */
+.mat-mdc-dialog-actions {
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
 .pagar__copiado {
   margin: 0.25rem 0 0;
   font-size: var(--text-md);

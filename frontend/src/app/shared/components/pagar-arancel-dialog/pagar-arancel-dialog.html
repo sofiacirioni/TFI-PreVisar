@@ -55,16 +55,22 @@
     @if (copiado()) {
       <p class="pagar__copiado">¡Link copiado!</p>
     }
+
+    <!-- Las dos formas de compartir se apilan a lo ancho, igual que las opciones
+         del primer paso: son acciones equivalentes y con estos labels no entran
+         en una fila de 480px junto a "Cerrar". -->
+    <div class="pagar__opciones">
+      <a mat-stroked-button [href]="mailtoUrl">
+        <mat-icon svgIcon="mail"></mat-icon>
+        Enviar por correo
+      </a>
+      <a mat-flat-button color="primary" [href]="whatsappUrl" target="_blank" rel="noopener">
+        <mat-icon svgIcon="share"></mat-icon>
+        Compartir por WhatsApp
+      </a>
+    </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Cerrar</button>
-    <a mat-stroked-button [href]="mailtoUrl">
-      <mat-icon svgIcon="mail"></mat-icon>
-      Enviar por correo
-    </a>
-    <a mat-flat-button color="primary" [href]="whatsappUrl" target="_blank" rel="noopener">
-      <mat-icon svgIcon="share"></mat-icon>
-      Compartir por WhatsApp
-    </a>
   </mat-dialog-actions>
 }

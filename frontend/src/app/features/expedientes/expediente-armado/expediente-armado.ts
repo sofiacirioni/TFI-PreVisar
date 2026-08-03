@@ -37,6 +37,17 @@ type Vm =
   | { status: 'error'; error: unknown }
   | { status: 'ok'; expediente: ExpedienteResponse; secciones: SeccionEstructura[] };
 
+/**
+ * Estado de la descarga del archivo subido que se muestra en el visor.
+ * Explícito y no `Blob | null` para poder distinguir "todavía viaja" de "falló":
+ * con null para ambos, un archivo faltante dejaba el spinner girando para siempre.
+ */
+type EstadoPreview =
+  | { estado: 'vacio' }
+  | { estado: 'cargando' }
+  | { estado: 'ok'; blob: Blob }
+  | { estado: 'error' };
+
 type EstadoIA =
   | 'IDLE'
   | 'EN_PROGRESO'
@@ -197,21 +208,41 @@ export class ExpedienteArmado {
     return archivos.find((a) => a.id === this.archivoSeleccionadoId()) ?? archivos[0] ?? null;
   });
 
-  // Blob del archivo activo para el visor PDF.js (acepta Blob directo, sin
+  /** Reintento manual de la descarga del archivo activo (botón del estado de error). */
+  private readonly reintentoPreview = signal(0);
+  reintentarPreview(): void {
+    this.reintentoPreview.update((n) => n + 1);
+  }
+
+  // Descarga del archivo activo para el visor PDF.js (acepta Blob directo, sin
   // object URLs). switchMap cancela la descarga previa al cambiar de archivo.
-  readonly previewBlob = toSignal(
-    toObservable(this.archivoActivo).pipe(
-      switchMap((archivo) => {
-        if (!archivo) return of<Blob | null>(null);
+  //
+  // Es un estado explícito y no un `Blob | null`: antes el error se mapeaba a null,
+  // indistinguible de "todavía cargando", y la pantalla quedaba con el spinner de
+  // "Cargando previsualización…" para siempre cuando el archivo ya no estaba en el
+  // servidor. Ahora ese caso se puede mostrar como lo que es y ofrecer reintentar.
+  // Sin <EstadoPreview> explícito: con un único type-arg se descartan los overloads
+  // que aceptan initialValue (mismo caso que vm, más abajo).
+  private readonly previewArchivo = toSignal(
+    combineLatest([toObservable(this.archivoActivo), toObservable(this.reintentoPreview)]).pipe(
+      switchMap(([archivo]) => {
+        if (!archivo) return of<EstadoPreview>({ estado: 'vacio' });
         return this.documentoService.descargar(this.expedienteId(), archivo.id).pipe(
-          map((resp) => resp.body),
-          startWith(null as Blob | null),
-          catchError(() => of<Blob | null>(null)),
+          map((resp): EstadoPreview =>
+            resp.body ? { estado: 'ok', blob: resp.body } : { estado: 'error' },
+          ),
+          startWith({ estado: 'cargando' } as EstadoPreview),
+          catchError(() => of<EstadoPreview>({ estado: 'error' })),
         );
       }),
     ),
-    { initialValue: null as Blob | null },
+    { initialValue: { estado: 'vacio' } as EstadoPreview },
   );
+
+  /** El archivo subido se está descargando. */
+  readonly cargandoArchivo = computed(() => this.previewArchivo().estado === 'cargando');
+  /** La descarga falló: el archivo no está en el servidor o hubo un error de red. */
+  readonly errorArchivo = computed(() => this.previewArchivo().estado === 'error');
 
   // PDFs que produce el sistema (carátula, contrato), cacheados por ranura para no
   // volver a pedirlos cada vez que se abre el slot. No se guardan en el servidor: son
@@ -235,7 +266,10 @@ export class ExpedienteArmado {
   readonly viewerSrc = computed<Blob | null>(() => {
     const doc = this.docActivo();
     if (!doc) return null;
-    if (this.archivosDe(doc.id).length) return this.previewBlob();
+    if (this.archivosDe(doc.id).length) {
+      const preview = this.previewArchivo();
+      return preview.estado === 'ok' ? preview.blob : null;
+    }
     return this.previewsGeneradas().get(doc.id) ?? null;
   });
 

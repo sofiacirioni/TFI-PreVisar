@@ -230,10 +230,25 @@
                 <mat-spinner diameter="32" />
                 <p>Generando previsualización…</p>
               </div>
-            } @else if (archivoActivo()) {
+            } @else if (cargandoArchivo()) {
               <div class="hoja__placeholder">
                 <mat-spinner diameter="32" />
                 <p>Cargando previsualización…</p>
+              </div>
+            } @else if (errorArchivo()) {
+              <!-- La descarga falló. El caso típico es que el archivo ya no esté en
+                   el servidor: la baja de un documento borra el archivo físico y la
+                   fila por separado, así que pueden quedar desincronizados. -->
+              <div class="hoja__placeholder">
+                <mat-icon svgIcon="error_outline"></mat-icon>
+                <h2>No se pudo cargar el archivo</h2>
+                <p class="hoja__hint">
+                  Puede que ya no esté disponible en el servidor. Probá de nuevo y, si
+                  sigue fallando, volvé a subirlo.
+                </p>
+                <button mat-stroked-button (click)="reintentarPreview()">
+                  <mat-icon svgIcon="autorenew"></mat-icon> Reintentar
+                </button>
               </div>
             } @else if (esGenerable()) {
               <div class="hoja__placeholder">
