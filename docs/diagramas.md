@@ -1045,7 +1045,7 @@ JRE o nginx.
 ## 7. Esquema de base de datos (DBML)
 
 Esquema físico de la base, generado a partir de las migraciones Flyway
-`V001`–`V030` (refleja el estado final).
+`V001`–`V031` (refleja el estado final).
 
 **▶ Ver el diagrama en dbdiagram.io:**
 https://dbdiagram.io/d/PreVisar-Esquema-de-base-de-datos-6a0db795b62396d22c2afed1
@@ -1068,7 +1068,7 @@ https://dbdiagram.io/d/PreVisar-Esquema-de-base-de-datos-6a0db795b62396d22c2afed
   válidos (`rol`, `tipo_persona`, `estado`, `grupo`, `tipo_valor`, `base_calculo`).
 - **Índices parciales** (cláusula `WHERE`):
   - `comitente (profesional_id, dni_cuit)` solo entre activos (`WHERE deleted_at IS NULL`);
-  - un único vigente por concepto en `parametro_aporte` (`WHERE vigencia_hasta IS NULL AND activo`);
+  - un único vigente por concepto en `parametro_aporte` (`WHERE vigencia_hasta IS NULL AND activo`), restaurado en `V031`;
   - `expediente` por `profesional_id` `WHERE activo`;
   - `seccion (provincia_id, tipo_tarea_id, codigo)` y
     `documento_requerido (seccion_id, codigo)` `WHERE activo` — así, al dar de baja

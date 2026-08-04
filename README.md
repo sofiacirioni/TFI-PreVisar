@@ -59,7 +59,7 @@ El sistema cubre:
 
 ### Base de datos y almacenamiento
 - **PostgreSQL 16** (contenedor `previsar-postgres`, base/usuario `previsar`)
-- **Flyway** para versionado del esquema (migraciones `V001`–`V030`)
+- **Flyway** para versionado del esquema (migraciones `V001`–`V031`)
 - Los archivos subidos **no** van a la base: se guardan en el filesystem y en la
   BD queda solo la ruta relativa (`previsar.storage.base-path`)
 
@@ -112,7 +112,7 @@ documento_cargado → validacion_visual (resultado de IA, cacheado por hash)
 |-----------|-----------|
 | `V001`–`V012` | Jurisdicción (provincia/regional), usuario, condición IVA, profesional, rol revisor, comitente, obra, título y ajustes asociados. |
 | `V013` | `especialidad` + `tipo_tarea`. Seeds: especialidad **ELEC** + tarea **PR-DT-RT**. |
-| `V014` | `parametro_aporte`: valores con vigencia temporal. Índice parcial único: un valor vigente por concepto. |
+| `V014` | `parametro_aporte`: valores con vigencia temporal. |
 | `V015` | `expediente`: casi todos los campos nullable a propósito (guardado parcial); `profesional_id` es la única FK obligatoria. |
 | `V016` | `profesional.numero_orden` (complementa la matrícula). |
 | `V017` | **Rediseño de aportes**: `concepto_aporte` (catálogo, grupo CIEC/CAJA) + `tipo_tarea_aporte` (qué conceptos aplican a cada tarea). Reemplaza los flags `aplica_*` de `tipo_tarea`. |
@@ -129,6 +129,7 @@ documento_cargado → validacion_visual (resultado de IA, cacheado por hash)
 | `V028` | `usuario.terminos_version`: versión de T&C aceptada al registrarse. |
 | `V029` | `revision_externa`: PDF completo que el revisor analiza con IA; estado + resultado JSONB. |
 | `V030` | Datos editables del contrato de locación embebidos en `expediente`. |
+| `V031` | Restaura el índice parcial único de `parametro_aporte`: **un solo valor vigente por concepto**. Lo creaba la `V014` sobre la columna `concepto`, y el `DROP COLUMN` de la `V017` se lo llevó. |
 
 > El diagrama de clases del dominio, los de arquitectura y los flujos principales
 > están en **[docs/diagramas.md](docs/diagramas.md)**.

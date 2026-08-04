@@ -16,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,12 +25,12 @@ import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -139,16 +140,34 @@ class ParametroAporteServiceImplTest {
         assertThat(anterior.getVigenciaHasta()).isEqualTo(hoy.minusDays(1));
 
         ArgumentCaptor<ParametroAporte> captor = ArgumentCaptor.forClass(ParametroAporte.class);
-        verify(parametroAporteRepository, times(2)).save(captor.capture());
+        verify(parametroAporteRepository).save(captor.capture());
 
-        List<ParametroAporte> guardados = captor.getAllValues();
-        ParametroAporte nuevo = guardados.get(guardados.size() - 1);
+        ParametroAporte nuevo = captor.getValue();
         assertThat(nuevo.getValor()).isEqualByComparingTo("25000");
         assertThat(nuevo.getVigenciaDesde()).isEqualTo(hoy);
         assertThat(nuevo.getVigenciaHasta()).isNull();       // null = vigente
         assertThat(nuevo.getTipoValor()).isEqualTo(TipoValor.FIJO);
         assertThat(nuevo.getBaseCalculo()).isNull();          // un FIJO no tiene base
         assertThat(nuevo.isActivo()).isTrue();
+    }
+
+    @Test
+    @DisplayName("El cierre del anterior se descarga a la base ANTES de insertar el nuevo")
+    void cierraElAnteriorConFlushAntesDeInsertar() {
+        LocalDate hoy = LocalDate.now();
+        ParametroAporte anterior = vigenteDesde(hoy.minusMonths(2), "19000");
+        when(parametroAporteRepository.findVigente(any(), any())).thenReturn(Optional.of(anterior));
+
+        parametroService.actualizarArancel(pedido("25000"));
+
+        // El índice uq_parametro_vigente (V031) admite una sola fila vigente por
+        // concepto, y el id es IDENTITY: el persist del nuevo dispara su INSERT al
+        // instante. Sin el flush explícito, el UPDATE que cierra el anterior queda
+        // encolado hasta el commit, el INSERT llega primero y la base rechaza la
+        // operación con un 409. El orden es parte del contrato, no un detalle.
+        InOrder orden = inOrder(parametroAporteRepository);
+        orden.verify(parametroAporteRepository).saveAndFlush(anterior);
+        orden.verify(parametroAporteRepository).save(any(ParametroAporte.class));
     }
 
     @Test

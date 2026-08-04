@@ -65,9 +65,16 @@ public class ParametroAporteServiceImpl implements ParametroAporteService {
         }
 
         // 3. El vigente empezó antes de hoy: se cierra (vigencia_hasta = ayer) y se abre uno nuevo.
+        //
+        // saveAndFlush y no save: el índice uq_parametro_vigente (V031) admite una
+        // sola fila vigente por concepto, y el id de ParametroAporte es IDENTITY, así
+        // que el persist del paso 4 dispara su INSERT de inmediato —Hibernate necesita
+        // el id generado—. Con un save() normal el UPDATE que cierra esta fila queda
+        // encolado hasta el commit y el INSERT llega primero: por un instante hay dos
+        // filas vigentes y la base lo rechaza. El flush explícito fuerza el orden.
         vigenteOpt.ifPresent(vigente -> {
             vigente.setVigenciaHasta(hoy.minusDays(1));
-            parametroAporteRepository.save(vigente);
+            parametroAporteRepository.saveAndFlush(vigente);
         });
 
         // 4. Insertar el nuevo valor vigente
